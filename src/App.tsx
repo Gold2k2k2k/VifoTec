@@ -17,10 +17,23 @@ const POPULAR_TARGETS = [
 const PROMPT_TEMPLATES = [
   "Tóm tắt thông tin thành 3 ý chính",
   "Giải thích đoạn mã này cho người mới",
-  "Phân tích dữ liệu FITS của vật thể này"
+  "Phân tích cấu trúc của thiên thể này"
 ];
 
 type ChatSession = { id: string; title: string; messages: {role: string, text: string}[] };
+
+const MOCK_TOURS: Record<string, any[]> = {
+  "M101": [
+    { x: 0.5, y: 0.5, zoom: 1, text: "Chào mừng bạn đến với thiên hà Chong Chóng M101. Nhìn từ xa, nó giống như một bông hoa ánh sáng khổng lồ." },
+    { x: 0.35, y: 0.65, zoom: 3, text: "Đây là một trong những nhánh xoắn ốc ngoại vi, nơi chứa các cụm sao trẻ đang hình thành rực rỡ." },
+    { x: 0.5, y: 0.5, zoom: 8, text: "Tiến sâu vào trung tâm lõi thiên hà, nơi có mật độ năng lượng và bức xạ dày đặc nhất." }
+  ],
+  "DEFAULT": [
+    { x: 0.5, y: 0.5, zoom: 1, text: "Bắt đầu quét tổng thể thiên thể... Đang thu thập phổ ánh sáng." },
+    { x: 0.4, y: 0.4, zoom: 4, text: "Phát hiện vùng nhiễu loạn bức xạ ở khu vực phía Tây Bắc." },
+    { x: 0.7, y: 0.7, zoom: 2.5, text: "Khu vực này có chứa nhiều bụi sao nguyên thủy. Chuyến tham quan tự động hoàn tất." }
+  ]
+};
 
 function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -38,20 +51,32 @@ function App() {
   const [fileContent, setFileContent] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Voice Interaction
+  const [isListening, setIsListening] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
   const [dziUrl, setDziUrl] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const osdViewerRef = useRef<OpenSeadragon.Viewer | null>(null);
 
-  const [interactionMode, setInteractionMode] = useState<'none'|'mark'|'select'>('none');
+  const [interactionMode, setInteractionMode] = useState<'none'|'mark'|'select'|'measure'>('none');
   const interactionModeRef = useRef(interactionMode);
   
   const [isWaitingForDzi, setIsWaitingForDzi] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(180); 
   const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturate: 100 });
+  const [spectrumMode, setSpectrumMode] = useState<'NIRCAM' | 'MIRI' | 'XRAY'>('NIRCAM');
 
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const getSpectrumFilters = () => {
+    let base = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
+    if (spectrumMode === 'MIRI') return base + ` hue-rotate(90deg) contrast(150%)`;
+    if (spectrumMode === 'XRAY') return base + ` invert(1) hue-rotate(180deg) saturate(200%)`;
+    return base;
+  };
 
   // Load Sessions
   useEffect(() => {
@@ -77,7 +102,6 @@ function App() {
             ? { ...s, messages, title: s.title === 'Phiên khám phá mới' ? (messages[0]?.text.slice(0, 25) + '...') : s.title } 
             : s
         );
-        // Nếu session chưa tồn tại thì thêm vào
         if (!updated.some(s => s.id === currentSessionId)) {
           updated.unshift({ id: currentSessionId, title: messages[0]?.text.slice(0, 25) + '...', messages });
         }
@@ -115,7 +139,6 @@ function App() {
     }
   }, [interactionMode]);
 
-  // Hide suggestions
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -129,16 +152,11 @@ function App() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
-
     if (value.trim().length > 0) {
-      const filtered = POPULAR_TARGETS.filter(target => 
-        target.toLowerCase().includes(value.toLowerCase())
-      );
+      const filtered = POPULAR_TARGETS.filter(target => target.toLowerCase().includes(value.toLowerCase()));
       setFilteredSuggestions(filtered);
       setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
+    } else setShowSuggestions(false);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -150,9 +168,7 @@ function App() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isWaitingForDzi) {
-      interval = setInterval(() => {
-        setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
+      interval = setInterval(() => setTimeLeft(prev => (prev > 0 ? prev - 1 : 0)), 1000);
     }
     return () => clearInterval(interval);
   }, [isWaitingForDzi]);
@@ -163,9 +179,7 @@ function App() {
 
   useEffect(() => {
     if (isExploring && dziUrl) {
-      if (osdViewerRef.current) {
-        osdViewerRef.current.destroy();
-      }
+      if (osdViewerRef.current) osdViewerRef.current.destroy();
 
       const viewer = OpenSeadragon({
         id: 'osd-viewer',
@@ -177,6 +191,16 @@ function App() {
         crossOriginPolicy: "Anonymous", 
       });
 
+      // Custom Styling for Minimap (Navigator)
+      viewer.addHandler('open', () => {
+         const nav = document.querySelector('.navigator') as HTMLElement;
+         if (nav) {
+           nav.style.border = '2px solid #3b82f6';
+           nav.style.borderRadius = '8px';
+           nav.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
+         }
+      });
+
       osdViewerRef.current = viewer;
 
       let dragStartPoint: OpenSeadragon.Point | null = null;
@@ -185,97 +209,153 @@ function App() {
       new OpenSeadragon.MouseTracker({
         element: viewer.canvas,
         pressHandler: (event) => {
-           if (interactionModeRef.current === 'select' && osdViewerRef.current) {
+           const mode = interactionModeRef.current;
+           if ((mode === 'select' || mode === 'measure') && osdViewerRef.current) {
               dragStartPoint = osdViewerRef.current.viewport.pointFromPixel(event.position);
               selectionOverlayElement = document.createElement("div");
-              selectionOverlayElement.className = "border-2 border-emerald-400 bg-emerald-500/20 pointer-events-none";
-              osdViewerRef.current.addOverlay({
-                  element: selectionOverlayElement,
-                  location: new OpenSeadragon.Rect(dragStartPoint.x, dragStartPoint.y, 0, 0)
-              });
+              
+              if (mode === 'select') {
+                selectionOverlayElement.className = "border-2 border-emerald-400 bg-emerald-500/20 pointer-events-none";
+                osdViewerRef.current.addOverlay({
+                    element: selectionOverlayElement,
+                    location: new OpenSeadragon.Rect(dragStartPoint.x, dragStartPoint.y, 0, 0)
+                });
+              } else if (mode === 'measure') {
+                selectionOverlayElement.className = "text-xs font-bold text-yellow-400 bg-black/80 px-2 py-1 rounded border border-yellow-500 shadow-lg pointer-events-none whitespace-nowrap";
+                osdViewerRef.current.addOverlay({
+                    element: selectionOverlayElement,
+                    location: dragStartPoint,
+                    placement: OpenSeadragon.Placement.BOTTOM_LEFT
+                });
+              }
            }
         },
         dragHandler: (event) => {
-           if (interactionModeRef.current === 'select' && dragStartPoint && selectionOverlayElement && osdViewerRef.current) {
+           const mode = interactionModeRef.current;
+           if (dragStartPoint && selectionOverlayElement && osdViewerRef.current) {
               const currentPoint = osdViewerRef.current.viewport.pointFromPixel(event.position);
-              const x = Math.min(dragStartPoint.x, currentPoint.x);
-              const y = Math.min(dragStartPoint.y, currentPoint.y);
-              const width = Math.abs(currentPoint.x - dragStartPoint.x);
-              const height = Math.abs(currentPoint.y - dragStartPoint.y);
-              osdViewerRef.current.updateOverlay(selectionOverlayElement, new OpenSeadragon.Rect(x, y, width, height));
+              
+              if (mode === 'select') {
+                const x = Math.min(dragStartPoint.x, currentPoint.x);
+                const y = Math.min(dragStartPoint.y, currentPoint.y);
+                const width = Math.abs(currentPoint.x - dragStartPoint.x);
+                const height = Math.abs(currentPoint.y - dragStartPoint.y);
+                osdViewerRef.current.updateOverlay(selectionOverlayElement, new OpenSeadragon.Rect(x, y, width, height));
+              } else if (mode === 'measure') {
+                const dx = currentPoint.x - dragStartPoint.x;
+                const dy = currentPoint.y - dragStartPoint.y;
+                const distViewport = Math.sqrt(dx*dx + dy*dy); 
+                
+                let scale = 100000; 
+                if (searchQuery.toUpperCase().includes('M101')) scale = 170000;
+                
+                const ly = (distViewport * scale).toLocaleString('en-US', {maximumFractionDigits: 1});
+                selectionOverlayElement.innerHTML = `📏 Khảng cách: ~${ly} năm ánh sáng`;
+                osdViewerRef.current.updateOverlay(selectionOverlayElement, currentPoint);
+              }
            }
         },
         releaseHandler: () => {
-           if (interactionModeRef.current === 'select') {
-               dragStartPoint = null;
-               selectionOverlayElement = null;
-           }
+           dragStartPoint = null;
+           selectionOverlayElement = null;
         },
         clickHandler: (event: any) => {
           if (interactionModeRef.current === 'mark' && osdViewerRef.current) {
             const viewportPoint = osdViewerRef.current.viewport.pointFromPixel(event.position);
             const markerElement = document.createElement("div");
             markerElement.className = "w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-[0_0_10px_rgba(239,68,68,0.8)] pointer-events-none animate-pulse";
-            osdViewerRef.current.addOverlay({
-                element: markerElement,
-                location: viewportPoint,
-                placement: OpenSeadragon.Placement.CENTER
-            });
+            osdViewerRef.current.addOverlay({ element: markerElement, location: viewportPoint, placement: OpenSeadragon.Placement.CENTER });
           }
         }
       });
     }
 
-    return () => {
-      if (osdViewerRef.current) {
-        osdViewerRef.current.destroy();
-      }
-    };
+    return () => { if (osdViewerRef.current) osdViewerRef.current.destroy(); };
   }, [isExploring, dziUrl]);
 
   const handleZoomIn = () => { osdViewerRef.current?.viewport.zoomBy(1.5); osdViewerRef.current?.viewport.applyConstraints(); };
   const handleZoomOut = () => { osdViewerRef.current?.viewport.zoomBy(0.66); osdViewerRef.current?.viewport.applyConstraints(); };
   const handleToggleFullScreen = () => { if (osdViewerRef.current) osdViewerRef.current.setFullScreen(!osdViewerRef.current.isFullPage()); };
 
+  // Speech Recognition (Speech to Text)
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy dùng Google Chrome.");
+      return;
+    }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'vi-VN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setChatInput(prev => prev + (prev.length > 0 ? ' ' : '') + transcript);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
+  };
+
+  // Text to Speech
+  const speakText = (text: string) => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'vi-VN';
+    utterance.onend = () => setIsSpeaking(false);
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Guided Tours
+  const startTour = async () => {
+    if (!osdViewerRef.current) return;
+    const tourData = MOCK_TOURS[searchQuery.toUpperCase()] || MOCK_TOURS["DEFAULT"];
+    
+    for (const point of tourData) {
+       if (!osdViewerRef.current) break;
+       osdViewerRef.current.viewport.panTo(new OpenSeadragon.Point(point.x, point.y));
+       osdViewerRef.current.viewport.zoomTo(point.zoom);
+       
+       setMessages(prev => [...prev, {role: 'ai', text: `🛸 **Tour Guide:** ${point.text}`}]);
+       speakText(point.text);
+       
+       // Wait 6 seconds for each waypoint
+       await new Promise(r => setTimeout(r, 6000));
+    }
+  };
+
   const executeSearch = async (queryToSearch: string) => {
     if (queryToSearch.trim() === '') return;
-
     setShowSuggestions(false); 
     const formattedQuery = queryToSearch.trim().toUpperCase().replace(/\s+/g, '_');
 
     setInteractionMode('none');
     setFilters({ brightness: 100, contrast: 100, saturate: 100 });
+    setSpectrumMode('NIRCAM');
     
-    if (osdViewerRef.current) {
-      osdViewerRef.current.clearOverlays();
-    }
-
+    if (osdViewerRef.current) osdViewerRef.current.clearOverlays();
     const cleanApiUrl = "https://gbachnguyen-jwst-backend-processor.hf.space";
 
-    if (dziUrl) {
-       try { fetch(`${cleanApiUrl}/api/v1/cleanup/`, { method: 'DELETE' }); } catch (err) { }
-    }
+    if (dziUrl) { try { fetch(`${cleanApiUrl}/api/v1/cleanup/`, { method: 'DELETE' }); } catch (err) { } }
 
     setIsExploring(true);
     setDziUrl('');
     setIsWaitingForDzi(false);
     setTimeLeft(180);
 
-    const introMsg = {
-      role: 'ai',
-      text: `Đang thiết lập lại tọa độ. Khởi động quy trình quét dữ liệu cho mục tiêu mới: **${queryToSearch}**...`
-    };
+    const introMsg = { role: 'ai', text: `Đang thiết lập lại tọa độ. Khởi động quy trình quét dữ liệu cho mục tiêu mới: **${queryToSearch}**...` };
     
-    if (messages.length === 0) {
-       setMessages([introMsg]);
-    } else {
-       handleNewSession();
-       setTimeout(() => setMessages([introMsg]), 100);
-    }
+    if (messages.length === 0) setMessages([introMsg]);
+    else { handleNewSession(); setTimeout(() => setMessages([introMsg]), 100); }
 
     try {
       const response = await fetch(`${cleanApiUrl}/api/v1/explore/${formattedQuery}`, { method: 'POST' });
-
       if (response.ok) {
         const data = await response.json();
         const fullDziUrl = `${cleanApiUrl}/static/${formattedQuery}.dzi`;
@@ -289,9 +369,7 @@ function App() {
 
             const checkInterval = setInterval(async () => {
                 try {
-                    const noCacheUrl = `${fullDziUrl}?t=${new Date().getTime()}`;
-                    const statusRes = await fetch(noCacheUrl, { method: 'HEAD', cache: 'no-store' });
-                    
+                    const statusRes = await fetch(`${fullDziUrl}?t=${new Date().getTime()}`, { method: 'HEAD', cache: 'no-store' });
                     if (statusRes.ok) {
                         clearInterval(checkInterval);
                         setIsWaitingForDzi(false);
@@ -301,48 +379,30 @@ function App() {
                 } catch (err) { }
             }, 3000);
 
-            setTimeout(() => {
-                clearInterval(checkInterval);
-                setIsWaitingForDzi(false);
-            }, 300000);
+            setTimeout(() => { clearInterval(checkInterval); setIsWaitingForDzi(false); }, 300000);
         }
-      } else {
-        setIsWaitingForDzi(false);
-      }
+      } else setIsWaitingForDzi(false);
     } catch (error) {
       setIsWaitingForDzi(false);
       setMessages(prev => [...prev, { role: 'ai', text: 'Lỗi: Không thể kết nối tới máy chủ lõi. Vui lòng kiểm tra lại Backend.' }]);
     }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    executeSearch(searchQuery);
-  };
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => { e.preventDefault(); executeSearch(searchQuery); };
 
-  // Handle File Upload
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      const text = await file.text();
-      setFileContent(text);
-    }
+    if (file) { setSelectedFile(file); setFileContent(await file.text()); }
   };
 
   const handleChatSubmit = async (overrideText?: string) => {
     const submitText = overrideText || chatInput.trim();
     if (submitText !== '' || fileContent !== '') {
-      
       let textToSend = submitText;
-      if (fileContent) {
-        textToSend += `\n\n--- Dữ liệu đính kèm từ file ${selectedFile?.name} ---\n${fileContent}`;
-      }
+      if (fileContent) textToSend += `\n\n--- Dữ liệu đính kèm từ file ${selectedFile?.name} ---\n${fileContent}`;
 
       setMessages(prev => [...prev, { role: 'user', text: textToSend }]);
-      setChatInput('');
-      setSelectedFile(null);
-      setFileContent('');
+      setChatInput(''); setSelectedFile(null); setFileContent('');
       if (fileInputRef.current) fileInputRef.current.value = '';
 
       setMessages(prev => [...prev, { role: 'ai', text: 'Đang phân tích dữ liệu...' }]);
@@ -350,17 +410,16 @@ function App() {
       try {
         const currentHistory = messages.filter(m => m.text !== 'Đang phân tích dữ liệu...');
         const aiReply = await getGeminiResponse(textToSend, currentHistory);
-        
         setMessages(prev => {
-          const newMessages = [...prev];
-          newMessages[newMessages.length - 1] = { role: 'ai', text: aiReply };
-          return newMessages;
+          const newMsgs = [...prev];
+          newMsgs[newMsgs.length - 1] = { role: 'ai', text: aiReply };
+          return newMsgs;
         });
       } catch (err) {
         setMessages(prev => {
-          const newMessages = [...prev];
-          newMessages[newMessages.length - 1] = { role: 'ai', text: '⚠️ Lỗi: Cảm biến AI đang nhiễu sóng hoặc API Key không hợp lệ. Vui lòng thử lại!' };
-          return newMessages;
+          const newMsgs = [...prev];
+          newMsgs[newMsgs.length - 1] = { role: 'ai', text: '⚠️ Lỗi: Cảm biến AI đang nhiễu sóng hoặc API Key không hợp lệ.' };
+          return newMsgs;
         });
       }
     }
@@ -371,45 +430,34 @@ function App() {
     if (canvas) {
       try {
         const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width;
-        tempCanvas.height = canvas.height;
+        tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
         const ctx = tempCanvas.getContext('2d');
         if (ctx) {
-          ctx.filter = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
+          ctx.filter = getSpectrumFilters();
           ctx.drawImage(canvas, 0, 0);
           const link = document.createElement('a');
-          link.download = `jwst_${searchQuery}_${Date.now()}.png`;
+          link.download = `jwst_${searchQuery}_${spectrumMode}_${Date.now()}.png`;
           link.href = tempCanvas.toDataURL('image/png', 1.0);
           link.click();
         }
-      } catch (err) {
-        alert("Lỗi xuất ảnh: Không thể tải ảnh do giới hạn bảo mật CORS từ máy chủ chứa ảnh gốc.");
-      }
+      } catch (err) { alert("Lỗi xuất ảnh: Không thể tải ảnh do giới hạn bảo mật CORS từ máy chủ chứa ảnh gốc."); }
     }
   };
 
-  // Export to Notion / Markdown
   const handleExportToNotion = (text: string) => {
     const blob = new Blob([text], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `AI_Export_${Date.now()}.md`;
-    link.click();
-    URL.revokeObjectURL(url);
-    alert("Đã lưu vào Workspace (Tải xuống file Markdown thành công)!");
+    const link = document.createElement('a'); link.href = url; link.download = `AI_Export_${Date.now()}.md`; link.click(); URL.revokeObjectURL(url);
   };
 
-  const handleCopyText = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert("Đã sao chép vào bộ nhớ tạm!");
-  };
+  const handleCopyText = (text: string) => { navigator.clipboard.writeText(text); alert("Đã sao chép vào bộ nhớ tạm!"); };
 
   const controls = [
     { label: "+", action: handleZoomIn, title: "Phóng to", type: "zoomIn" },
     { label: "-", action: handleZoomOut, title: "Thu nhỏ", type: "zoomOut" },
-    { label: "⚲", action: () => setInteractionMode(interactionMode === 'mark' ? 'none' : 'mark'), title: "Ghim địa điểm (Click)", type: "mark" },
-    { label: "⬚", action: () => setInteractionMode(interactionMode === 'select' ? 'none' : 'select'), title: "Khoanh vùng (Drag chuột)", type: "select" },
+    { label: "📍", action: () => setInteractionMode(interactionMode === 'mark' ? 'none' : 'mark'), title: "Ghim địa điểm (Click)", type: "mark" },
+    { label: "🔲", action: () => setInteractionMode(interactionMode === 'select' ? 'none' : 'select'), title: "Khoanh vùng (Drag chuột)", type: "select" },
+    { label: "📏", action: () => setInteractionMode(interactionMode === 'measure' ? 'none' : 'measure'), title: "Thước đo quang sai (Drag chuột)", type: "measure" },
     { label: "⛶", action: handleToggleFullScreen, title: "Toàn màn hình", type: "fullScreen" },
   ];
 
@@ -417,25 +465,12 @@ function App() {
     <div className="flex flex-col h-screen w-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
       {!isExploring && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-cosmic">
-          <h1 className="text-6xl font-bold text-blue-400 tracking-widest mb-10 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)] text-center px-4">
-            JWST SPACE EXPLORER
-          </h1>
-          
+          <h1 className="text-6xl font-bold text-blue-400 tracking-widest mb-10 drop-shadow-[0_0_15px_rgba(96,165,250,0.5)] text-center px-4">JWST SPACE EXPLORER</h1>
           <div className="relative w-full max-w-2xl px-4" ref={searchContainerRef}>
             <form onSubmit={handleSearchSubmit} className="flex w-full shadow-[0_0_30px_rgba(0,0,0,0.8)] rounded-full z-20 relative">
-              <input
-                type="text"
-                className="w-full px-6 py-4 bg-slate-900/90 backdrop-blur-md border border-slate-600 rounded-l-full text-lg focus:outline-none focus:border-blue-500 text-white placeholder-slate-400"
-                placeholder="Khám phá thiên hà (VD: M101, Tinh vân Orion,...)"
-                value={searchQuery}
-                onChange={handleInputChange}
-                onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }}
-              />
-              <button type="submit" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-r-full font-bold text-lg transition-colors shadow-lg">
-                Khám phá
-              </button>
+              <input type="text" className="w-full px-6 py-4 bg-slate-900/90 backdrop-blur-md border border-slate-600 rounded-l-full text-lg focus:outline-none focus:border-blue-500 text-white placeholder-slate-400" placeholder="Khám phá thiên hà (VD: M101, Tinh vân Orion,...)" value={searchQuery} onChange={handleInputChange} onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} />
+              <button type="submit" className="px-8 py-4 bg-blue-600 hover:bg-blue-500 rounded-r-full font-bold text-lg transition-colors shadow-lg">Khám phá</button>
             </form>
-
             {showSuggestions && (
               <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in-down mx-4" style={{width: 'calc(100% - 2rem)'}}>
                 {filteredSuggestions.length > 0 ? (
@@ -446,11 +481,7 @@ function App() {
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <div className="px-6 py-4 text-slate-400 italic">
-                    Chưa có trong danh mục phổ biến. Nhấn "Khám phá" để quét sâu...
-                  </div>
-                )}
+                ) : ( <div className="px-6 py-4 text-slate-400 italic">Nhấn "Khám phá" để yêu cầu NASA quét sâu...</div> )}
               </div>
             )}
           </div>
@@ -461,14 +492,8 @@ function App() {
         <header className="flex items-center justify-between p-4 bg-slate-950 border-b border-slate-800 z-20">
           <div className="flex items-center gap-4">
             <h1 className="text-xl font-bold text-blue-400 tracking-widest cursor-pointer" onClick={() => setIsExploring(false)}>JWST EXPLORER</h1>
-            <button 
-              onClick={() => setShowSessionSidebar(!showSessionSidebar)}
-              className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-sm text-slate-300"
-            >
-              🕒 Lịch sử Chat
-            </button>
+            <button onClick={() => setShowSessionSidebar(!showSessionSidebar)} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-sm text-slate-300">🕒 Lịch sử Chat</button>
           </div>
-          
           <div className="relative w-1/3" ref={searchContainerRef}>
             <form onSubmit={handleSearchSubmit} className="flex w-full">
               <input type="text" className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded-l-md focus:outline-none focus:border-blue-500" placeholder="Khám phá thiên hà (VD: M1)..." value={searchQuery} onChange={handleInputChange} onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} />
@@ -479,14 +504,10 @@ function App() {
                 {filteredSuggestions.length > 0 ? (
                   <ul className="max-h-60 overflow-y-auto">
                     {filteredSuggestions.map((suggestion, idx) => (
-                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-4 py-2 hover:bg-blue-600/50 cursor-pointer border-b border-slate-700/50 last:border-0 text-sm text-slate-200">
-                        {suggestion}
-                      </li>
+                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-4 py-2 hover:bg-blue-600/50 cursor-pointer border-b border-slate-700/50 last:border-0 text-sm text-slate-200">{suggestion}</li>
                     ))}
                   </ul>
-                ) : (
-                  <div className="px-4 py-3 text-xs text-slate-400 italic">Nhấn "Khám phá" để quét sâu...</div>
-                )}
+                ) : ( <div className="px-4 py-3 text-xs text-slate-400 italic">Nhấn "Khám phá" để quét sâu...</div> )}
               </div>
             )}
           </div>
@@ -494,7 +515,6 @@ function App() {
       )}
 
       <main className="flex-1 flex relative overflow-hidden">
-        {/* Session Sidebar */}
         {isExploring && showSessionSidebar && (
           <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-10 shadow-2xl">
             <div className="p-4 border-b border-slate-800 flex justify-between items-center">
@@ -503,11 +523,7 @@ function App() {
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               {sessions.map(s => (
-                <div 
-                  key={s.id} 
-                  onClick={() => handleSwitchSession(s.id)}
-                  className={`p-3 mb-2 rounded cursor-pointer text-sm truncate border transition-colors ${currentSessionId === s.id ? 'bg-blue-900/50 border-blue-500 text-blue-200' : 'bg-slate-800/30 border-transparent hover:bg-slate-800 text-slate-400'}`}
-                >
+                <div key={s.id} onClick={() => handleSwitchSession(s.id)} className={`p-3 mb-2 rounded cursor-pointer text-sm truncate border transition-colors ${currentSessionId === s.id ? 'bg-blue-900/50 border-blue-500 text-blue-200' : 'bg-slate-800/30 border-transparent hover:bg-slate-800 text-slate-400'}`}>
                   {s.title}
                 </div>
               ))}
@@ -516,52 +532,50 @@ function App() {
         )}
 
         <section className="flex-1 relative bg-black flex items-center justify-center">
-          {!isExploring ? (
-            <p className="text-slate-500 italic text-lg">Vui lòng nhập tên thiên thể để nạp bản đồ vũ trụ.</p>
-          ) : (
+          {!isExploring ? ( <p className="text-slate-500 italic text-lg">Vui lòng nhập tên thiên thể để nạp bản đồ vũ trụ.</p> ) : (
             <>
               {isWaitingForDzi && (
                 <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
                   <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
                   <h2 className="text-2xl font-bold text-blue-400 animate-pulse tracking-widest text-center">ĐANG TRUY XUẤT NASA MAST</h2>
-                  <p className="text-slate-300 mt-4 text-xl text-center">
-                    Thời gian dự kiến còn lại: <span className="text-emerald-400 font-mono font-bold text-3xl ml-2">{timeLeft > 0 ? `${timeLeft}s` : 'Đang đồng bộ hóa dữ liệu...'}</span>
-                  </p>
+                  <p className="text-slate-300 mt-4 text-xl text-center">Thời gian dự kiến còn lại: <span className="text-emerald-400 font-mono font-bold text-3xl ml-2">{timeLeft > 0 ? `${timeLeft}s` : 'Đang đồng bộ hóa dữ liệu...'}</span></p>
                 </div>
               )}
               
               {dziUrl && !isWaitingForDzi && (
-                <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 p-4 rounded-xl shadow-2xl z-20 w-64">
-                  <h3 className="font-bold text-blue-400 mb-4 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Xử lý hình ảnh</h3>
-                  <div className="mb-3">
-                    <div className="flex justify-between text-slate-300 text-xs mb-1"><span>Độ sáng</span><span>{filters.brightness}%</span></div>
-                    <input type="range" min="50" max="200" value={filters.brightness} onChange={e => setFilters({...filters, brightness: parseInt(e.target.value)})} className="w-full accent-blue-500" />
+                <>
+                  <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 p-4 rounded-xl shadow-2xl z-20 w-64">
+                    <h3 className="font-bold text-blue-400 mb-4 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Xử lý hình ảnh & HD</h3>
+                    <div className="mb-3"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Độ sáng</span><span>{filters.brightness}%</span></div><input type="range" min="50" max="200" value={filters.brightness} onChange={e => setFilters({...filters, brightness: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
+                    <div className="mb-3"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Tương phản</span><span>{filters.contrast}%</span></div><input type="range" min="50" max="200" value={filters.contrast} onChange={e => setFilters({...filters, contrast: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
+                    <div className="mb-5"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Độ bão hòa</span><span>{filters.saturate}%</span></div><input type="range" min="0" max="200" value={filters.saturate} onChange={e => setFilters({...filters, saturate: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
+                    <button onClick={handleDownload} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-900/50">Tải ảnh chất lượng cao</button>
+                    
+                    <button onClick={startTour} className="w-full mt-3 bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-indigo-900/50">
+                      🚀 Bắt đầu Tham Quan
+                    </button>
                   </div>
-                  <div className="mb-3">
-                    <div className="flex justify-between text-slate-300 text-xs mb-1"><span>Tương phản</span><span>{filters.contrast}%</span></div>
-                    <input type="range" min="50" max="200" value={filters.contrast} onChange={e => setFilters({...filters, contrast: parseInt(e.target.value)})} className="w-full accent-blue-500" />
+
+                  {/* Spectrum Mock Panel */}
+                  <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 p-4 rounded-xl shadow-2xl z-20 w-56">
+                    <h3 className="font-bold text-emerald-400 mb-3 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Kính Lọc Đa Phổ</h3>
+                    <div className="flex flex-col gap-2">
+                      <button onClick={() => setSpectrumMode('NIRCAM')} className={`py-1.5 px-3 rounded text-sm font-semibold transition-all ${spectrumMode==='NIRCAM' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>📷 Khả kiến (Hubble)</button>
+                      <button onClick={() => setSpectrumMode('MIRI')} className={`py-1.5 px-3 rounded text-sm font-semibold transition-all ${spectrumMode==='MIRI' ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>🔥 Hồng ngoại (MIRI)</button>
+                      <button onClick={() => setSpectrumMode('XRAY')} className={`py-1.5 px-3 rounded text-sm font-semibold transition-all ${spectrumMode==='XRAY' ? 'bg-purple-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>☢️ Tia X (Chandra)</button>
+                    </div>
                   </div>
-                  <div className="mb-5">
-                    <div className="flex justify-between text-slate-300 text-xs mb-1"><span>Độ bão hòa</span><span>{filters.saturate}%</span></div>
-                    <input type="range" min="0" max="200" value={filters.saturate} onChange={e => setFilters({...filters, saturate: parseInt(e.target.value)})} className="w-full accent-blue-500" />
-                  </div>
-                  <button onClick={handleDownload} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-900/50">
-                    Tải ảnh chất lượng cao
-                  </button>
-                </div>
+                </>
               )}
 
-              <div id="osd-viewer" className="absolute inset-0 w-full h-full" style={{ filter: `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)` }}></div>
+              <div id="osd-viewer" className="absolute inset-0 w-full h-full" style={{ filter: getSpectrumFilters() }}></div>
             </>
           )}
 
           {isExploring && (
             <div className="absolute bottom-6 left-6 flex flex-col gap-2 z-10">
               {controls.map((control, idx) => (
-                <button
-                  key={idx} onClick={control.action} title={control.title}
-                  className={`w-11 h-11 bg-slate-800/80 hover:bg-slate-700 text-white rounded shadow-lg border border-slate-600 flex items-center justify-center text-xl transition-all ${((control.type === 'mark' && interactionMode === 'mark') || (control.type === 'select' && interactionMode === 'select')) ? 'bg-blue-600 border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.6)]' : ''}`}
-                >
+                <button key={idx} onClick={control.action} title={control.title} className={`w-11 h-11 bg-slate-800/80 hover:bg-slate-700 text-white rounded shadow-lg border border-slate-600 flex items-center justify-center text-xl transition-all ${['mark', 'select', 'measure'].includes(control.type) && interactionMode === control.type ? 'bg-blue-600 border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.6)]' : ''}`}>
                   {control.label}
                 </button>
               ))}
@@ -570,10 +584,9 @@ function App() {
         </section>
 
         {isExploring && (
-          <aside className="w-96 bg-slate-900 border-l border-slate-800 flex flex-col z-10 shadow-2xl relative">
+          <aside className="w-[400px] bg-slate-900 border-l border-slate-800 flex flex-col z-10 shadow-2xl relative">
             <div className="p-4 border-b border-slate-800 font-semibold text-emerald-400 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Trợ lý Gemini AI
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Trợ lý Gemini AI
             </div>
 
             <div className="flex-1 p-4 overflow-y-auto">
@@ -585,8 +598,8 @@ function App() {
                         <ReactMarkdown 
                           components={{
                             code(props) {
-                              const {children, className, node, ...rest} = props
-                              const match = /language-(\w+)/.exec(className || '')
+                              const {children, className, node, ...rest} = props;
+                              const match = /language-(\w+)/.exec(className || '');
                               return match ? (
                                 <div className="relative group/code mt-2 mb-2 rounded overflow-hidden">
                                   <div className="flex justify-between items-center bg-slate-800 px-3 py-1 border-b border-slate-700 text-xs text-slate-400">
@@ -596,32 +609,19 @@ function App() {
                                       <button onClick={() => handleCopyText(String(children))} className="hover:text-blue-400 transition-colors">Copy</button>
                                     </div>
                                   </div>
-                                  <SyntaxHighlighter
-                                    {...rest}
-                                    PreTag="div"
-                                    children={String(children).replace(/\n$/, '')}
-                                    language={match[1]}
-                                    style={vscDarkPlus}
-                                    customStyle={{ margin: 0, borderRadius: '0 0 0.25rem 0.25rem' }}
-                                  />
+                                  <SyntaxHighlighter {...rest} PreTag="div" children={String(children).replace(/\n$/, '')} language={match[1]} style={vscDarkPlus} customStyle={{ margin: 0, borderRadius: '0 0 0.25rem 0.25rem' }} />
                                 </div>
-                              ) : (
-                                <code {...rest} className="bg-slate-700 px-1 py-0.5 rounded text-emerald-300">
-                                  {children}
-                                </code>
-                              )
+                              ) : ( <code {...rest} className="bg-slate-700 px-1 py-0.5 rounded text-emerald-300">{children}</code> );
                             }
                           }}
                         >
                           {msg.text}
                         </ReactMarkdown>
-                      ) : (
-                        <div className="whitespace-pre-wrap">{msg.text}</div>
-                      )}
+                      ) : ( <div className="whitespace-pre-wrap">{msg.text}</div> )}
                     </div>
-                    {/* Action buttons under AI message */}
                     {msg.role === 'ai' && msg.text !== 'Đang phân tích dữ liệu...' && (
                       <div className="flex gap-2 mt-1 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => speakText(msg.text)} className={`text-xs text-slate-500 hover:text-yellow-400 bg-slate-800 px-2 py-1 rounded ${isSpeaking ? 'text-yellow-400 animate-pulse' : ''}`}>🔊 {isSpeaking ? 'Đang đọc...' : 'Đọc'}</button>
                         <button onClick={() => handleCopyText(msg.text)} className="text-xs text-slate-500 hover:text-blue-400 bg-slate-800 px-2 py-1 rounded">📋 Copy</button>
                         <button onClick={() => handleExportToNotion(msg.text)} className="text-xs text-slate-500 hover:text-emerald-400 bg-slate-800 px-2 py-1 rounded">💾 Lưu Workspace</button>
                       </div>
@@ -633,38 +633,22 @@ function App() {
             </div>
 
             <div className="p-3 border-t border-slate-800 bg-slate-950 flex flex-col gap-2">
-              {/* Prompt Templates */}
               <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
                 {PROMPT_TEMPLATES.map((pt, i) => (
-                  <button key={i} onClick={() => setChatInput(pt)} className="whitespace-nowrap px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-xs text-slate-300 transition-colors">
-                    ✨ {pt}
-                  </button>
+                  <button key={i} onClick={() => setChatInput(pt)} className="whitespace-nowrap px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-xs text-slate-300 transition-colors">✨ {pt}</button>
                 ))}
               </div>
-
-              {/* File Upload Info */}
               {selectedFile && (
                 <div className="flex items-center justify-between bg-blue-900/30 border border-blue-500/50 px-3 py-1.5 rounded text-xs text-blue-200">
                   <span className="truncate max-w-[200px]">📎 {selectedFile.name}</span>
                   <button onClick={() => { setSelectedFile(null); setFileContent(''); if(fileInputRef.current) fileInputRef.current.value = ''; }} className="hover:text-red-400">✕</button>
                 </div>
               )}
-
               <div className="flex items-center gap-2">
-                {/* File Upload Button */}
+                <button onClick={startListening} className={`p-2 rounded transition-colors ${isListening ? 'text-red-400 bg-red-900/30 animate-pulse' : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-800'}`} title="Nhập bằng giọng nói (Web Speech)">🎙️</button>
                 <input type="file" accept=".txt,.md,.csv,.json" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
-                <button onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded transition-colors" title="Đính kèm tài liệu (TXT, MD, CSV)">
-                  📎
-                </button>
-                
-                <input
-                  type="text"
-                  placeholder="Nhập câu hỏi hoặc chọn file..."
-                  className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm focus:outline-none focus:border-emerald-500 text-white"
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleChatSubmit(); }}
-                />
+                <button onClick={() => fileInputRef.current?.click()} className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-800 rounded transition-colors" title="Đính kèm tài liệu (TXT, MD, CSV)">📎</button>
+                <input type="text" placeholder="Nhập câu hỏi hoặc chọn file..." className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded text-sm focus:outline-none focus:border-emerald-500 text-white" value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleChatSubmit(); }} />
               </div>
             </div>
           </aside>
