@@ -4,7 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import OpenSeadragon from 'openseadragon';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { ChatSession, InteractionMode, SpectrumMode, POPULAR_TARGETS, PROMPT_TEMPLATES, MOCK_TOURS, QUIZZES } from './data';
+import { ChatSession, InteractionMode, SpectrumMode, POPULAR_TARGETS, PROMPT_TEMPLATES, MOCK_TOURS } from './data';
+import { SpaceNewsTicker } from './components/SpaceNewsTicker';
+import { Radar3D } from './components/Radar3D';
+import { QuizOverlay } from './components/QuizOverlay';
+import { SpectrumPanel } from './components/SpectrumPanel';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -40,11 +44,17 @@ function App() {
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // NEW FEATURES STATE
+  // Feature States
   const [showQuiz, setShowQuiz] = useState(false);
-  const [quizState, setQuizState] = useState({ step: 0, score: 0 });
   const [badges, setBadges] = useState<string[]>([]);
   const [showRadar, setShowRadar] = useState(false);
+
+  // Data Sonification State
+  const [isSonifying, setIsSonifying] = useState(false);
+  const [scannerX, setScannerX] = useState(0);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const oscRef = useRef<OscillatorNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
 
   const getSpectrumFilters = () => {
     let base = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
@@ -60,29 +70,71 @@ function App() {
     if (savedBadges) setBadges(JSON.parse(savedBadges));
   }, []);
 
+  // Audio Sonification Loop
+  useEffect(() => {
+    let animationFrameId: number;
+    const playScan = () => {
+       if (!isSonifying || !audioCtxRef.current || !oscRef.current || !gainRef.current) return;
+       
+       setScannerX(prev => {
+          const next = prev + 0.2;
+          if (next >= 100) return 0;
+          
+          const noise = Math.sin(next * 12) + Math.cos(next * 4);
+          let brightness = (Math.sin(next * 0.1) + 1) / 2;
+          if (noise > 1.6) brightness = 1.0;
+          
+          const freq = 100 + (brightness * 1000);
+          const vol = brightness * 0.4;
+
+          oscRef.current?.frequency.setTargetAtTime(freq, audioCtxRef.current!.currentTime, 0.1);
+          gainRef.current?.gain.setTargetAtTime(vol, audioCtxRef.current!.currentTime, 0.1);
+          
+          return next;
+       });
+       animationFrameId = requestAnimationFrame(playScan);
+    };
+
+    if (isSonifying) animationFrameId = requestAnimationFrame(playScan);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isSonifying]);
+
+  const toggleSonification = () => {
+    if (isSonifying) {
+      setIsSonifying(false);
+      if (audioCtxRef.current) { audioCtxRef.current.close(); audioCtxRef.current = null; }
+      setScannerX(0);
+      return;
+    }
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    audioCtxRef.current = ctx;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = 'sine';
+    osc.frequency.value = 200;
+    gain.gain.value = 0;
+
+    osc.connect(gain); gain.connect(ctx.destination); osc.start();
+    oscRef.current = osc; gainRef.current = gain;
+    setIsSonifying(true);
+  };
+
   useEffect(() => {
     const saved = localStorage.getItem('jwst_chat_sessions');
     if (saved) {
       const parsed = JSON.parse(saved);
       setSessions(parsed);
-      if (parsed.length > 0) {
-        setCurrentSessionId(parsed[0].id);
-        setMessages(parsed[0].messages);
-      }
+      if (parsed.length > 0) { setCurrentSessionId(parsed[0].id); setMessages(parsed[0].messages); }
     } else handleNewSession();
   }, []);
 
   useEffect(() => {
     if (currentSessionId && messages.length > 0) {
       setSessions(prev => {
-        const updated = prev.map(s => 
-          s.id === currentSessionId ? { ...s, messages, title: s.title === 'Phiên khám phá mới' ? (messages[0]?.text.slice(0, 25) + '...') : s.title } : s
-        );
-        if (!updated.some(s => s.id === currentSessionId)) {
-          updated.unshift({ id: currentSessionId, title: messages[0]?.text.slice(0, 25) + '...', messages });
-        }
-        localStorage.setItem('jwst_chat_sessions', JSON.stringify(updated));
-        return updated;
+        const updated = prev.map(s => s.id === currentSessionId ? { ...s, messages, title: s.title === 'Phiên khám phá mới' ? (messages[0]?.text.slice(0, 25) + '...') : s.title } : s);
+        if (!updated.some(s => s.id === currentSessionId)) updated.unshift({ id: currentSessionId, title: messages[0]?.text.slice(0, 25) + '...', messages });
+        localStorage.setItem('jwst_chat_sessions', JSON.stringify(updated)); return updated;
       });
     }
   }, [messages, currentSessionId]);
@@ -90,8 +142,7 @@ function App() {
   const handleNewSession = () => {
     const newId = Date.now().toString();
     setSessions(prev => [{ id: newId, title: 'Phiên khám phá mới', messages: [] }, ...prev]);
-    setCurrentSessionId(newId);
-    setMessages([]);
+    setCurrentSessionId(newId); setMessages([]);
   };
 
   const handleSwitchSession = (id: string) => {
@@ -104,11 +155,8 @@ function App() {
     if (osdViewerRef.current) {
         const viewer = osdViewerRef.current;
         const isNone = interactionMode === 'none';
-        viewer.panHorizontal = isNone;
-        viewer.panVertical = isNone;
-        viewer.zoomPerClick = isNone ? 2.0 : 1.0;
+        viewer.panHorizontal = isNone; viewer.panVertical = isNone; viewer.zoomPerClick = isNone ? 2.0 : 1.0;
         
-        // Hide overlay if leaving magnify mode
         const overlay = document.getElementById('magnify-overlay');
         if (overlay) overlay.style.display = (interactionMode === 'magnify') ? 'block' : 'none';
     }
@@ -123,14 +171,14 @@ function App() {
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
+    const value = e.target.value; setSearchQuery(value);
     if (value.trim().length > 0) {
-      const filtered = POPULAR_TARGETS.filter(target => target.toLowerCase().includes(value.toLowerCase()));
-      setFilteredSuggestions(filtered);
+      setFilteredSuggestions(POPULAR_TARGETS.filter(t => t.toLowerCase().includes(value.toLowerCase())));
       setShowSuggestions(true);
     } else setShowSuggestions(false);
   };
+
+  const handleSuggestionClick = (suggestion: string) => { setSearchQuery(suggestion.split(" (")[0]); setShowSuggestions(false); };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -145,20 +193,13 @@ function App() {
       if (osdViewerRef.current) osdViewerRef.current.destroy();
 
       const viewer = OpenSeadragon({
-        id: 'osd-viewer',
-        prefixUrl: 'https://openseadragon.github.io/openseadragon/images/',
-        tileSources: dziUrl,
-        showNavigator: true,
-        navigatorPosition: 'BOTTOM_RIGHT',
-        showNavigationControl: false,
-        crossOriginPolicy: "Anonymous", 
+        id: 'osd-viewer', prefixUrl: 'https://openseadragon.github.io/openseadragon/images/',
+        tileSources: dziUrl, showNavigator: true, navigatorPosition: 'BOTTOM_RIGHT', showNavigationControl: false, crossOriginPolicy: "Anonymous", 
       });
 
       viewer.addHandler('open', () => {
          const nav = document.querySelector('.navigator') as HTMLElement;
-         if (nav) {
-           nav.style.border = '2px solid #3b82f6'; nav.style.borderRadius = '8px'; nav.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
-         }
+         if (nav) { nav.style.border = '2px solid #3b82f6'; nav.style.borderRadius = '8px'; nav.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)'; }
       });
 
       osdViewerRef.current = viewer;
@@ -166,14 +207,10 @@ function App() {
       let dragStartPoint: OpenSeadragon.Point | null = null;
       let selectionOverlayElement: HTMLDivElement | null = null;
 
-      // Magnify Overlay Pre-creation
       const magnifyEl = document.createElement("div");
       magnifyEl.id = 'magnify-overlay';
       magnifyEl.className = "hidden absolute pointer-events-none rounded-full border-4 border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.8)] backdrop-blur-sm bg-black/40 flex flex-col items-center justify-center text-center p-2 transition-transform";
-      magnifyEl.style.width = '180px';
-      magnifyEl.style.height = '180px';
-      magnifyEl.style.transform = 'translate(-50%, -50%)';
-      magnifyEl.style.zIndex = '50';
+      magnifyEl.style.width = '180px'; magnifyEl.style.height = '180px'; magnifyEl.style.transform = 'translate(-50%, -50%)'; magnifyEl.style.zIndex = '50';
       document.getElementById('osd-viewer')?.appendChild(magnifyEl);
 
       new OpenSeadragon.MouseTracker({
@@ -181,18 +218,14 @@ function App() {
         moveHandler: (event) => {
            if (interactionModeRef.current === 'magnify' && osdViewerRef.current) {
               const currentPoint = osdViewerRef.current.viewport.pointFromPixel(event.position);
-              magnifyEl.style.left = `${event.position.x}px`;
-              magnifyEl.style.top = `${event.position.y}px`;
-              
-              // Pseudo-spectroscopy logic based on coordinates
+              magnifyEl.style.left = `${event.position.x}px`; magnifyEl.style.top = `${event.position.y}px`;
               const pseudoColor = (Math.sin(currentPoint.x * 20) + Math.cos(currentPoint.y * 20)) / 2;
-              let material = "Bụi Carbon (Lạnh)";
-              let color = "text-slate-300";
+              let material = "Bụi Carbon (Lạnh)"; let color = "text-slate-300";
               if (pseudoColor > 0.5) { material = "Khí Hydro Ion Hóa"; color = "text-red-400"; }
               else if (pseudoColor < -0.3) { material = "Khí Oxy & Lưu Huỳnh"; color = "text-blue-400"; }
               
               magnifyEl.innerHTML = `
-                <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1">Máy Quang Phổ</span>
+                <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1">Quang Phổ</span>
                 <span class="text-sm font-bold ${color}">${material}</span>
                 <span class="text-[10px] text-slate-300 mt-1">Tọa độ: ${currentPoint.x.toFixed(2)}, ${currentPoint.y.toFixed(2)}</span>
               `;
@@ -203,7 +236,6 @@ function App() {
            if ((mode === 'select' || mode === 'measure') && osdViewerRef.current) {
               dragStartPoint = osdViewerRef.current.viewport.pointFromPixel(event.position);
               selectionOverlayElement = document.createElement("div");
-              
               if (mode === 'select') {
                 selectionOverlayElement.className = "border-2 border-emerald-400 bg-emerald-500/20 pointer-events-none";
                 osdViewerRef.current.addOverlay({ element: selectionOverlayElement, location: new OpenSeadragon.Rect(dragStartPoint.x, dragStartPoint.y, 0, 0) });
@@ -217,19 +249,14 @@ function App() {
            const mode = interactionModeRef.current;
            if (dragStartPoint && selectionOverlayElement && osdViewerRef.current) {
               const currentPoint = osdViewerRef.current.viewport.pointFromPixel(event.position);
-              
               if (mode === 'select') {
-                const x = Math.min(dragStartPoint.x, currentPoint.x);
-                const y = Math.min(dragStartPoint.y, currentPoint.y);
-                const width = Math.abs(currentPoint.x - dragStartPoint.x);
-                const height = Math.abs(currentPoint.y - dragStartPoint.y);
+                const x = Math.min(dragStartPoint.x, currentPoint.x); const y = Math.min(dragStartPoint.y, currentPoint.y);
+                const width = Math.abs(currentPoint.x - dragStartPoint.x); const height = Math.abs(currentPoint.y - dragStartPoint.y);
                 osdViewerRef.current.updateOverlay(selectionOverlayElement, new OpenSeadragon.Rect(x, y, width, height));
               } else if (mode === 'measure') {
-                const dx = currentPoint.x - dragStartPoint.x;
-                const dy = currentPoint.y - dragStartPoint.y;
+                const dx = currentPoint.x - dragStartPoint.x; const dy = currentPoint.y - dragStartPoint.y;
                 const distViewport = Math.sqrt(dx*dx + dy*dy); 
-                let scale = 100000; 
-                if (searchQuery.toUpperCase().includes('M101')) scale = 170000;
+                let scale = 100000; if (searchQuery.toUpperCase().includes('M101')) scale = 170000;
                 const ly = (distViewport * scale).toLocaleString('en-US', {maximumFractionDigits: 1});
                 selectionOverlayElement.innerHTML = `📏 Khảng cách: ~${ly} năm ánh sáng`;
                 osdViewerRef.current.updateOverlay(selectionOverlayElement, currentPoint);
@@ -247,7 +274,6 @@ function App() {
         }
       });
     }
-
     return () => { if (osdViewerRef.current) osdViewerRef.current.destroy(); };
   }, [isExploring, dziUrl]);
 
@@ -291,49 +317,20 @@ function App() {
     }
   };
 
-  // Gamification: Handle Quiz Answer
-  const handleQuizAnswer = (idx: number) => {
-    const quizData = QUIZZES[searchQuery.toUpperCase()] || QUIZZES["DEFAULT"];
-    const currentQ = quizData[quizState.step];
-    if (idx === currentQ.ans) {
-      setQuizState(prev => ({...prev, score: prev.score + 1}));
-      speakText("Chính xác!");
-    } else speakText("Rất tiếc, câu trả lời chưa đúng.");
-    
-    if (quizState.step + 1 < quizData.length) {
-      setQuizState(prev => ({...prev, step: prev.step + 1}));
-    } else {
-      // Finish quiz
-      if (quizState.score + (idx === currentQ.ans ? 1 : 0) === quizData.length) {
-        const newBadge = `Phi hành gia ưu tú: ${searchQuery || 'Vũ trụ'}`;
-        if (!badges.includes(newBadge)) {
-          const updated = [...badges, newBadge];
-          setBadges(updated);
-          localStorage.setItem('jwst_badges', JSON.stringify(updated));
-        }
-      }
-      setShowQuiz(false);
-      setQuizState({step: 0, score: 0});
-      alert("Bạn đã hoàn thành bài kiểm tra không gian!");
-    }
-  };
-
   const executeSearch = async (queryToSearch: string) => {
     if (queryToSearch.trim() === '') return;
     setShowSuggestions(false); 
     const formattedQuery = queryToSearch.trim().toUpperCase().replace(/\s+/g, '_');
 
-    setInteractionMode('none');
-    setFilters({ brightness: 100, contrast: 100, saturate: 100 });
-    setSpectrumMode('NIRCAM');
-    
+    setInteractionMode('none'); setFilters({ brightness: 100, contrast: 100, saturate: 100 }); setSpectrumMode('NIRCAM');
     if (osdViewerRef.current) osdViewerRef.current.clearOverlays();
-    const cleanApiUrl = "https://gbachnguyen-jwst-backend-processor.hf.space";
+    
+    if (isSonifying) toggleSonification();
 
+    const cleanApiUrl = "https://gbachnguyen-jwst-backend-processor.hf.space";
     if (dziUrl) { try { fetch(`${cleanApiUrl}/api/v1/cleanup/`, { method: 'DELETE' }); } catch (err) { } }
 
-    setIsExploring(true);
-    setDziUrl(''); setIsWaitingForDzi(false); setTimeLeft(180);
+    setIsExploring(true); setDziUrl(''); setIsWaitingForDzi(false); setTimeLeft(180);
 
     const introMsg = { role: 'ai', text: `Đang thiết lập lại tọa độ. Khởi động quy trình quét dữ liệu cho mục tiêu mới: **${queryToSearch}**...` };
     if (messages.length === 0) setMessages([introMsg]);
@@ -389,17 +386,13 @@ function App() {
     }
   };
 
-  // Citizen Science: Generate PDF/Markdown Report
   const generateCitizenReport = () => {
      let md = `# BÁO CÁO KHÁM PHÁ VŨ TRỤ (CITIZEN SCIENCE)\n\n`;
      md += `**Mục tiêu quan sát:** ${searchQuery.toUpperCase() || 'Không xác định'}\n`;
      md += `**Ngày thực hiện:** ${new Date().toLocaleString('vi-VN')}\n\n`;
      md += `## Lịch sử Phân tích AI\n`;
-     messages.filter(m => !m.text.includes('Đang thiết lập lại tọa độ')).forEach(m => {
-       md += `**[${m.role === 'user' ? 'Nhà nghiên cứu' : 'Trợ lý JWST-AI'}]**: ${m.text}\n\n`;
-     });
+     messages.filter(m => !m.text.includes('Đang thiết lập lại tọa độ')).forEach(m => { md += `**[${m.role === 'user' ? 'Nhà nghiên cứu' : 'Trợ lý JWST-AI'}]**: ${m.text}\n\n`; });
      md += `## Chú thích tọa độ\n*Các vùng sáng và tọa độ đã được đánh dấu trực tiếp trên ứng dụng.*\n`;
-     
      const blob = new Blob([md], { type: 'text/markdown' });
      const url = URL.createObjectURL(blob);
      const link = document.createElement('a'); link.href = url; link.download = `JWST_BaoCao_${Date.now()}.md`; link.click(); URL.revokeObjectURL(url);
@@ -410,13 +403,9 @@ function App() {
     const canvas = document.querySelector('#osd-viewer canvas') as HTMLCanvasElement;
     if (canvas) {
       try {
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
+        const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
         const ctx = tempCanvas.getContext('2d');
-        if (ctx) {
-          ctx.filter = getSpectrumFilters(); ctx.drawImage(canvas, 0, 0);
-          const link = document.createElement('a'); link.download = `jwst_${searchQuery}_${spectrumMode}_${Date.now()}.png`; link.href = tempCanvas.toDataURL('image/png', 1.0); link.click();
-        }
+        if (ctx) { ctx.filter = getSpectrumFilters(); ctx.drawImage(canvas, 0, 0); const link = document.createElement('a'); link.download = `jwst_${searchQuery}_${spectrumMode}_${Date.now()}.png`; link.href = tempCanvas.toDataURL('image/png', 1.0); link.click(); }
       } catch (err) { alert("Lỗi xuất ảnh: Không thể tải ảnh do giới hạn bảo mật CORS."); }
     }
   };
@@ -432,8 +421,6 @@ function App() {
     { label: "🔍", action: () => setInteractionMode(interactionMode === 'magnify' ? 'none' : 'magnify'), title: "Kính lúp phân tích vật chất", type: "magnify" },
     { label: "⛶", action: handleToggleFullScreen, title: "Toàn màn hình", type: "fullScreen" },
   ];
-
-  const activeQuiz = (QUIZZES[searchQuery.toUpperCase()] || QUIZZES["DEFAULT"])[quizState.step];
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-900 text-slate-100 font-sans overflow-hidden">
@@ -462,18 +449,15 @@ function App() {
       {/* Header */}
       {isExploring && (
         <header className="flex items-center justify-between p-4 bg-slate-950 border-b border-slate-800 z-20">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold text-blue-400 tracking-widest cursor-pointer" onClick={() => setIsExploring(false)}>JWST EXPLORER</h1>
-            <button onClick={() => setShowSessionSidebar(!showSessionSidebar)} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-sm text-slate-300">🕒 Lịch sử Chat</button>
-            <button onClick={() => setShowQuiz(true)} className="px-3 py-1 bg-purple-900/50 hover:bg-purple-800 border border-purple-500/50 text-purple-200 rounded text-sm flex items-center gap-2">🎮 Huấn luyện Phi hành gia</button>
+            <button onClick={() => setShowSessionSidebar(!showSessionSidebar)} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-sm text-slate-300">🕒 Lịch sử</button>
+            <button onClick={() => setShowQuiz(true)} className="px-3 py-1 bg-purple-900/50 hover:bg-purple-800 border border-purple-500/50 text-purple-200 rounded text-sm flex items-center gap-2">🎮 Trắc nghiệm</button>
             <button onClick={() => setShowRadar(!showRadar)} className="px-3 py-1 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-500/50 text-emerald-200 rounded text-sm flex items-center gap-2">🌐 Radar 3D</button>
+            <button onClick={toggleSonification} className={`px-3 py-1 border rounded text-sm flex items-center gap-2 transition-all ${isSonifying ? 'bg-orange-600 border-orange-400 shadow-[0_0_15px_rgba(234,88,12,0.6)] animate-pulse text-white' : 'bg-orange-900/40 hover:bg-orange-800 border-orange-500/50 text-orange-200'}`}>🎵 {isSonifying ? 'Dừng Âm thanh' : 'Âm thanh hóa'}</button>
           </div>
           <div className="flex items-center gap-4">
-            {badges.length > 0 && (
-              <div className="flex gap-1">
-                {badges.map((b, i) => <span key={i} title={b} className="text-xl">🎖️</span>)}
-              </div>
-            )}
+            {badges.length > 0 && <div className="flex gap-1">{badges.map((b, i) => <span key={i} title={b} className="text-xl">🎖️</span>)}</div>}
             <div className="relative w-64" ref={searchContainerRef}>
               <form onSubmit={handleSearchSubmit} className="flex w-full">
                 <input type="text" className="w-full px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-l-md focus:outline-none focus:border-blue-500 text-sm" placeholder="Tìm thiên thể..." value={searchQuery} onChange={handleInputChange} onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} />
@@ -490,93 +474,64 @@ function App() {
           <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-10 shadow-2xl">
             <div className="p-4 border-b border-slate-800 flex justify-between items-center"><h2 className="font-bold text-slate-200">Các phiên Chat</h2><button onClick={handleNewSession} className="text-emerald-400 hover:text-emerald-300 font-bold text-xl">+</button></div>
             <div className="flex-1 overflow-y-auto p-2">
-              {sessions.map(s => (
-                <div key={s.id} onClick={() => handleSwitchSession(s.id)} className={`p-3 mb-2 rounded cursor-pointer text-sm truncate border transition-colors ${currentSessionId === s.id ? 'bg-blue-900/50 border-blue-500 text-blue-200' : 'bg-slate-800/30 border-transparent hover:bg-slate-800 text-slate-400'}`}>{s.title}</div>
-              ))}
+              {sessions.map(s => ( <div key={s.id} onClick={() => handleSwitchSession(s.id)} className={`p-3 mb-2 rounded cursor-pointer text-sm truncate border transition-colors ${currentSessionId === s.id ? 'bg-blue-900/50 border-blue-500 text-blue-200' : 'bg-slate-800/30 border-transparent hover:bg-slate-800 text-slate-400'}`}>{s.title}</div> ))}
             </div>
           </aside>
         )}
 
-        <section className="flex-1 relative bg-black flex items-center justify-center">
-          {!isExploring ? ( <p className="text-slate-500 italic text-lg">Vui lòng nhập tên thiên thể để nạp bản đồ vũ trụ.</p> ) : (
-            <>
-              {isWaitingForDzi && (
-                <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-                  <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-                  <h2 className="text-2xl font-bold text-blue-400 animate-pulse tracking-widest text-center">ĐANG TRUY XUẤT NASA MAST</h2>
-                  <p className="text-slate-300 mt-4 text-xl text-center">Thời gian dự kiến còn lại: <span className="text-emerald-400 font-mono font-bold text-3xl ml-2">{timeLeft > 0 ? `${timeLeft}s` : 'Đang đồng bộ...'}</span></p>
-                </div>
-              )}
-              
-              {dziUrl && !isWaitingForDzi && (
-                <>
-                  <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 p-4 rounded-xl shadow-2xl z-20 w-64">
-                    <h3 className="font-bold text-blue-400 mb-4 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Xử lý hình ảnh & HD</h3>
-                    <div className="mb-3"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Độ sáng</span><span>{filters.brightness}%</span></div><input type="range" min="50" max="200" value={filters.brightness} onChange={e => setFilters({...filters, brightness: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
-                    <div className="mb-3"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Tương phản</span><span>{filters.contrast}%</span></div><input type="range" min="50" max="200" value={filters.contrast} onChange={e => setFilters({...filters, contrast: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
-                    <div className="mb-5"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Độ bão hòa</span><span>{filters.saturate}%</span></div><input type="range" min="0" max="200" value={filters.saturate} onChange={e => setFilters({...filters, saturate: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
-                    <button onClick={handleDownload} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-900/50 mb-2">Tải ảnh chất lượng cao</button>
-                    <button onClick={generateCitizenReport} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg mb-2">🖨️ Xuất Báo Cáo Khám Phá</button>
-                    <button onClick={startTour} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-indigo-900/50">🚀 Bắt đầu Tham Quan</button>
+        <section className="flex-1 relative bg-black flex flex-col">
+          <div className="flex-1 relative">
+            {!isExploring ? ( <div className="absolute inset-0 flex items-center justify-center"><p className="text-slate-500 italic text-lg">Vui lòng nhập tên thiên thể để nạp bản đồ vũ trụ.</p></div> ) : (
+              <>
+                {isWaitingForDzi && (
+                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
+                    <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+                    <h2 className="text-2xl font-bold text-blue-400 animate-pulse tracking-widest text-center">ĐANG TRUY XUẤT NASA MAST</h2>
+                    <p className="text-slate-300 mt-4 text-xl text-center">Thời gian dự kiến còn lại: <span className="text-emerald-400 font-mono font-bold text-3xl ml-2">{timeLeft > 0 ? `${timeLeft}s` : 'Đang đồng bộ...'}</span></p>
                   </div>
-
-                  <div className="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 p-4 rounded-xl shadow-2xl z-20 w-56">
-                    <h3 className="font-bold text-emerald-400 mb-3 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Kính Lọc Đa Phổ</h3>
-                    <div className="flex flex-col gap-2">
-                      <button onClick={() => setSpectrumMode('NIRCAM')} className={`py-1.5 px-3 rounded text-sm font-semibold transition-all ${spectrumMode==='NIRCAM' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>📷 Khả kiến (Hubble)</button>
-                      <button onClick={() => setSpectrumMode('MIRI')} className={`py-1.5 px-3 rounded text-sm font-semibold transition-all ${spectrumMode==='MIRI' ? 'bg-orange-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>🔥 Hồng ngoại (MIRI)</button>
-                      <button onClick={() => setSpectrumMode('XRAY')} className={`py-1.5 px-3 rounded text-sm font-semibold transition-all ${spectrumMode==='XRAY' ? 'bg-purple-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>☢️ Tia X (Chandra)</button>
+                )}
+                
+                {dziUrl && !isWaitingForDzi && (
+                  <>
+                    <div className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md border border-slate-700 p-4 rounded-xl shadow-2xl z-20 w-64 pointer-events-auto">
+                      <h3 className="font-bold text-blue-400 mb-4 uppercase tracking-wider text-xs border-b border-slate-700 pb-2">Xử lý hình ảnh & HD</h3>
+                      <div className="mb-3"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Độ sáng</span><span>{filters.brightness}%</span></div><input type="range" min="50" max="200" value={filters.brightness} onChange={e => setFilters({...filters, brightness: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
+                      <div className="mb-3"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Tương phản</span><span>{filters.contrast}%</span></div><input type="range" min="50" max="200" value={filters.contrast} onChange={e => setFilters({...filters, contrast: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
+                      <div className="mb-5"><div className="flex justify-between text-slate-300 text-xs mb-1"><span>Độ bão hòa</span><span>{filters.saturate}%</span></div><input type="range" min="0" max="200" value={filters.saturate} onChange={e => setFilters({...filters, saturate: parseInt(e.target.value)})} className="w-full accent-blue-500" /></div>
+                      <button onClick={handleDownload} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-emerald-900/50 mb-2">Tải ảnh chất lượng cao</button>
+                      <button onClick={generateCitizenReport} className="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg mb-2">🖨️ Xuất Báo Cáo Khám Phá</button>
+                      <button onClick={startTour} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-indigo-900/50">🚀 Bắt đầu Tham Quan</button>
                     </div>
+
+                    <SpectrumPanel spectrumMode={spectrumMode} setSpectrumMode={setSpectrumMode} />
+                  </>
+                )}
+
+                <div id="osd-viewer" className={`absolute inset-0 w-full h-full ${interactionMode==='magnify' ? 'cursor-none' : ''}`} style={{ filter: getSpectrumFilters() }}></div>
+
+                {isSonifying && (
+                  <div className="absolute top-0 bottom-0 w-[2px] bg-orange-500 shadow-[0_0_20px_5px_rgba(234,88,12,0.8)] z-30 pointer-events-none" style={{ left: `${scannerX}%` }}>
+                    <div className="absolute -left-16 w-32 h-full bg-gradient-to-r from-transparent to-orange-500/20"></div>
                   </div>
-                </>
-              )}
+                )}
 
-              <div id="osd-viewer" className={`absolute inset-0 w-full h-full ${interactionMode==='magnify' ? 'cursor-none' : ''}`} style={{ filter: getSpectrumFilters() }}></div>
+                {showQuiz && <QuizOverlay searchQuery={searchQuery} setShowQuiz={setShowQuiz} badges={badges} setBadges={setBadges} speakText={speakText} />}
+                {showRadar && <Radar3D />}
+              </>
+            )}
 
-              {/* Quiz Overlay */}
-              {showQuiz && (
-                <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                  <div className="bg-slate-900 border border-purple-500 p-8 rounded-2xl shadow-[0_0_50px_rgba(168,85,247,0.4)] max-w-lg w-full text-center">
-                    <h2 className="text-3xl font-bold text-purple-400 mb-2">🚀 Thử Thách Không Gian</h2>
-                    <p className="text-slate-400 mb-8">Câu hỏi {quizState.step + 1} / {(QUIZZES[searchQuery.toUpperCase()] || QUIZZES["DEFAULT"]).length}</p>
-                    <h3 className="text-xl text-white mb-6 font-medium">{activeQuiz.q}</h3>
-                    <div className="flex flex-col gap-3">
-                      {activeQuiz.options.map((opt: string, i: number) => (
-                        <button key={i} onClick={() => handleQuizAnswer(i)} className="bg-slate-800 hover:bg-purple-600 text-slate-200 py-3 px-6 rounded-xl transition-colors border border-slate-700 hover:border-purple-400">{opt}</button>
-                      ))}
-                    </div>
-                    <button onClick={() => setShowQuiz(false)} className="mt-8 text-sm text-slate-500 hover:text-white underline">Bỏ qua thử thách</button>
-                  </div>
-                </div>
-              )}
-
-              {/* CSS 3D Radar/Globe */}
-              {showRadar && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-                  <div className="w-96 h-96 rounded-full border border-emerald-500/50 relative bg-black/80 shadow-[0_0_100px_rgba(16,185,129,0.3)] backdrop-blur-md overflow-hidden flex items-center justify-center">
-                    <div className="absolute inset-0 rounded-full border border-emerald-500/30 scale-75"></div>
-                    <div className="absolute inset-0 rounded-full border border-emerald-500/20 scale-50"></div>
-                    <div className="absolute w-full h-[1px] bg-emerald-500/40"></div>
-                    <div className="absolute h-full w-[1px] bg-emerald-500/40"></div>
-                    <div className="absolute top-1/2 left-1/2 w-1/2 h-1 bg-gradient-to-r from-emerald-400/0 to-emerald-400/80 origin-left animate-[spin_4s_linear_infinite]"></div>
-                    <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-blue-500 rounded-full shadow-[0_0_15px_blue] -translate-x-1/2 -translate-y-1/2" title="Trái Đất (Quan sát viên)"></div>
-                    <div className="absolute top-1/4 left-3/4 w-3 h-3 bg-red-500 rounded-full shadow-[0_0_15px_red] animate-ping" title="Mục tiêu JWST"></div>
-                    <div className="absolute bottom-4 text-emerald-400 font-mono text-xs text-center w-full">HỆ THỐNG ĐỊNH VỊ SAO TOÀN CẢNH<br/>Vĩ độ: 45.2° | Kinh độ: 12.8°</div>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          {isExploring && (
-            <div className="absolute bottom-6 left-6 flex flex-col gap-2 z-10">
-              {controls.map((control, idx) => (
-                <button key={idx} onClick={control.action} title={control.title} className={`w-11 h-11 bg-slate-800/80 hover:bg-slate-700 text-white rounded shadow-lg border border-slate-600 flex items-center justify-center text-xl transition-all ${['mark', 'select', 'measure', 'magnify'].includes(control.type) && interactionMode === control.type ? 'bg-blue-600 border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.6)]' : ''}`}>
-                  {control.label}
-                </button>
-              ))}
-            </div>
-          )}
+            {isExploring && (
+              <div className="absolute bottom-6 left-6 flex flex-col gap-2 z-10 pointer-events-auto">
+                {controls.map((control, idx) => (
+                  <button key={idx} onClick={control.action} title={control.title} className={`w-11 h-11 bg-slate-800/80 hover:bg-slate-700 text-white rounded shadow-lg border border-slate-600 flex items-center justify-center text-xl transition-all ${['mark', 'select', 'measure', 'magnify'].includes(control.type) && interactionMode === control.type ? 'bg-blue-600 border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.6)]' : ''}`}>
+                    {control.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {isExploring && <SpaceNewsTicker />}
         </section>
 
         {isExploring && (
