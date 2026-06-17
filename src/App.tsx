@@ -178,7 +178,12 @@ function App() {
     } else setShowSuggestions(false);
   };
 
-  const handleSuggestionClick = (suggestion: string) => { setSearchQuery(suggestion.split(" (")[0]); setShowSuggestions(false); };
+  const handleSuggestionClick = (suggestion: string) => { 
+    const query = suggestion.split(" (")[0];
+    setSearchQuery(query); 
+    setShowSuggestions(false); 
+    executeSearch(query);
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -463,6 +468,15 @@ function App() {
                 <input type="text" className="w-full px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-l-md focus:outline-none focus:border-blue-500 text-sm" placeholder="Tìm thiên thể..." value={searchQuery} onChange={handleInputChange} onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} />
                 <button type="submit" className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-r-md font-medium transition-colors text-sm">Tìm</button>
               </form>
+              {showSuggestions && (
+                <div className="absolute top-full right-0 w-80 mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in-down">
+                  {filteredSuggestions.length > 0 ? (
+                    <ul className="max-h-60 overflow-y-auto">
+                      {filteredSuggestions.map((suggestion, idx) => ( <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-4 py-2 hover:bg-blue-600/50 cursor-pointer border-b border-slate-700/50 last:border-0 text-slate-200 transition-colors flex items-center gap-2 text-sm"><span className="text-blue-400">✨</span> {suggestion}</li> ))}
+                    </ul>
+                  ) : ( <div className="px-4 py-3 text-slate-400 italic text-sm">Nhấn "Tìm" để quét...</div> )}
+                </div>
+              )}
             </div>
           </div>
         </header>
