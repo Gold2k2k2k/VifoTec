@@ -78,6 +78,12 @@ function App() {
     return base;
   };
 
+  // Preload Speech Voices
+  useEffect(() => {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+  }, []);
+
   // Load Sessions
   useEffect(() => {
     const saved = localStorage.getItem('jwst_chat_sessions');
@@ -307,6 +313,14 @@ function App() {
     }
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'vi-VN';
+    
+    // Ép kiểu chọn đúng giọng Tiếng Việt (Khắc phục lỗi của Chrome/Edge)
+    const voices = window.speechSynthesis.getVoices();
+    const viVoice = voices.find(v => v.lang === 'vi-VN' || v.lang.includes('vi'));
+    if (viVoice) {
+      utterance.voice = viVoice;
+    }
+
     utterance.onend = () => setIsSpeaking(false);
     setIsSpeaking(true);
     window.speechSynthesis.speak(utterance);
