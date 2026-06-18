@@ -1,5 +1,5 @@
 export type ChatSession = { id: string; title: string; messages: {role: string, text: string}[] };
-export type InteractionMode = 'none'|'mark'|'select'|'measure'|'magnify';
+export type InteractionMode = 'none'|'mark'|'select'|'measure'|'magnify'|'blackhole';
 export type SpectrumMode = 'NIRCAM' | 'MIRI' | 'XRAY';
 
 export const POPULAR_TARGETS = [

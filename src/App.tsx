@@ -9,6 +9,7 @@ import { SpaceNewsTicker } from './components/SpaceNewsTicker';
 import { Radar3D } from './components/Radar3D';
 import { QuizOverlay } from './components/QuizOverlay';
 import { SpectrumPanel } from './components/SpectrumPanel';
+import { VRGallery } from './components/VRGallery';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -38,7 +39,10 @@ function App() {
   const [timeLeft, setTimeLeft] = useState<number>(180); 
   const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturate: 100 });
   const [spectrumMode, setSpectrumMode] = useState<SpectrumMode>('NIRCAM');
-
+  const [timeMachineYear, setTimeMachineYear] = useState<number>(2026);
+  const [isCockpitMode, setIsCockpitMode] = useState<boolean>(false);
+  const mousePosRef = useRef({x: window.innerWidth/2, y: window.innerHeight/2});
+  const blackholeRef = useRef<HTMLDivElement>(null);
   // Suggestions
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
@@ -48,18 +52,23 @@ function App() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [badges, setBadges] = useState<string[]>([]);
   const [showRadar, setShowRadar] = useState(false);
+  const [showVRGallery, setShowVRGallery] = useState(false);
 
   // Data Sonification State
   const [isSonifying, setIsSonifying] = useState(false);
-  const [scannerX, setScannerX] = useState(0);
+  const scannerRef = useRef<HTMLDivElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const oscRef = useRef<OscillatorNode | null>(null);
   const gainRef = useRef<GainNode | null>(null);
 
   const getSpectrumFilters = () => {
     let base = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) saturate(${filters.saturate}%)`;
-    if (spectrumMode === 'MIRI') return base + ` hue-rotate(90deg) contrast(150%)`;
-    if (spectrumMode === 'XRAY') return base + ` invert(1) hue-rotate(180deg) saturate(200%)`;
+    if (spectrumMode === 'MIRI') base += ` hue-rotate(90deg) contrast(150%)`;
+    if (spectrumMode === 'XRAY') base += ` invert(1) hue-rotate(180deg) saturate(200%)`;
+    if (timeMachineYear < 2026) {
+       const diff = 2026 - timeMachineYear;
+       base += ` blur(${diff * 0.15}px) sepia(${diff * 1.5}%) contrast(${100 - diff}%)`;
+    }
     return base;
   };
 
@@ -73,25 +82,25 @@ function App() {
   // Audio Sonification Loop
   useEffect(() => {
     let animationFrameId: number;
+    let next = 0;
     const playScan = () => {
        if (!isSonifying || !audioCtxRef.current || !oscRef.current || !gainRef.current) return;
        
-       setScannerX(prev => {
-          const next = prev + 0.2;
-          if (next >= 100) return 0;
-          
-          const noise = Math.sin(next * 12) + Math.cos(next * 4);
-          let brightness = (Math.sin(next * 0.1) + 1) / 2;
-          if (noise > 1.6) brightness = 1.0;
-          
-          const freq = 100 + (brightness * 1000);
-          const vol = brightness * 0.4;
+       next = next + 0.2;
+       if (next >= 100) next = 0;
+       
+       if (scannerRef.current) scannerRef.current.style.left = `${next}%`;
+       
+       const noise = Math.sin(next * 12) + Math.cos(next * 4);
+       let brightness = (Math.sin(next * 0.1) + 1) / 2;
+       if (noise > 1.6) brightness = 1.0;
+       
+       const freq = 100 + (brightness * 1000);
+       const vol = brightness * 0.4;
 
-          oscRef.current?.frequency.setTargetAtTime(freq, audioCtxRef.current!.currentTime, 0.1);
-          gainRef.current?.gain.setTargetAtTime(vol, audioCtxRef.current!.currentTime, 0.1);
-          
-          return next;
-       });
+       oscRef.current.frequency.setTargetAtTime(freq, audioCtxRef.current.currentTime, 0.1);
+       gainRef.current.gain.setTargetAtTime(vol, audioCtxRef.current.currentTime, 0.1);
+       
        animationFrameId = requestAnimationFrame(playScan);
     };
 
@@ -103,7 +112,7 @@ function App() {
     if (isSonifying) {
       setIsSonifying(false);
       if (audioCtxRef.current) { audioCtxRef.current.close(); audioCtxRef.current = null; }
-      setScannerX(0);
+      if (scannerRef.current) scannerRef.current.style.left = '0%';
       return;
     }
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -410,7 +419,29 @@ function App() {
       try {
         const tempCanvas = document.createElement('canvas'); tempCanvas.width = canvas.width; tempCanvas.height = canvas.height;
         const ctx = tempCanvas.getContext('2d');
-        if (ctx) { ctx.filter = getSpectrumFilters(); ctx.drawImage(canvas, 0, 0); const link = document.createElement('a'); link.download = `jwst_${searchQuery}_${spectrumMode}_${Date.now()}.png`; link.href = tempCanvas.toDataURL('image/png', 1.0); link.click(); }
+        if (ctx) { 
+          ctx.filter = getSpectrumFilters(); 
+          ctx.drawImage(canvas, 0, 0); 
+          
+          ctx.filter = 'none';
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+          ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+          
+          ctx.fillStyle = '#60a5fa';
+          ctx.font = 'bold 24px monospace';
+          ctx.fillText(`JWST SPACE EXPLORER - VIFOTEC 2026`, 20, canvas.height - 50);
+          
+          ctx.fillStyle = '#a7f3d0';
+          ctx.font = '16px monospace';
+          ctx.fillText(`Target: ${searchQuery.toUpperCase()} | Filter: ${spectrumMode} | Era: ${timeMachineYear}`, 20, canvas.height - 20);
+          
+          ctx.fillStyle = '#f87171';
+          ctx.textAlign = 'right';
+          const centerPoint = osdViewerRef.current?.viewport.getCenter();
+          ctx.fillText(`RA: ${(centerPoint?.x || 0).toFixed(4)} | DEC: ${(centerPoint?.y || 0).toFixed(4)}`, canvas.width - 20, canvas.height - 35);
+          
+          const link = document.createElement('a'); link.download = `jwst_${searchQuery}_${spectrumMode}_${Date.now()}.png`; link.href = tempCanvas.toDataURL('image/png', 1.0); link.click(); 
+        }
       } catch (err) { alert("Lỗi xuất ảnh: Không thể tải ảnh do giới hạn bảo mật CORS."); }
     }
   };
@@ -424,6 +455,8 @@ function App() {
     { label: "🔲", action: () => setInteractionMode(interactionMode === 'select' ? 'none' : 'select'), title: "Khoanh vùng (Drag chuột)", type: "select" },
     { label: "📏", action: () => setInteractionMode(interactionMode === 'measure' ? 'none' : 'measure'), title: "Thước đo quang sai (Drag chuột)", type: "measure" },
     { label: "🔍", action: () => setInteractionMode(interactionMode === 'magnify' ? 'none' : 'magnify'), title: "Kính lúp phân tích vật chất", type: "magnify" },
+    { label: "🕳️", action: () => setInteractionMode(interactionMode === 'blackhole' ? 'none' : 'blackhole'), title: "Kính lúp hố đen (Gravitational Lensing)", type: "blackhole" },
+    { label: "🚀", action: () => setIsCockpitMode(!isCockpitMode), title: "Chế độ buồng lái phi thuyền", type: "cockpit" },
     { label: "⛶", action: handleToggleFullScreen, title: "Toàn màn hình", type: "fullScreen" },
   ];
 
@@ -459,6 +492,7 @@ function App() {
             <button onClick={() => setShowSessionSidebar(!showSessionSidebar)} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-sm text-slate-300">🕒 Lịch sử</button>
             <button onClick={() => setShowQuiz(true)} className="px-3 py-1 bg-purple-900/50 hover:bg-purple-800 border border-purple-500/50 text-purple-200 rounded text-sm flex items-center gap-2">🎮 Trắc nghiệm</button>
             <button onClick={() => setShowRadar(!showRadar)} className="px-3 py-1 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-500/50 text-emerald-200 rounded text-sm flex items-center gap-2">🌐 Radar 3D</button>
+            <button onClick={() => setShowVRGallery(true)} className="px-3 py-1 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/50 text-cyan-200 rounded text-sm flex items-center gap-2">🪐 VR Gallery</button>
             <button onClick={toggleSonification} className={`px-3 py-1 border rounded text-sm flex items-center gap-2 transition-all ${isSonifying ? 'bg-orange-600 border-orange-400 shadow-[0_0_15px_rgba(234,88,12,0.6)] animate-pulse text-white' : 'bg-orange-900/40 hover:bg-orange-800 border-orange-500/50 text-orange-200'}`}>🎵 {isSonifying ? 'Dừng Âm thanh' : 'Âm thanh hóa'}</button>
           </div>
           <div className="flex items-center gap-4">
@@ -493,7 +527,13 @@ function App() {
           </aside>
         )}
 
-        <section className="flex-1 relative bg-black flex flex-col">
+        <section className="flex-1 relative bg-black flex flex-col" onMouseMove={(e) => { 
+            mousePosRef.current = {x: e.clientX, y: e.clientY}; 
+            if (interactionModeRef.current === 'blackhole' && blackholeRef.current) {
+                blackholeRef.current.style.left = e.clientX + 'px';
+                blackholeRef.current.style.top = e.clientY + 'px';
+            }
+        }}>
           <div className="flex-1 relative">
             {!isExploring ? ( <div className="absolute inset-0 flex items-center justify-center"><p className="text-slate-500 italic text-lg">Vui lòng nhập tên thiên thể để nạp bản đồ vũ trụ.</p></div> ) : (
               <>
@@ -517,17 +557,31 @@ function App() {
                       <button onClick={startTour} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded font-semibold transition-colors flex items-center justify-center gap-2 text-sm shadow-lg shadow-indigo-900/50">🚀 Bắt đầu Tham Quan</button>
                     </div>
 
-                    <SpectrumPanel spectrumMode={spectrumMode} setSpectrumMode={setSpectrumMode} />
+                    <SpectrumPanel spectrumMode={spectrumMode} setSpectrumMode={setSpectrumMode} timeMachineYear={timeMachineYear} setTimeMachineYear={setTimeMachineYear} />
                   </>
                 )}
 
-                <div id="osd-viewer" className={`absolute inset-0 w-full h-full ${interactionMode==='magnify' ? 'cursor-none' : ''}`} style={{ filter: getSpectrumFilters() }}></div>
+                <div id="osd-viewer" className={`absolute inset-0 w-full h-full transition-transform duration-1000 ${interactionMode==='magnify' ? 'cursor-none' : ''} ${isCockpitMode ? 'scale-110 perspective-[1000px] rotate-x-[5deg]' : ''}`} style={{ filter: getSpectrumFilters() }}></div>
 
-                {isSonifying && (
-                  <div className="absolute top-0 bottom-0 w-[2px] bg-orange-500 shadow-[0_0_20px_5px_rgba(234,88,12,0.8)] z-30 pointer-events-none" style={{ left: `${scannerX}%` }}>
-                    <div className="absolute -left-16 w-32 h-full bg-gradient-to-r from-transparent to-orange-500/20"></div>
+                {isCockpitMode && (
+                  <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,1)] border-[40px] border-slate-900/90 rounded-[100px] overflow-hidden flex items-center justify-center">
+                    <div className="absolute top-0 w-full h-8 bg-slate-800 border-b border-blue-500/30 flex justify-around items-center px-20">
+                      <div className="text-[10px] text-blue-400 font-mono animate-pulse">WARP DRIVE ACTIVE</div>
+                      <div className="text-[10px] text-red-400 font-mono">SHIELDS: 100%</div>
+                    </div>
+                    <div className="absolute bottom-0 w-1/3 h-24 bg-slate-800 border-t border-x rounded-t-[50px] border-slate-600 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] flex items-end justify-center pb-4 gap-4">
+                      <div className="w-8 h-8 rounded-full bg-red-600/20 border border-red-500/50 shadow-[0_0_10px_red]"></div>
+                      <div className="w-12 h-12 rounded-full bg-blue-600 border border-blue-400 shadow-[0_0_20px_blue] flex flex-col items-center justify-center"><span className="text-[8px]">AUTO</span></div>
+                      <div className="w-8 h-8 rounded-full bg-emerald-600/20 border border-emerald-500/50 shadow-[0_0_10px_emerald]"></div>
+                    </div>
                   </div>
                 )}
+
+                <div ref={blackholeRef} className={`fixed z-40 pointer-events-none rounded-full ${interactionMode === 'blackhole' ? 'block' : 'hidden'}`} style={{ width: '300px', height: '300px', transform: 'translate(-50%, -50%)', backdropFilter: 'blur(8px) contrast(200%) hue-rotate(180deg)', boxShadow: 'inset 0 0 100px black, 0 0 30px rgba(168, 85, 247, 0.5)', background: 'radial-gradient(circle, black 15%, transparent 60%)' }}></div>
+
+                <div ref={scannerRef} className={`absolute top-0 bottom-0 w-[2px] bg-orange-500 shadow-[0_0_20px_5px_rgba(234,88,12,0.8)] z-30 pointer-events-none ${isSonifying ? 'block' : 'hidden'}`} style={{ left: '0%' }}>
+                  <div className="absolute -left-16 w-32 h-full bg-gradient-to-r from-transparent to-orange-500/20"></div>
+                </div>
 
                 {showQuiz && <QuizOverlay searchQuery={searchQuery} setShowQuiz={setShowQuiz} badges={badges} setBadges={setBadges} speakText={speakText} />}
                 {showRadar && <Radar3D />}
@@ -537,7 +591,7 @@ function App() {
             {isExploring && (
               <div className="absolute bottom-6 left-6 flex flex-col gap-2 z-10 pointer-events-auto">
                 {controls.map((control, idx) => (
-                  <button key={idx} onClick={control.action} title={control.title} className={`w-11 h-11 bg-slate-800/80 hover:bg-slate-700 text-white rounded shadow-lg border border-slate-600 flex items-center justify-center text-xl transition-all ${['mark', 'select', 'measure', 'magnify'].includes(control.type) && interactionMode === control.type ? 'bg-blue-600 border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.6)]' : ''}`}>
+                  <button key={idx} onClick={control.action} title={control.title} className={`w-11 h-11 bg-slate-800/80 hover:bg-slate-700 text-white rounded shadow-lg border border-slate-600 flex items-center justify-center text-xl transition-all ${['mark', 'select', 'measure', 'magnify', 'blackhole', 'cockpit'].includes(control.type) && (interactionMode === control.type || (control.type === 'cockpit' && isCockpitMode)) ? 'bg-blue-600 border-blue-400 shadow-[0_0_15px_rgba(37,99,235,0.6)]' : ''}`}>
                     {control.label}
                   </button>
                 ))}
@@ -547,6 +601,8 @@ function App() {
           
           {isExploring && <SpaceNewsTicker />}
         </section>
+
+        {showVRGallery && <VRGallery onClose={() => setShowVRGallery(false)} speakText={speakText} />}
 
         {isExploring && (
           <aside className="w-[400px] bg-slate-900 border-l border-slate-800 flex flex-col z-10 shadow-2xl relative">
