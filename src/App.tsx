@@ -10,6 +10,7 @@ import { Radar3D } from './components/Radar3D';
 import { QuizOverlay } from './components/QuizOverlay';
 import { SpectrumPanel } from './components/SpectrumPanel';
 import { VRGallery } from './components/VRGallery';
+import { StellariumSky } from './components/StellariumSky';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -53,6 +54,7 @@ function App() {
   const [badges, setBadges] = useState<string[]>([]);
   const [showRadar, setShowRadar] = useState(false);
   const [showVRGallery, setShowVRGallery] = useState(false);
+  const [showStellarium, setShowStellarium] = useState(false);
 
   // Data Sonification State
   const [isSonifying, setIsSonifying] = useState(false);
@@ -493,6 +495,7 @@ function App() {
             <button onClick={() => setShowQuiz(true)} className="px-3 py-1 bg-purple-900/50 hover:bg-purple-800 border border-purple-500/50 text-purple-200 rounded text-sm flex items-center gap-2">🎮 Trắc nghiệm</button>
             <button onClick={() => setShowRadar(!showRadar)} className="px-3 py-1 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-500/50 text-emerald-200 rounded text-sm flex items-center gap-2">🌐 Radar 3D</button>
             <button onClick={() => setShowVRGallery(true)} className="px-3 py-1 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/50 text-cyan-200 rounded text-sm flex items-center gap-2">🪐 VR Gallery</button>
+            <button onClick={() => setShowStellarium(true)} className="px-3 py-1 bg-sky-900/50 hover:bg-sky-800 border border-sky-500/50 text-sky-200 rounded text-sm flex items-center gap-2">🌌 Kính Stellarium</button>
             <button onClick={toggleSonification} className={`px-3 py-1 border rounded text-sm flex items-center gap-2 transition-all ${isSonifying ? 'bg-orange-600 border-orange-400 shadow-[0_0_15px_rgba(234,88,12,0.6)] animate-pulse text-white' : 'bg-orange-900/40 hover:bg-orange-800 border-orange-500/50 text-orange-200'}`}>🎵 {isSonifying ? 'Dừng Âm thanh' : 'Âm thanh hóa'}</button>
           </div>
           <div className="flex items-center gap-4">
@@ -603,6 +606,34 @@ function App() {
         </section>
 
         {showVRGallery && <VRGallery onClose={() => setShowVRGallery(false)} speakText={speakText} />}
+        {showStellarium && (
+          <StellariumSky 
+            onClose={() => setShowStellarium(false)} 
+            onSelectObject={async (name, type, details) => {
+              // Feed selected object details into Gemini AI Assistant chat
+              const userText = `Tôi muốn phân tích thiên thể ${name} (${type}). Chi tiết tọa độ: ${details}`;
+              setMessages(prev => [...prev, { role: 'user', text: userText }]);
+              setMessages(prev => [...prev, { role: 'ai', text: 'Đang kết nối vệ tinh và phân tích dữ liệu...' }]);
+              try {
+                const reply = await getGeminiResponse(
+                  `Người dùng đang xem thiên thể "${name}" (${type}) trên Kính thiên văn Stellarium Web với dữ liệu tọa độ: "${details}". Hãy cung cấp thông tin khoa học chuyên sâu, lịch sử phát hiện và ý nghĩa văn hóa dân gian (đặc biệt là mối liên hệ với văn hóa Việt Nam hoặc phương Đông nếu có) về thiên thể này.`, 
+                  messages
+                );
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  newMsgs[newMsgs.length - 1] = { role: 'ai', text: reply };
+                  return newMsgs;
+                });
+              } catch (err) {
+                setMessages(prev => {
+                  const newMsgs = [...prev];
+                  newMsgs[newMsgs.length - 1] = { role: 'ai', text: '⚠️ Lỗi: Không thể kết nối với lõi xử lý AI.' };
+                  return newMsgs;
+                });
+              }
+            }}
+          />
+        )}
 
         {isExploring && (
           <aside className="w-[400px] bg-slate-900 border-l border-slate-800 flex flex-col z-10 shadow-2xl relative">
