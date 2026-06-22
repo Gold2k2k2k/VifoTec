@@ -22,6 +22,7 @@ function App() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>('');
   const [showSessionSidebar, setShowSessionSidebar] = useState<boolean>(false);
+  const [showAiSidebar, setShowAiSidebar] = useState<boolean>(false);
 
   // File Upload QA & Voice
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -488,25 +489,25 @@ function App() {
 
       {/* Header */}
       {isExploring && (
-        <header className="flex items-center justify-between p-4 bg-slate-950 border-b border-slate-800 z-20">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-blue-400 tracking-widest cursor-pointer" onClick={() => setIsExploring(false)}>JWST EXPLORER</h1>
-            <button onClick={() => setShowSessionSidebar(!showSessionSidebar)} className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-sm text-slate-300">🕒 Lịch sử</button>
-            <button onClick={() => setShowQuiz(true)} className="px-3 py-1 bg-purple-900/50 hover:bg-purple-800 border border-purple-500/50 text-purple-200 rounded text-sm flex items-center gap-2">🎮 Trắc nghiệm</button>
-            <button onClick={() => setShowRadar(!showRadar)} className="px-3 py-1 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-500/50 text-emerald-200 rounded text-sm flex items-center gap-2">🌐 Radar 3D</button>
-            <button onClick={() => setShowVRGallery(true)} className="px-3 py-1 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/50 text-cyan-200 rounded text-sm flex items-center gap-2">🪐 VR Gallery</button>
-            <button onClick={() => setShowStellarium(true)} className="px-3 py-1 bg-sky-900/50 hover:bg-sky-800 border border-sky-500/50 text-sky-200 rounded text-sm flex items-center gap-2">🌌 Kính Stellarium</button>
-            <button onClick={toggleSonification} className={`px-3 py-1 border rounded text-sm flex items-center gap-2 transition-all ${isSonifying ? 'bg-orange-600 border-orange-400 shadow-[0_0_15px_rgba(234,88,12,0.6)] animate-pulse text-white' : 'bg-orange-900/40 hover:bg-orange-800 border-orange-500/50 text-orange-200'}`}>🎵 {isSonifying ? 'Dừng Âm thanh' : 'Âm thanh hóa'}</button>
+        <header className="flex flex-col md:flex-row items-start md:items-center justify-between p-2 md:p-4 bg-slate-950 border-b border-slate-800 z-20 gap-2 md:gap-0">
+          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 hide-scrollbar">
+            <h1 className="text-lg md:text-xl font-bold text-blue-400 tracking-widest cursor-pointer whitespace-nowrap pr-2" onClick={() => setIsExploring(false)}>JWST EXPLORER</h1>
+            <button onClick={() => setShowSessionSidebar(!showSessionSidebar)} className="whitespace-nowrap px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded text-xs md:text-sm text-slate-300">🕒 Lịch sử</button>
+            <button onClick={() => setShowQuiz(true)} className="whitespace-nowrap px-3 py-1 bg-purple-900/50 hover:bg-purple-800 border border-purple-500/50 text-purple-200 rounded text-xs md:text-sm flex items-center gap-2">🎮 Trắc nghiệm</button>
+            <button onClick={() => setShowRadar(!showRadar)} className="whitespace-nowrap px-3 py-1 bg-emerald-900/50 hover:bg-emerald-800 border border-emerald-500/50 text-emerald-200 rounded text-xs md:text-sm flex items-center gap-2">🌐 Radar 3D</button>
+            <button onClick={() => setShowVRGallery(true)} className="whitespace-nowrap px-3 py-1 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/50 text-cyan-200 rounded text-xs md:text-sm flex items-center gap-2">🪐 VR Gallery</button>
+            <button onClick={() => setShowStellarium(true)} className="whitespace-nowrap px-3 py-1 bg-sky-900/50 hover:bg-sky-800 border border-sky-500/50 text-sky-200 rounded text-xs md:text-sm flex items-center gap-2">🌌 Kính Stellarium</button>
+            <button onClick={toggleSonification} className={`whitespace-nowrap px-3 py-1 border rounded text-xs md:text-sm flex items-center gap-2 transition-all ${isSonifying ? 'bg-orange-600 border-orange-400 shadow-[0_0_15px_rgba(234,88,12,0.6)] animate-pulse text-white' : 'bg-orange-900/40 hover:bg-orange-800 border-orange-500/50 text-orange-200'}`}>🎵 {isSonifying ? 'Dừng Âm thanh' : 'Âm thanh hóa'}</button>
           </div>
-          <div className="flex items-center gap-4">
-            {badges.length > 0 && <div className="flex gap-1">{badges.map((b, i) => <span key={i} title={b} className="text-xl">🎖️</span>)}</div>}
-            <div className="relative w-64" ref={searchContainerRef}>
+          <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+            {badges.length > 0 && <div className="flex gap-1">{badges.map((b, i) => <span key={i} title={b} className="text-lg md:text-xl">🎖️</span>)}</div>}
+            <div className="relative flex-1 md:w-64" ref={searchContainerRef}>
               <form onSubmit={handleSearchSubmit} className="flex w-full">
-                <input type="text" className="w-full px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-l-md focus:outline-none focus:border-blue-500 text-sm" placeholder="Tìm thiên thể..." value={searchQuery} onChange={handleInputChange} onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} />
-                <button type="submit" className="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-r-md font-medium transition-colors text-sm">Tìm</button>
+                <input type="text" className="w-full px-3 md:px-4 py-1.5 bg-slate-800 border border-slate-700 rounded-l-md focus:outline-none focus:border-blue-500 text-xs md:text-sm" placeholder="Tìm thiên thể..." value={searchQuery} onChange={handleInputChange} onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} />
+                <button type="submit" className="px-3 md:px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-r-md font-medium transition-colors text-xs md:text-sm">Tìm</button>
               </form>
               {showSuggestions && (
-                <div className="absolute top-full right-0 w-80 mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in-down">
+                <div className="absolute top-full right-0 w-full md:w-80 mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-fade-in-down">
                   {filteredSuggestions.length > 0 ? (
                     <ul className="max-h-60 overflow-y-auto">
                       {filteredSuggestions.map((suggestion, idx) => ( <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-4 py-2 hover:bg-blue-600/50 cursor-pointer border-b border-slate-700/50 last:border-0 text-slate-200 transition-colors flex items-center gap-2 text-sm"><span className="text-blue-400">✨</span> {suggestion}</li> ))}
@@ -522,10 +523,16 @@ function App() {
       <main className="flex-1 flex relative overflow-hidden">
         {/* Session Sidebar */}
         {isExploring && showSessionSidebar && (
-          <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-10 shadow-2xl">
-            <div className="p-4 border-b border-slate-800 flex justify-between items-center"><h2 className="font-bold text-slate-200">Các phiên Chat</h2><button onClick={handleNewSession} className="text-emerald-400 hover:text-emerald-300 font-bold text-xl">+</button></div>
+          <aside className="absolute md:relative left-0 top-0 bottom-0 w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-50 shadow-2xl">
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center">
+              <h2 className="font-bold text-slate-200">Các phiên Chat</h2>
+              <div className="flex gap-2">
+                <button onClick={handleNewSession} className="text-emerald-400 hover:text-emerald-300 font-bold text-xl">+</button>
+                <button onClick={() => setShowSessionSidebar(false)} className="md:hidden text-slate-400 hover:text-white ml-2">✕</button>
+              </div>
+            </div>
             <div className="flex-1 overflow-y-auto p-2">
-              {sessions.map(s => ( <div key={s.id} onClick={() => handleSwitchSession(s.id)} className={`p-3 mb-2 rounded cursor-pointer text-sm truncate border transition-colors ${currentSessionId === s.id ? 'bg-blue-900/50 border-blue-500 text-blue-200' : 'bg-slate-800/30 border-transparent hover:bg-slate-800 text-slate-400'}`}>{s.title}</div> ))}
+              {sessions.map(s => ( <div key={s.id} onClick={() => { handleSwitchSession(s.id); if(window.innerWidth < 768) setShowSessionSidebar(false); }} className={`p-3 mb-2 rounded cursor-pointer text-sm truncate border transition-colors ${currentSessionId === s.id ? 'bg-blue-900/50 border-blue-500 text-blue-200' : 'bg-slate-800/30 border-transparent hover:bg-slate-800 text-slate-400'}`}>{s.title}</div> ))}
             </div>
           </aside>
         )}
@@ -636,10 +643,22 @@ function App() {
         )}
 
         {isExploring && (
-          <aside className="w-[400px] bg-slate-900 border-l border-slate-800 flex flex-col z-10 shadow-2xl relative">
-            <div className="p-4 border-b border-slate-800 font-semibold text-emerald-400 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Trợ lý Gemini AI
-            </div>
+          <>
+            <button 
+              className="md:hidden absolute bottom-24 right-4 z-40 bg-indigo-600 text-white p-3 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.5)] flex items-center justify-center text-xl"
+              onClick={() => setShowAiSidebar(!showAiSidebar)}
+            >
+              🤖
+            </button>
+            <aside className={`${showAiSidebar ? 'flex' : 'hidden'} md:flex absolute md:relative right-0 top-0 bottom-0 w-full sm:w-[400px] bg-slate-900 border-l border-slate-800 flex-col z-50 shadow-2xl`}>
+              <div className="p-4 border-b border-slate-800 font-semibold text-emerald-400 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Trợ lý Gemini AI
+                </div>
+                {showAiSidebar && (
+                  <button onClick={() => setShowAiSidebar(false)} className="md:hidden text-slate-400 hover:text-white text-sm">✕ Đóng</button>
+                )}
+              </div>
             <div className="flex-1 p-4 overflow-y-auto">
               <div className="flex flex-col gap-4 mt-3">
                 {messages.map((msg, idx) => (
@@ -690,6 +709,7 @@ function App() {
               </div>
             </div>
           </aside>
+        </>
         )}
       </main>
     </div>

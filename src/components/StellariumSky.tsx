@@ -121,6 +121,8 @@ interface StellariumSkyProps {
 
 export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectObject }) => {
   const [useOfficialEngine, setUseOfficialEngine] = useState<boolean>(true);
+  const [showControlsMobile, setShowControlsMobile] = useState<boolean>(false);
+  const [isAREnabled, setIsAREnabled] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Observation settings
@@ -148,6 +150,10 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   const [showPlanets, setShowPlanets] = useState<boolean>(true);
   const [showDSOs, setShowDSOs] = useState<boolean>(true);
   const [showCompass, setShowCompass] = useState<boolean>(true);
+  const [showMeteors, setShowMeteors] = useState<boolean>(true);
+  const [showSatellites, setShowSatellites] = useState<boolean>(true);
+  const [showLandscape, setShowLandscape] = useState<boolean>(true);
+  const [showTelescope, setShowTelescope] = useState<boolean>(false);
   const [skyCulture, setSkyCulture] = useState<'western' | 'vietnamese'>('western');
 
   // Selected state
@@ -175,6 +181,18 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   // Mouse interaction state
   const isDragging = useRef<boolean>(false);
   const previousMousePosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  // Meteors State
+  const meteorsRef = useRef<{x: number, y: number, length: number, angle: number, life: number, maxLife: number}[]>([]);
+
+  // Landscape Image Cache
+  const landscapeImgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/trees_512.png';
+    img.onload = () => { landscapeImgRef.current = img; };
+  }, []);
 
   // Update date/time
   useEffect(() => {
@@ -234,6 +252,45 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     }
   }, [date, trackingSelected, selectedObj, lat, lng]);
 
+  // AR Device Orientation Tracker
+  useEffect(() => {
+    if (!isAREnabled) return;
+
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      // e.alpha: compass direction [0, 360)
+      // e.beta: front-to-back tilt [-180, 180)
+      if (e.alpha !== null && e.beta !== null) {
+        let az = 360 - e.alpha; // invert so rotating phone right looks right
+        let alt = 90 - e.beta; // 90 beta is standing up (horizon). 0 is flat on table (zenith).
+        
+        targetYawRef.current = (az + 360) % 360;
+        targetPitchRef.current = Math.max(-85, Math.min(85, alt));
+      }
+    };
+
+    const enableAR = async () => {
+      if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+        try {
+          const permission = await (DeviceOrientationEvent as any).requestPermission();
+          if (permission === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation);
+          } else {
+            setIsAREnabled(false);
+            alert("Vui lòng cấp quyền Cảm biến chuyển động để dùng chế độ AR.");
+          }
+        } catch (err) {
+          console.error(err);
+          setIsAREnabled(false);
+        }
+      } else {
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+    };
+
+    enableAR();
+    return () => window.removeEventListener('deviceorientation', handleOrientation);
+  }, [isAREnabled]);
+
   // Geolocation trigger
   const handleGeolocation = () => {
     if (navigator.geolocation) {
@@ -275,14 +332,15 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     if (!ctx) return;
 
     // Resize canvas if needed
+    const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
-    if (canvas.width !== rect.width || canvas.height !== rect.height) {
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+    if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
     }
 
-    const width = canvas.width;
-    const height = canvas.height;
+    const width = rect.width;
+    const height = rect.height;
     const cx = width / 2;
     const cy = height / 2;
     
@@ -299,7 +357,9 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     const sunHoriz = eqToHoriz(sunCoords.ra, sunCoords.dec, lst, lat);
 
     // 1. CLEAR & SKY BACKGROUND
-    ctx.clearRect(0, 0, width, height);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.scale(dpr, dpr);
 
     // Sky colors based on Sun altitude
     const sunAlt = sunHoriz.alt;
@@ -500,6 +560,71 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       ctx.lineJoin = 'round';
       ctx.stroke();
       ctx.restore();
+    }
+
+    // UPDATE AND RENDER METEORS
+    if (showMeteors && isTimeRunning) {
+      if (Math.random() < 0.03 * timeSpeed) {
+        meteorsRef.current.push({
+          x: Math.random() * width,
+          y: Math.random() * (height / 2),
+          length: 40 + Math.random() * 80,
+          angle: (Math.PI / 3) + (Math.random() * Math.PI / 3),
+          life: 0,
+          maxLife: 20 + Math.random() * 30
+        });
+      }
+
+      ctx.save();
+      for (let i = meteorsRef.current.length - 1; i >= 0; i--) {
+        const m = meteorsRef.current[i];
+        m.life += timeSpeed;
+        m.x += Math.cos(m.angle) * 12 * timeSpeed;
+        m.y += Math.sin(m.angle) * 12 * timeSpeed;
+
+        if (m.life >= m.maxLife) {
+          meteorsRef.current.splice(i, 1);
+          continue;
+        }
+
+        const opacity = 1 - (m.life / m.maxLife);
+        const grad = ctx.createLinearGradient(m.x, m.y, m.x - Math.cos(m.angle) * m.length, m.y - Math.sin(m.angle) * m.length);
+        grad.addColorStop(0, `rgba(255, 255, 255, ${opacity})`);
+        grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        ctx.beginPath();
+        ctx.moveTo(m.x, m.y);
+        ctx.lineTo(m.x - Math.cos(m.angle) * m.length, m.y - Math.sin(m.angle) * m.length);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // UPDATE AND RENDER SATELLITES (e.g. ISS)
+    if (showSatellites) {
+      const timeSec = date.getTime() / 1000;
+      const issAz = (timeSec * 0.5) % 360; 
+      const issAlt = 45 + Math.sin(timeSec * 0.05) * 30; 
+
+      const scr = project(issAz, issAlt);
+      if (scr.visible && (!showAtmosphere || issAlt > 0)) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(scr.x, scr.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = '#ff3333';
+        ctx.fill();
+        
+        ctx.shadowColor = '#ff3333';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.font = '10px monospace';
+        ctx.fillText('🛰️ Trạm ISS', scr.x + 6, scr.y + 3);
+        ctx.restore();
+      }
     }
 
     // Convert all stars to current Az/Alt horizontal coordinates
@@ -725,13 +850,13 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       }
       ctx.stroke();
 
-      // Render ground overlay if atmosphere is on
-      if (showAtmosphere) {
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; // Solid dark ground
+      // Render ground overlay
+      if (showAtmosphere || showLandscape) {
+        ctx.save();
         ctx.beginPath();
-        // Custom simple terrain boundary below alt=0
         let polyStarted = false;
-        for (let az = lookYaw - fov; az <= lookYaw + fov; az += 2) {
+        // Extend bounds to avoid clipping artifacts
+        for (let az = lookYaw - fov * 1.5; az <= lookYaw + fov * 1.5; az += 2) {
           const pt = project(az, 0);
           if (pt.visible) {
             if (!polyStarted) {
@@ -745,7 +870,30 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         ctx.lineTo(width, height);
         ctx.lineTo(0, height);
         ctx.closePath();
-        ctx.fill();
+        
+        if (showLandscape && landscapeImgRef.current) {
+          ctx.clip(); // clip drawing to below horizon
+          const img = landscapeImgRef.current;
+          
+          const fovRatio = 360 / fov;
+          const imgWidth = width * fovRatio;
+          const imgHeight = img.height * (imgWidth / img.width) * 0.55;
+          
+          const wrapYaw = ((lookYaw % 360) + 360) % 360;
+          const xOffset = -(wrapYaw / 360) * imgWidth;
+          const horizCenter = project(lookYaw, 0);
+          const yPos = horizCenter.y - imgHeight * 0.49;
+
+          ctx.drawImage(img, xOffset + width/2, yPos, imgWidth, imgHeight);
+          if (xOffset + width/2 > 0) {
+            ctx.drawImage(img, xOffset + width/2 - imgWidth, yPos, imgWidth, imgHeight);
+          } else {
+            ctx.drawImage(img, xOffset + width/2 + imgWidth, yPos, imgWidth, imgHeight);
+          }
+        } else if (showAtmosphere) {
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; // Solid dark ground
+          ctx.fill();
+        }
       }
       ctx.restore();
 
@@ -813,6 +961,46 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         ctx.font = '10px monospace';
         ctx.fillText(selectedObj.name, scr.x, scr.y + size + 12);
       }
+    }
+
+    // 12. RENDER TELESCOPE OCULARS VIEW (Mask)
+    if (showTelescope) {
+      ctx.save();
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = Math.min(cx, cy) * 0.9;
+      
+      // Draw outer dark mask
+      ctx.beginPath();
+      ctx.rect(0, 0, width, height);
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2, true);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
+      ctx.fill();
+
+      // Draw telescope ring
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Draw crosshairs
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - radius);
+      ctx.lineTo(cx, cy + radius);
+      ctx.moveTo(cx - radius, cy);
+      ctx.lineTo(cx + radius, cy);
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Fov text
+      ctx.fillStyle = '#ef4444';
+      ctx.font = '10px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(`FOV: ${fov.toFixed(2)}°`, cx + radius - 10, cy + 15);
+      
+      ctx.restore();
     }
   }, [
     date,
@@ -1061,6 +1249,47 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     previousMousePosition.current = { x: e.clientX, y: e.clientY };
   };
 
+  // Touch Dragging & Pinch Zooming
+  const initialPinchDistance = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      isDragging.current = true;
+      previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      initialPinchDistance.current = Math.sqrt(dx * dx + dy * dy);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1 && isDragging.current) {
+      const deltaX = e.touches[0].clientX - previousMousePosition.current.x;
+      const deltaY = e.touches[0].clientY - previousMousePosition.current.y;
+      const factor = fov / 600;
+
+      targetYawRef.current = (targetYawRef.current - deltaX * factor + 360) % 360;
+      targetPitchRef.current = Math.max(-85, Math.min(85, targetPitchRef.current + deltaY * factor));
+
+      previousMousePosition.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      if (trackingSelected) setTrackingSelected(false);
+    } else if (e.touches.length === 2 && initialPinchDistance.current !== null) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      const delta = initialPinchDistance.current - dist;
+      targetFovRef.current = Math.max(5, Math.min(120, targetFovRef.current + delta * 0.1));
+      initialPinchDistance.current = dist;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    isDragging.current = false;
+    initialPinchDistance.current = null;
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging.current) return;
 
@@ -1089,29 +1318,46 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   return (
     <div className="absolute inset-0 bg-slate-950 flex flex-col z-40 overflow-hidden font-sans text-slate-200">
       {/* Header Controls */}
-      <header className="flex items-center justify-between p-3 bg-slate-900/90 backdrop-blur border-b border-slate-800 z-50">
-        <div className="flex items-center gap-3">
+      <header className="flex flex-col md:flex-row items-start md:items-center justify-between p-2 md:p-3 bg-slate-900/90 backdrop-blur border-b border-slate-800 z-50 gap-2 md:gap-0">
+        <div className="flex flex-wrap md:flex-nowrap items-center gap-2 md:gap-3 w-full md:w-auto">
           <button onClick={onClose} className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors" title="Quay lại">
             ✕
           </button>
-          <h1 className="text-lg font-bold text-sky-400 tracking-wider flex items-center gap-2">
-            <span>🌌</span> {useOfficialEngine ? 'STELLARIUM WEB ENGINE (OFFICIAL)' : 'KÍNH THIÊN VĂN STELLARIUM WEB'}
+          <h1 className="text-sm md:text-lg font-bold text-sky-400 tracking-wider flex items-center gap-2 whitespace-nowrap">
+            <span>🌌</span> {useOfficialEngine ? 'STELLARIUM (OFFICIAL)' : 'STELLARIUM WEB 2D'}
           </h1>
           <button 
             onClick={() => setUseOfficialEngine(!useOfficialEngine)}
-            className={`ml-4 px-4 py-1.5 text-xs rounded-full font-bold transition-all ${useOfficialEngine ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.6)] hover:shadow-[0_0_25px_rgba(37,99,235,0.8)]'}`}
+            className={`md:ml-4 px-3 md:px-4 py-1.5 text-[10px] md:text-xs rounded-full font-bold transition-all whitespace-nowrap ${useOfficialEngine ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.6)] hover:shadow-[0_0_25px_rgba(37,99,235,0.8)]'}`}
           >
-            {useOfficialEngine ? 'Chuyển về Bản đồ 2D nội bộ' : 'Chuyển sang Stellarium Web 3D'}
+            {useOfficialEngine ? 'Bản đồ nội bộ' : 'Bản đồ 3D'}
           </button>
         </div>
 
         {/* Global Presets / Quick Search */}
-        <div className="flex items-center gap-4">
-          <form onSubmit={handleSearchSubmit} className="relative flex">
+        <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-between md:justify-end">
+          {!useOfficialEngine && (
+            <button 
+              onClick={() => setIsAREnabled(!isAREnabled)}
+              className={`px-3 py-1 text-[10px] md:text-xs font-bold rounded flex items-center gap-1 ${isAREnabled ? 'bg-orange-600 text-white animate-pulse shadow-[0_0_10px_rgba(234,88,12,0.8)]' : 'bg-slate-800 text-orange-400 hover:bg-slate-700'}`}
+              title="Cảm biến thiết bị AR Tracker"
+            >
+              📱 {isAREnabled ? 'Đang bật AR' : 'Chế độ AR'}
+            </button>
+          )}
+          {!useOfficialEngine && (
+            <button 
+              onClick={() => setShowControlsMobile(!showControlsMobile)}
+              className="md:hidden px-3 py-1 bg-slate-800 text-sky-300 rounded text-xs font-bold"
+            >
+              🛠️ Tuỳ chỉnh
+            </button>
+          )}
+          <form onSubmit={handleSearchSubmit} className="relative flex flex-1 md:flex-none">
             <input 
               type="text" 
-              placeholder="Tìm hành tinh, sao, tinh vân... (VD: Sirius, Mars, M31)" 
-              className="w-72 bg-slate-950 border border-slate-700 px-3 py-1 rounded-l text-xs focus:outline-none focus:border-sky-500"
+              placeholder="Tìm sao (VD: Sirius)" 
+              className="w-full md:w-72 bg-slate-950 border border-slate-700 px-3 py-1 rounded-l text-xs focus:outline-none focus:border-sky-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -1121,7 +1367,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
           </form>
 
           {/* Time & Play Controls */}
-          <div className="flex items-center bg-slate-950 rounded border border-slate-700 px-2 py-0.5 text-xs gap-1.5 font-mono">
+          <div className="hidden md:flex items-center bg-slate-950 rounded border border-slate-700 px-2 py-0.5 text-xs gap-1.5 font-mono">
             <span className="text-sky-300">{date.toLocaleTimeString('vi-VN')}</span>
             <span className="text-slate-500">|</span>
             <span className="text-emerald-400">{date.toLocaleDateString('vi-VN')}</span>
@@ -1141,9 +1387,9 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
           />
         </div>
       ) : (
-      <div className="flex-1 flex relative">
+      <div className="flex-1 flex relative overflow-hidden">
         {/* Left Side Panel (Controls) */}
-        <div className="w-80 bg-slate-900/80 backdrop-blur border-r border-slate-800 flex flex-col z-30 p-4 gap-4 overflow-y-auto">
+        <div className={`${showControlsMobile ? 'flex' : 'hidden'} md:flex absolute md:relative w-full md:w-80 h-[50%] md:h-full bottom-0 md:bottom-auto bg-slate-900/95 md:bg-slate-900/80 backdrop-blur border-t md:border-t-0 md:border-r border-slate-800 flex-col z-40 p-4 gap-4 overflow-y-auto`}>
           {/* Observation Coordinates */}
           <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
             <h3 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">📍 Địa Điểm & Vĩ Độ</h3>
@@ -1250,8 +1496,28 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked={showMeteors} onChange={e => setShowMeteors(e.target.checked)} className="rounded text-sky-600" />
+                <span>Mưa sao băng (Meteors Plugin)</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked={showSatellites} onChange={e => setShowSatellites(e.target.checked)} className="rounded text-sky-600" />
+                <span>Vệ tinh nhân tạo ISS (Satellites Plugin)</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
                 <input type="checkbox" checked={showCompass} onChange={e => setShowCompass(e.target.checked)} className="rounded text-sky-600" />
                 <span>Đường chân trời & Đông Tây Nam Bắc</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked={showLandscape} onChange={e => setShowLandscape(e.target.checked)} className="rounded text-sky-600" />
+                <span>Hiển thị cảnh quan (Landscapes)</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                <input type="checkbox" checked={showTelescope} onChange={e => setShowTelescope(e.target.checked)} className="rounded text-sky-600" />
+                <span>Ống kính viễn vọng (Oculars Plugin)</span>
               </label>
             </div>
           </div>
@@ -1268,6 +1534,10 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             onWheel={handleWheel}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
           />
 
           {/* Compass Rose Mini Widget */}
@@ -1286,7 +1556,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
 
         {/* Right Info Panel (Star details & AI Analysis) */}
         {selectedObj && (
-          <aside className="w-80 bg-slate-900/90 backdrop-blur border-l border-slate-800 flex flex-col z-30 p-4 gap-4 overflow-y-auto">
+          <aside className="absolute md:relative right-0 top-0 bottom-0 md:bottom-auto md:h-full w-full md:w-80 bg-slate-900/95 md:bg-slate-900/90 backdrop-blur border-l border-slate-800 flex flex-col z-50 p-4 gap-4 overflow-y-auto">
             <div className="flex justify-between items-center border-b border-slate-800 pb-2">
               <h2 className="text-sm font-bold text-sky-400 uppercase tracking-wider">📡 Thông Tin Thiên Thể</h2>
               <button 
