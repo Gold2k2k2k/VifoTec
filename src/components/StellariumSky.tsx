@@ -120,6 +120,7 @@ interface StellariumSkyProps {
 }
 
 export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectObject }) => {
+  const [useOfficialEngine, setUseOfficialEngine] = useState<boolean>(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   // Observation settings
@@ -1094,8 +1095,14 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
             ✕
           </button>
           <h1 className="text-lg font-bold text-sky-400 tracking-wider flex items-center gap-2">
-            <span>🌌</span> KÍNH THIÊN VĂN STELLARIUM WEB
+            <span>🌌</span> {useOfficialEngine ? 'STELLARIUM WEB ENGINE (OFFICIAL)' : 'KÍNH THIÊN VĂN STELLARIUM WEB'}
           </h1>
+          <button 
+            onClick={() => setUseOfficialEngine(!useOfficialEngine)}
+            className={`ml-4 px-4 py-1.5 text-xs rounded-full font-bold transition-all ${useOfficialEngine ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.6)] hover:shadow-[0_0_25px_rgba(37,99,235,0.8)]'}`}
+          >
+            {useOfficialEngine ? 'Chuyển về Bản đồ 2D nội bộ' : 'Chuyển sang Stellarium Web 3D'}
+          </button>
         </div>
 
         {/* Global Presets / Quick Search */}
@@ -1123,6 +1130,17 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       </header>
 
       {/* Main Workspace layout */}
+      {useOfficialEngine ? (
+        <div className="flex-1 w-full relative bg-black">
+          <iframe 
+            src="https://stellarium-web.org/" 
+            className="w-full h-full border-none"
+            title="Stellarium Web Engine"
+            allowFullScreen
+            allow="geolocation"
+          />
+        </div>
+      ) : (
       <div className="flex-1 flex relative">
         {/* Left Side Panel (Controls) */}
         <div className="w-80 bg-slate-900/80 backdrop-blur border-r border-slate-800 flex flex-col z-30 p-4 gap-4 overflow-y-auto">
@@ -1352,6 +1370,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
           </aside>
         )}
       </div>
+      )}
     </div>
   );
 };
