@@ -1,41 +1,236 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body, html, #root {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-  background-color: #0f172a; /* Màu slate-900 */
+/* ============================================
+   JWST SPACE EXPLORER — DESIGN SYSTEM
+   Based on UI UX Pro Max: HUD / Sci-Fi FUI
+   ============================================ */
+
+@layer base {
+  :root {
+    --color-bg: #0B0B10;
+    --color-card: #12121A;
+    --color-surface: #1A1A2E;
+    --color-muted: #1E293B;
+    --color-border: #1E293B;
+    --color-text: #F8FAFC;
+    --color-text-muted: #94A3B8;
+    --color-accent: #00FFFF;
+    --color-accent-dim: rgba(0, 255, 255, 0.15);
+    --color-blue: #3B82F6;
+    --color-destructive: #EF4444;
+    --color-success: #10B981;
+    --color-warning: #F59E0B;
+    --font-heading: 'Space Grotesk', system-ui, sans-serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --glow-sm: 0 0 6px rgba(0, 255, 255, 0.3);
+    --glow-md: 0 0 15px rgba(0, 255, 255, 0.2);
+    --glow-lg: 0 0 30px rgba(0, 255, 255, 0.15);
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 500ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  html, body, #root {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+
+  /* Focus styles for keyboard navigation */
+  *:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 }
 
-.bg-cosmic {
-  background-image: url('./assets/space.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: #0f172a;
+@layer components {
+  /* ---- Buttons ---- */
+  .btn-primary {
+    @apply px-4 py-2 bg-cyan-500/20 border border-cyan-500/50 text-cyan-300
+           font-medium text-xs tracking-wide cursor-pointer
+           transition-all duration-200
+           hover:bg-cyan-500/30 hover:border-cyan-400 hover:text-cyan-100
+           hover:shadow-[0_0_15px_rgba(0,255,255,0.2)]
+           focus-visible:ring-2 focus-visible:ring-cyan-400
+           active:scale-[0.97];
+    font-family: var(--font-mono);
+  }
+
+  .btn-ghost {
+    @apply px-3 py-1.5 bg-transparent border border-slate-700/50 text-slate-400
+           text-xs cursor-pointer transition-all duration-200
+           hover:bg-slate-800/50 hover:text-slate-200 hover:border-slate-600
+           active:scale-[0.97];
+    font-family: var(--font-mono);
+  }
+
+  .btn-icon {
+    @apply w-9 h-9 flex items-center justify-center
+           bg-transparent border border-slate-700/50 text-slate-400
+           cursor-pointer transition-all duration-200
+           hover:bg-slate-800/50 hover:text-cyan-300 hover:border-cyan-500/40
+           active:scale-[0.95];
+  }
+
+  .btn-icon.active {
+    @apply bg-cyan-500/15 border-cyan-500/50 text-cyan-300
+           shadow-[inset_0_0_12px_rgba(0,255,255,0.15)];
+  }
+
+  /* ---- Cards & Panels ---- */
+  .hud-panel {
+    @apply bg-[#12121A]/80 backdrop-blur-xl border border-slate-700/50
+           shadow-lg overflow-hidden;
+  }
+
+  .hud-panel-header {
+    @apply flex items-center justify-between px-3 py-2
+           border-b border-slate-700/50 bg-slate-900/40;
+  }
+
+  .hud-label {
+    @apply text-[10px] font-semibold tracking-[0.15em] uppercase;
+    font-family: var(--font-mono);
+    color: var(--color-text-muted);
+  }
+
+  .hud-value {
+    @apply text-sm font-medium;
+    font-family: var(--font-mono);
+    color: var(--color-text);
+  }
+
+  /* ---- Scrollbar ---- */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 255, 0.15);
+    border-radius: 2px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 255, 0.3);
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ---- Scanline Overlay ---- */
+  .scanline-overlay {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 3px,
+      rgba(0, 255, 255, 0.015) 3px,
+      rgba(0, 255, 255, 0.015) 4px
+    );
+    mix-blend-mode: screen;
+    z-index: 1;
+  }
+
+  /* ---- Input fields ---- */
+  .input-hud {
+    @apply w-full bg-[#0B0B10] border border-slate-700/60
+           text-slate-100 placeholder-slate-600 px-3 py-2
+           text-sm transition-all duration-200
+           focus:outline-none focus:border-cyan-500/50
+           focus:shadow-[0_0_10px_rgba(0,255,255,0.08)];
+    font-family: var(--font-mono);
+  }
+
+  /* ---- Range Slider ---- */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    background: var(--color-muted);
+    border-radius: 2px;
+    cursor: ew-resize;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 2px solid var(--color-bg);
+    box-shadow: var(--glow-sm);
+    cursor: ew-resize;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    border: 2px solid var(--color-bg);
+    box-shadow: var(--glow-sm);
+    cursor: ew-resize;
+  }
+
+  /* ---- Glow text ---- */
+  .text-glow {
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  }
+  .text-glow-sm {
+    text-shadow: 0 0 6px rgba(0, 255, 255, 0.3);
+  }
 }
+
+/* ---- Respect reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- OpenSeadragon overrides ---- */
 .openseadragon-container {
   overflow: visible !important;
 }
-/* Hình nền thiên hà cho màn hình chờ */
-.bg-cosmic {
-  background-image: 
-    /* Lớp kính râm (Gradient) giúp làm dịu ảnh nền, làm nổi bật chữ */
-    linear-gradient(to bottom, rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.9)), 
-    /* Link ảnh thiên hà 4K tuyệt đẹp từ Unsplash */
-    url('https://images.unsplash.com/photo-1462331940025-496dfbfc7564?q=80&w=2048&auto=format&fit=crop');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  animation: pulse-glow 15s infinite alternate; /* (Tùy chọn) Thêm hiệu ứng thở nhẹ */
+
+/* ---- Keyframes ---- */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
-/* (Tùy chọn) Hiệu ứng làm màn hình nền sáng lên rồi tối đi nhè nhẹ */
-@keyframes pulse-glow {
-  0% { filter: brightness(0.9); }
-  100% { filter: brightness(1.2); }
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }

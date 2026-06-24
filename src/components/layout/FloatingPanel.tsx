@@ -1,7 +1,8 @@
 import React from 'react';
+import { IconClose } from '../Icons';
 
 interface FloatingPanelProps {
-  position: 'left' | 'right' | 'top' | 'bottom';
+  position: 'left' | 'right';
   isOpen: boolean;
   onClose?: () => void;
   title?: React.ReactNode;
@@ -17,65 +18,51 @@ export const FloatingPanel: React.FC<FloatingPanelProps> = ({
   title, 
   children,
   className = '',
-  width = 'w-[340px]' // Slightly wider for HUD layout
+  width = 'w-[340px]'
 }) => {
-  // Determine translation based on position and open state
-  let transform = '';
-  if (!isOpen) {
-    if (position === 'left') transform = '-translate-x-[120%] opacity-0 rotate-y-[-10deg] scale-95';
-    if (position === 'right') transform = 'translate-x-[120%] opacity-0 rotate-y-[10deg] scale-95';
-    if (position === 'top') transform = '-translate-y-[120%] opacity-0 scale-95';
-    if (position === 'bottom') transform = 'translate-y-[120%] opacity-0 scale-95';
-  } else {
-    transform = 'translate-x-0 translate-y-0 opacity-100 rotate-y-0 scale-100';
-  }
+  const translateClass = !isOpen
+    ? position === 'left' ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'
+    : 'translate-x-0 opacity-100';
 
-  const posClasses = {
-    left: 'left-6 top-24 bottom-28 perspective-[1000px]',
-    right: 'right-6 top-24 bottom-28 perspective-[1000px]',
-    top: 'top-6 left-1/2 -translate-x-1/2 perspective-[1000px]',
-    bottom: 'bottom-28 left-1/2 -translate-x-1/2 perspective-[1000px]'
-  };
+  const posClass = position === 'left' ? 'left-0 top-16 bottom-16' : 'right-0 top-16 bottom-16';
 
   return (
     <div 
       className={`
-        absolute ${posClasses[position]} ${width} z-40
+        absolute ${posClass} ${width} z-40
         flex flex-col
-        transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1)
-        ${transform}
+        transition-all duration-500 ease-out
+        ${translateClass}
         ${className}
       `}
+      role="complementary"
+      aria-label={typeof title === 'string' ? title : 'Panel'}
     >
-      <div className="flex-1 flex flex-col bg-[#0B0F19]/70 backdrop-blur-3xl border border-cyan-500/30 rounded-lg shadow-[0_0_40px_rgba(6,182,212,0.15)] overflow-hidden relative">
-        
-        {/* Futuristic Corner Accents */}
-        <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400/80 rounded-tl-lg pointer-events-none z-10"></div>
-        <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/80 rounded-tr-lg pointer-events-none z-10"></div>
-        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-400/80 rounded-bl-lg pointer-events-none z-10"></div>
-        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-400/80 rounded-br-lg pointer-events-none z-10"></div>
-
-        {/* Scanline Overlay */}
-        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(34,211,238,0.03)_1px,transparent_1px)] bg-[size:100%_4px] mix-blend-screen z-0"></div>
+      <div className="flex-1 flex flex-col hud-panel m-2 rounded-lg overflow-hidden relative">
+        {/* Subtle scanline */}
+        <div className="scanline-overlay rounded-lg" />
 
         {title && (
-          <div className="flex items-center justify-between p-3 border-b border-cyan-500/30 bg-cyan-950/40 relative z-10">
+          <div className="hud-panel-header relative z-10">
             <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></div>
-              <h3 className="font-mono font-bold text-cyan-300 tracking-[0.2em] uppercase text-[10px]">{title}</h3>
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" style={{ animation: 'pulse-glow 2s infinite' }} />
+              <h3 className="text-[11px] font-semibold text-slate-300 tracking-wider uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
+                {title}
+              </h3>
             </div>
             {onClose && (
               <button 
                 onClick={onClose}
-                className="text-cyan-600 hover:text-cyan-300 hover:bg-cyan-900/50 transition-all w-6 h-6 flex items-center justify-center rounded-sm font-mono text-xs border border-transparent hover:border-cyan-500/30"
+                className="btn-icon w-6 h-6 border-0"
+                aria-label="Close panel"
               >
-                [X]
+                <IconClose size={14} />
               </button>
             )}
           </div>
         )}
         
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-1 relative z-10">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 relative z-10">
           {children}
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SpectrumPanel } from '../SpectrumPanel';
 import { SpectrumMode } from '../../data';
+import { IconDownload, IconWave, IconReport, IconTrophy } from '../Icons';
 
 interface LeftHUDProps {
   activeLayer: string;
@@ -30,20 +31,25 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('IMAGE');
 
+  const hasDeepSkyData = activeLayer === 'deepsky' && dziUrl;
+
   return (
-    <div className="flex flex-col gap-3 font-mono">
-      {/* Tabs Navigation */}
-      {activeLayer === 'deepsky' && dziUrl && (
-        <div className="flex w-full bg-slate-900/50 backdrop-blur border border-cyan-500/30 p-1">
+    <div className="flex flex-col gap-2">
+      {/* Tab Navigation */}
+      {hasDeepSkyData && (
+        <div className="flex bg-slate-900/50 rounded-lg p-0.5 gap-0.5" role="tablist">
           {(['IMAGE', 'ANALYSIS', 'TOOLS'] as TabType[]).map(tab => (
             <button
               key={tab}
+              role="tab"
+              aria-selected={activeTab === tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-1.5 text-[9px] font-bold tracking-widest transition-colors ${
+              className={`flex-1 py-1.5 text-[10px] font-semibold tracking-wider rounded-md cursor-pointer transition-all duration-200 ${
                 activeTab === tab
-                  ? 'bg-cyan-600/40 text-cyan-100 shadow-[inset_0_0_10px_rgba(34,211,238,0.3)]'
-                  : 'text-slate-400 hover:text-cyan-300 hover:bg-slate-800/50'
+                  ? 'bg-cyan-500/15 text-cyan-300 shadow-[0_0_8px_rgba(0,255,255,0.1)]'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/40'
               }`}
+              style={{ fontFamily: 'var(--font-mono)' }}
             >
               {tab}
             </button>
@@ -51,96 +57,115 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
         </div>
       )}
 
-      {/* Tab Content: IMAGE */}
-      {activeLayer === 'deepsky' && dziUrl && activeTab === 'IMAGE' && (
-        <div className="flex flex-col gap-3">
-          {/* Image Analysis Bento Box */}
-          <div className="bg-[#0B0F19]/60 p-3 rounded-none border border-cyan-500/30 backdrop-blur shadow-[0_0_15px_rgba(6,182,212,0.1)] relative">
-            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-400"></div>
-            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-cyan-400"></div>
-            
-            <h4 className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2 border-b border-cyan-900/50 pb-2">
-              <span className="w-1.5 h-1.5 bg-cyan-500 animate-pulse"></span> 
-              SYS.ANALYSIS.OPTICAL
-            </h4>
-            
-            <div className="mb-2">
-              <div className="flex justify-between text-cyan-700 text-[9px] mb-1 tracking-widest"><span>BRIGHTNESS</span><span className="text-cyan-300">[{filters.brightness}%]</span></div>
-              <input type="range" min="50" max="200" value={filters.brightness} onChange={e => setFilters({...filters, brightness: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none cursor-ew-resize" />
+      {/* IMAGE Tab */}
+      {hasDeepSkyData && activeTab === 'IMAGE' && (
+        <div className="flex flex-col gap-3 p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
+          <h4 className="hud-label text-cyan-400 flex items-center gap-2">
+            <span className="w-1 h-1 rounded-full bg-cyan-400" />
+            Optical Analysis
+          </h4>
+          
+          {[
+            { label: 'Brightness', key: 'brightness' as const, min: 50, max: 200 },
+            { label: 'Contrast', key: 'contrast' as const, min: 50, max: 200 },
+            { label: 'Saturation', key: 'saturate' as const, min: 0, max: 200 },
+          ].map(slider => (
+            <div key={slider.key}>
+              <div className="flex justify-between mb-1">
+                <span className="hud-label">{slider.label}</span>
+                <span className="text-[10px] text-cyan-400" style={{ fontFamily: 'var(--font-mono)' }}>{filters[slider.key]}%</span>
+              </div>
+              <input 
+                type="range" 
+                min={slider.min} 
+                max={slider.max} 
+                value={filters[slider.key]} 
+                onChange={e => setFilters({...filters, [slider.key]: parseInt(e.target.value)})} 
+                className="w-full"
+                aria-label={slider.label}
+              />
             </div>
-            <div className="mb-2">
-              <div className="flex justify-between text-cyan-700 text-[9px] mb-1 tracking-widest"><span>CONTRAST</span><span className="text-cyan-300">[{filters.contrast}%]</span></div>
-              <input type="range" min="50" max="200" value={filters.contrast} onChange={e => setFilters({...filters, contrast: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none cursor-ew-resize" />
-            </div>
-            <div className="mb-4">
-              <div className="flex justify-between text-cyan-700 text-[9px] mb-1 tracking-widest"><span>SATURATION</span><span className="text-cyan-300">[{filters.saturate}%]</span></div>
-              <input type="range" min="0" max="200" value={filters.saturate} onChange={e => setFilters({...filters, saturate: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none cursor-ew-resize" />
-            </div>
-            <button onClick={handleDownload} className="w-full bg-cyan-950/50 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 py-1.5 font-bold tracking-widest transition-all text-[10px] uppercase shadow-[inset_0_0_10px_rgba(6,182,212,0.2)] flex items-center justify-center gap-2">
-              [ CAPTURE_DATA ]
-            </button>
-          </div>
+          ))}
+
+          <button onClick={handleDownload} className="btn-primary flex items-center justify-center gap-2 w-full mt-1">
+            <IconDownload size={14} />
+            Capture Image
+          </button>
         </div>
       )}
 
-      {/* Tab Content: ANALYSIS */}
-      {activeLayer === 'deepsky' && dziUrl && activeTab === 'ANALYSIS' && (
+      {/* ANALYSIS Tab */}
+      {hasDeepSkyData && activeTab === 'ANALYSIS' && (
         <div className="flex flex-col gap-3">
-          {/* Audio & Report Bento Box */}
-          <div className="bg-[#0B0F19]/60 p-3 rounded-none border border-cyan-500/30 backdrop-blur shadow-[0_0_15px_rgba(6,182,212,0.1)] relative">
-            <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-400"></div>
-            <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-cyan-400"></div>
-
-            <h4 className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2 border-b border-cyan-900/50 pb-2">
-              <span className="w-1.5 h-1.5 bg-cyan-500"></span>
-              SYS.TOOLS.SCIENCE
+          <div className="p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
+            <h4 className="hud-label text-cyan-400 flex items-center gap-2 mb-3">
+              <span className="w-1 h-1 rounded-full bg-cyan-400" />
+              Science Tools
             </h4>
-            <button onClick={toggleSonification} className={`w-full py-1.5 mb-2 font-bold transition-all flex items-center justify-center gap-2 text-[10px] border uppercase tracking-widest ${isSonifying ? 'bg-amber-900/40 border-amber-500 text-amber-400 shadow-[inset_0_0_15px_rgba(245,158,11,0.3)] animate-pulse' : 'bg-cyan-950/30 border-cyan-900 text-cyan-600 hover:bg-cyan-900/80 hover:text-cyan-300 hover:border-cyan-500/50'}`}>
-              {isSonifying ? '[ AUDIO_OUT: ACTIVE ]' : '[ AUDIO_OUT: INIT ]'}
-            </button>
-            <button onClick={generateCitizenReport} className="w-full bg-cyan-950/30 hover:bg-cyan-900/80 text-cyan-600 hover:text-cyan-300 py-1.5 font-bold transition-all flex items-center justify-center gap-2 text-[10px] border border-cyan-900 hover:border-cyan-500/50 uppercase tracking-widest">
-              [ EXPORT_REPORT ]
-            </button>
+            <div className="flex flex-col gap-2">
+              <button 
+                onClick={toggleSonification} 
+                className={`btn-primary flex items-center justify-center gap-2 w-full ${isSonifying ? '!bg-amber-500/20 !border-amber-500/50 !text-amber-300' : ''}`}
+              >
+                <IconWave size={14} />
+                {isSonifying ? 'Sonification Active' : 'Start Sonification'}
+              </button>
+              <button onClick={generateCitizenReport} className="btn-ghost flex items-center justify-center gap-2 w-full">
+                <IconReport size={14} />
+                Export Report
+              </button>
+            </div>
           </div>
 
-          {/* Spectrum Panel */}
-          <div className="bg-[#0B0F19]/60 border border-cyan-500/30 backdrop-blur shadow-[0_0_15px_rgba(6,182,212,0.1)]">
+          <div className="bg-slate-900/30 rounded-lg border border-slate-700/30 overflow-hidden">
             <SpectrumPanel spectrumMode={spectrumMode} setSpectrumMode={setSpectrumMode} timeMachineYear={timeMachineYear} setTimeMachineYear={setTimeMachineYear} />
           </div>
         </div>
       )}
 
-      {/* Tab Content: TOOLS */}
-      {activeLayer === 'deepsky' && dziUrl && activeTab === 'TOOLS' && (
-        <div className="bg-[#0B0F19]/60 p-3 rounded-none border border-cyan-500/30 backdrop-blur shadow-[0_0_15px_rgba(6,182,212,0.1)] relative">
-            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-400"></div>
-            
-           <h4 className="text-[10px] font-bold text-cyan-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2 border-b border-cyan-900/50 pb-2">
-              <span className="w-1.5 h-1.5 bg-cyan-500"></span>
-              CTRL.MODULES
-            </h4>
-          <div className="grid grid-cols-4 gap-2">
+      {/* TOOLS Tab */}
+      {hasDeepSkyData && activeTab === 'TOOLS' && (
+        <div className="p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
+          <h4 className="hud-label text-cyan-400 flex items-center gap-2 mb-3">
+            <span className="w-1 h-1 rounded-full bg-cyan-400" />
+            Interaction Modes
+          </h4>
+          <div className="grid grid-cols-3 gap-1.5">
             {controls.map((control, idx) => (
-              <button key={idx} onClick={control.action} title={control.title} className={`aspect-square border flex items-center justify-center text-xl transition-all duration-300 hover:scale-105 ${['mark', 'select', 'measure', 'magnify', 'blackhole', 'cockpit'].includes(control.type) && (interactionMode === control.type || (control.type === 'cockpit' && isCockpitMode)) ? 'bg-cyan-600/40 border-cyan-400 text-cyan-100 shadow-[inset_0_0_15px_rgba(34,211,238,0.5)]' : 'bg-cyan-950/30 border-cyan-900 text-cyan-700 hover:bg-cyan-900/80 hover:text-cyan-300 hover:border-cyan-500/50'}`}>
-                {control.label}
+              <button 
+                key={idx} 
+                onClick={control.action} 
+                title={control.title}
+                aria-label={control.title}
+                className={`btn-icon rounded-lg h-10 w-full ${
+                  ['mark', 'select', 'measure', 'magnify', 'blackhole', 'cockpit'].includes(control.type) && 
+                  (interactionMode === control.type || (control.type === 'cockpit' && isCockpitMode)) 
+                    ? 'active' : ''
+                }`}
+              >
+                {control.icon || control.label}
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Quiz Button */}
-      <button onClick={() => setShowQuiz(true)} className="w-full relative group overflow-hidden bg-[#0B0F19]/80 border border-purple-500/50 py-3 text-[10px] font-bold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] uppercase tracking-widest mt-2">
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(168,85,247,0.2),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-        <span className="w-1.5 h-1.5 bg-purple-500 group-hover:animate-ping"></span>
-        <span className="relative z-10 text-purple-400 group-hover:text-purple-200 transition-colors">INITIATE.TRAINING.SIM</span>
+      {/* Quiz & Badges — always visible */}
+      <button 
+        onClick={() => setShowQuiz(true)} 
+        className="btn-ghost flex items-center justify-center gap-2 w-full border-purple-500/30 text-purple-400 hover:text-purple-300 hover:border-purple-500/50 hover:bg-purple-500/10 mt-1"
+      >
+        <IconTrophy size={14} />
+        Training Simulation
       </button>
       
-      {/* Badge display */}
       {badges.length > 0 && (
-        <div className="bg-[#0B0F19]/60 p-3 border border-cyan-500/30 flex flex-wrap gap-2 justify-center backdrop-blur relative mt-2">
-          <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-cyan-400"></div>
-          {badges.map((b, i) => <span key={i} title={b} className="text-2xl drop-shadow-[0_0_10px_rgba(34,211,238,0.6)] hover:scale-110 transition-transform cursor-help">🎖️</span>)}
+        <div className="flex flex-wrap gap-1.5 justify-center p-2 bg-slate-900/30 rounded-lg border border-slate-700/30">
+          {badges.map((b, i) => (
+            <span key={i} title={b} className="w-8 h-8 flex items-center justify-center bg-cyan-500/10 border border-cyan-500/20 rounded-lg cursor-help transition-transform hover:scale-110">
+              <IconTrophy size={16} className="text-cyan-400" />
+            </span>
+          ))}
         </div>
       )}
     </div>

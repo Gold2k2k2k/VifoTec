@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconSearch } from '../Icons';
 
 interface TopHUDProps {
   searchQuery: string;
@@ -8,6 +9,7 @@ interface TopHUDProps {
   showSuggestions: boolean;
   onSuggestionClick: (s: string) => void;
   onFocus: () => void;
+  activeLayer?: string;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({
@@ -17,56 +19,80 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   suggestions,
   showSuggestions,
   onSuggestionClick,
-  onFocus
+  onFocus,
+  activeLayer = 'deepsky'
 }) => {
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-2xl font-mono">
-      <div className="relative group">
-        {/* HUD Scanline */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent blur opacity-50 group-hover:opacity-100 transition duration-500 pointer-events-none"></div>
-        
-        <form onSubmit={onSearch} className="relative flex w-full bg-[#0B0F19]/80 backdrop-blur-xl border border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.15)] rounded-none">
-          {/* Decorative Corners */}
-          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-cyan-400"></div>
-          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-cyan-400"></div>
+    <header className="absolute top-0 left-0 right-0 z-[100] flex items-center justify-between px-4 h-14 bg-[#0B0B10]/80 backdrop-blur-xl border-b border-slate-700/40">
+      {/* Logo / Title */}
+      <div className="flex items-center gap-3 shrink-0">
+        <div className="w-2 h-2 rounded-full bg-cyan-400" style={{ animation: 'pulse-glow 2s infinite' }} />
+        <h1 className="text-sm font-bold tracking-wide text-slate-200 hidden md:block" style={{ fontFamily: 'var(--font-heading)' }}>
+          JWST <span className="text-cyan-400 font-normal">Explorer</span>
+        </h1>
+        <span className="text-[10px] text-slate-600 hidden lg:block" style={{ fontFamily: 'var(--font-mono)' }}>
+          v2.0
+        </span>
+      </div>
 
-          <div className="flex items-center pl-4 text-cyan-500 text-xs">
-            <span className="animate-pulse">{'>'}</span>
+      {/* Search Bar — center */}
+      <div className="relative flex-1 max-w-xl mx-4">
+        <form onSubmit={onSearch} className="relative flex items-center">
+          <div className="absolute left-3 text-slate-500">
+            <IconSearch size={15} />
           </div>
-
           <input 
             type="text" 
-            className="w-full px-4 py-3 bg-transparent text-cyan-100 placeholder-cyan-900 focus:outline-none text-xs tracking-[0.2em] uppercase"
-            placeholder="INPUT_TARGET_COORDINATES..." 
+            className="input-hud w-full pl-9 pr-20 py-2 rounded-lg text-xs"
+            placeholder="Search targets... (M101, Orion, Carina...)" 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={onFocus}
+            aria-label="Search celestial targets"
+            aria-autocomplete="list"
           />
           <button 
             type="submit" 
-            className="px-6 py-3 text-cyan-500 hover:text-cyan-100 transition-colors border-l border-cyan-500/30 hover:bg-cyan-900/50 text-xs font-bold tracking-[0.2em] uppercase"
+            className="absolute right-1 top-1 bottom-1 px-4 bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 hover:text-cyan-300 transition-all duration-200 text-[10px] font-bold tracking-wider rounded-md cursor-pointer"
+            style={{ fontFamily: 'var(--font-mono)' }}
           >
             SCAN
           </button>
         </form>
 
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-[#0B0F19]/90 backdrop-blur-xl border border-cyan-500/50 shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden">
-            <ul className="max-h-64 overflow-y-auto custom-scrollbar py-2">
+          <div 
+            className="absolute top-full left-0 right-0 mt-1 hud-panel rounded-lg overflow-hidden shadow-2xl"
+            role="listbox"
+          >
+            <ul className="max-h-64 overflow-y-auto custom-scrollbar py-1">
               {suggestions.map((suggestion, idx) => (
                 <li 
                   key={idx} 
+                  role="option"
                   onClick={() => onSuggestionClick(suggestion)}
-                  className="px-6 py-2 hover:bg-cyan-900/50 cursor-pointer text-cyan-300 transition-colors flex items-center gap-3 text-[10px] uppercase tracking-widest border-b border-cyan-900/30 last:border-0"
+                  className="px-4 py-2 hover:bg-slate-800/60 cursor-pointer text-slate-300 hover:text-cyan-300 transition-colors flex items-center gap-3 text-xs border-b border-slate-800/40 last:border-0"
+                  style={{ fontFamily: 'var(--font-mono)' }}
                 >
-                  <span className="text-cyan-500">[{idx < 9 ? '0'+(idx+1) : idx+1}]</span> 
-                  {suggestion}
+                  <span className="text-cyan-600 text-[10px] w-6">{String(idx + 1).padStart(2, '0')}</span>
+                  <span>{suggestion}</span>
                 </li>
               ))}
             </ul>
           </div>
         )}
       </div>
-    </div>
+
+      {/* Status indicators — right */}
+      <div className="flex items-center gap-3 shrink-0" style={{ fontFamily: 'var(--font-mono)' }}>
+        <div className="hidden md:flex items-center gap-1.5 text-[10px]">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span className="text-slate-500">ONLINE</span>
+        </div>
+        <div className="hidden lg:block text-[10px] text-slate-600">
+          {activeLayer.toUpperCase()}
+        </div>
+      </div>
+    </header>
   );
 };

@@ -1,16 +1,18 @@
 import { getGeminiResponse } from './aiService';
-import ReactMarkdown from 'react-markdown';
 import React, { useState, useEffect, useRef } from 'react';
 import OpenSeadragon from 'openseadragon';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { ChatSession, InteractionMode, SpectrumMode, POPULAR_TARGETS, PROMPT_TEMPLATES, MOCK_TOURS } from './data';
 import { SpaceNewsTicker } from './components/SpaceNewsTicker';
 import { Radar3D } from './components/Radar3D';
 import { QuizOverlay } from './components/QuizOverlay';
-import { SpectrumPanel } from './components/SpectrumPanel';
 import { VRGallery } from './components/VRGallery';
 import { StellariumSky } from './components/StellariumSky';
+import {
+  IconStar, IconTelescope, IconGallery, IconRadar, IconSearch,
+  IconPlus, IconMinus, IconPin, IconSelect, IconRuler,
+  IconMagnify, IconBlackhole, IconRocket, IconExpand,
+  IconPanel, IconBrain, IconTour
+} from './components/Icons';
 
 // HUD Components
 import { TopHUD } from './components/layout/TopHUD';
@@ -458,115 +460,94 @@ function App() {
   const handleCopyText = (text: string) => { navigator.clipboard.writeText(text); alert("Đã sao chép vào bộ nhớ tạm!"); };
 
   const controls = [
-    { label: "+", action: handleZoomIn, title: "Phóng to", type: "zoomIn" },
-    { label: "-", action: handleZoomOut, title: "Thu nhỏ", type: "zoomOut" },
-    { label: "📍", action: () => setInteractionMode(interactionMode === 'mark' ? 'none' : 'mark'), title: "Ghim địa điểm (Click)", type: "mark" },
-    { label: "🔲", action: () => setInteractionMode(interactionMode === 'select' ? 'none' : 'select'), title: "Khoanh vùng (Drag chuột)", type: "select" },
-    { label: "📏", action: () => setInteractionMode(interactionMode === 'measure' ? 'none' : 'measure'), title: "Thước đo quang sai (Drag chuột)", type: "measure" },
-    { label: "🔍", action: () => setInteractionMode(interactionMode === 'magnify' ? 'none' : 'magnify'), title: "Kính lúp phân tích vật chất", type: "magnify" },
-    { label: "🕳️", action: () => setInteractionMode(interactionMode === 'blackhole' ? 'none' : 'blackhole'), title: "Kính lúp hố đen (Gravitational Lensing)", type: "blackhole" },
-    { label: "🚀", action: () => setIsCockpitMode(!isCockpitMode), title: "Chế độ buồng lái phi thuyền", type: "cockpit" },
-    { label: "⛶", action: handleToggleFullScreen, title: "Toàn màn hình", type: "fullScreen" },
+    { icon: <IconPlus size={16} />, action: handleZoomIn, title: "Zoom In", type: "zoomIn" },
+    { icon: <IconMinus size={16} />, action: handleZoomOut, title: "Zoom Out", type: "zoomOut" },
+    { icon: <IconPin size={16} />, action: () => setInteractionMode(interactionMode === 'mark' ? 'none' : 'mark'), title: "Pin Location", type: "mark" },
+    { icon: <IconSelect size={16} />, action: () => setInteractionMode(interactionMode === 'select' ? 'none' : 'select'), title: "Select Region", type: "select" },
+    { icon: <IconRuler size={16} />, action: () => setInteractionMode(interactionMode === 'measure' ? 'none' : 'measure'), title: "Measure Distance", type: "measure" },
+    { icon: <IconMagnify size={16} />, action: () => setInteractionMode(interactionMode === 'magnify' ? 'none' : 'magnify'), title: "Spectrum Analyzer", type: "magnify" },
+    { icon: <IconBlackhole size={16} />, action: () => setInteractionMode(interactionMode === 'blackhole' ? 'none' : 'blackhole'), title: "Gravitational Lensing", type: "blackhole" },
+    { icon: <IconRocket size={16} />, action: () => setIsCockpitMode(!isCockpitMode), title: "Cockpit Mode", type: "cockpit" },
+    { icon: <IconExpand size={16} />, action: handleToggleFullScreen, title: "Fullscreen", type: "fullScreen" },
   ];
 
   const dockItems = [
-    { id: 'stellarium', label: 'Kính Stellarium', icon: '🌌', isActive: activeLayer === 'stellarium', onClick: () => setActiveLayer('stellarium') },
-    { id: 'deepsky', label: 'Kính JWST (Deep Sky)', icon: '🔭', isActive: activeLayer === 'deepsky', onClick: () => setActiveLayer('deepsky') },
-    { id: 'vrgallery', label: 'Triển Lãm VR', icon: '🏛️', isActive: activeLayer === 'vrgallery', onClick: () => setActiveLayer('vrgallery') },
-    { id: 'radar', label: 'Radar 3D', icon: '🌐', isActive: activeLayer === 'radar', onClick: () => setActiveLayer('radar') }
+    { id: 'stellarium', label: 'Stellarium Sky', icon: <IconStar size={20} />, isActive: activeLayer === 'stellarium', onClick: () => setActiveLayer('stellarium') },
+    { id: 'deepsky', label: 'JWST Deep Sky', icon: <IconTelescope size={20} />, isActive: activeLayer === 'deepsky', onClick: () => setActiveLayer('deepsky') },
+    { id: 'vrgallery', label: 'VR Gallery', icon: <IconGallery size={20} />, isActive: activeLayer === 'vrgallery', onClick: () => setActiveLayer('vrgallery') },
+    { id: 'radar', label: 'Radar 3D', icon: <IconRadar size={20} />, isActive: activeLayer === 'radar', onClick: () => setActiveLayer('radar') }
   ];
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 font-sans overflow-hidden relative">
-      {/* Landing Page - Holographic Space Tech UI */}
+    <div className="flex flex-col h-screen w-screen overflow-hidden relative" style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', fontFamily: 'var(--font-body)' }}>
+      {/* Landing Page */}
       {!isExploring && (
-        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-[#0B0F19] overflow-hidden">
-          {/* Animated Background Grids & Stars */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-[#0B0F19] to-black opacity-80"></div>
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)]"></div>
+        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--color-bg)' }}>
+          {/* Background */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,255,0.03),transparent_70%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]" />
           
-          <div className="relative z-10 flex flex-col items-center w-full max-w-4xl px-4">
-            {/* Telemetry Header */}
-            <div className="flex items-center gap-4 text-cyan-500/50 font-mono text-xs tracking-[0.3em] mb-8 animate-pulse">
-              <span>[</span>
-              <span>SYSTEM.CORE.ONLINE</span>
-              <span className="w-12 h-[1px] bg-cyan-500/30"></span>
-              <span>AWAITING.COMMAND</span>
-              <span>]</span>
+          <div className="relative z-10 flex flex-col items-center w-full max-w-3xl px-6">
+            {/* Status */}
+            <div className="flex items-center gap-3 mb-10" style={{ fontFamily: 'var(--font-mono)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" style={{ animation: 'pulse-glow 2s infinite' }} />
+              <span className="text-[11px] text-slate-500 tracking-[0.2em]">SYSTEM READY</span>
             </div>
 
-            {/* Main Title */}
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4 text-center">
-              <span className="text-transparent bg-clip-text bg-gradient-to-br from-blue-400 via-cyan-200 to-white drop-shadow-[0_0_30px_rgba(34,211,238,0.4)]">
-                JWST 
+            {/* Title */}
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-3 text-center" style={{ fontFamily: 'var(--font-heading)' }}>
+              <span className="text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 via-white to-slate-300">
+                JWST Explorer
               </span>
-              <span className="text-white ml-4">EXPLORER</span>
             </h1>
-            <p className="text-slate-400 font-mono text-sm md:text-base tracking-widest mb-12 text-center max-w-2xl">
-              HỆ THỐNG TRUY XUẤT DỮ LIỆU KHÔNG GIAN SÂU TỪ NASA MAST
+            <p className="text-slate-500 text-sm md:text-base tracking-wide mb-14 text-center max-w-lg" style={{ fontFamily: 'var(--font-body)' }}>
+              Deep Space Data Retrieval System — NASA MAST
             </p>
 
-            {/* Search Interface */}
-            <div className="relative w-full max-w-2xl group" ref={searchContainerRef}>
-              {/* Decorative HUD corners */}
-              <div className="absolute -top-2 -left-2 w-4 h-4 border-t-2 border-l-2 border-cyan-500/50 transition-all group-hover:border-cyan-400 group-hover:-top-3 group-hover:-left-3"></div>
-              <div className="absolute -top-2 -right-2 w-4 h-4 border-t-2 border-r-2 border-cyan-500/50 transition-all group-hover:border-cyan-400 group-hover:-top-3 group-hover:-right-3"></div>
-              <div className="absolute -bottom-2 -left-2 w-4 h-4 border-b-2 border-l-2 border-cyan-500/50 transition-all group-hover:border-cyan-400 group-hover:-bottom-3 group-hover:-left-3"></div>
-              <div className="absolute -bottom-2 -right-2 w-4 h-4 border-b-2 border-r-2 border-cyan-500/50 transition-all group-hover:border-cyan-400 group-hover:-bottom-3 group-hover:-right-3"></div>
-
-              <form onSubmit={handleSearchSubmit} className="flex w-full bg-slate-900/50 backdrop-blur-xl border border-cyan-500/30 shadow-[0_0_30px_rgba(6,182,212,0.15)] relative">
-                <div className="flex items-center pl-6 text-cyan-400 font-mono animate-pulse">{'>'}</div>
+            {/* Search */}
+            <div className="relative w-full max-w-xl" ref={searchContainerRef}>
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+                <div className="absolute left-4 text-slate-500"><IconSearch size={16} /></div>
                 <input 
                   type="text" 
-                  className="w-full px-4 py-5 bg-transparent text-lg font-mono focus:outline-none text-cyan-50 placeholder-slate-500 tracking-wide" 
-                  placeholder="NHẬP TỌA ĐỘ HOẶC TÊN THIÊN THỂ (VD: M101, ORION...)" 
+                  className="input-hud w-full pl-11 pr-24 py-4 rounded-xl text-sm"
+                  placeholder="Search target (M101, Orion, Carina...)" 
                   value={searchQuery} 
                   onChange={handleInputChange} 
                   onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} 
                 />
-                <button type="submit" className="px-8 py-5 bg-cyan-950/50 hover:bg-cyan-900 text-cyan-400 font-bold font-mono tracking-widest border-l border-cyan-500/30 transition-all hover:shadow-[inset_0_0_20px_rgba(6,182,212,0.5)]">
-                  INITIATE
+                <button type="submit" className="absolute right-2 top-2 bottom-2 px-5 bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold tracking-wider" style={{ fontFamily: 'var(--font-mono)' }}>
+                  SCAN
                 </button>
               </form>
               
-              {showSuggestions && (
-                <div className="absolute top-full left-0 w-full mt-4 bg-slate-900/90 backdrop-blur-xl border border-cyan-500/30 shadow-[0_10px_40px_rgba(0,0,0,0.8)] z-50">
-                  {filteredSuggestions.length > 0 ? (
-                    <ul className="max-h-60 overflow-y-auto custom-scrollbar font-mono text-sm">
-                      {filteredSuggestions.map((suggestion, idx) => ( 
-                        <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-6 py-3 hover:bg-cyan-900/50 cursor-pointer border-b border-cyan-500/10 last:border-0 text-cyan-100 transition-colors flex items-center gap-3">
-                          <span className="text-cyan-500">[{idx < 9 ? '0'+(idx+1) : idx+1}]</span> {suggestion}
-                        </li> 
-                      ))}
-                    </ul>
-                  ) : ( <div className="px-6 py-4 text-slate-500 font-mono text-sm italic">Đang quét cơ sở dữ liệu... Không tìm thấy kết quả.</div> )}
+              {showSuggestions && filteredSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 w-full mt-2 hud-panel rounded-xl overflow-hidden shadow-2xl z-50">
+                  <ul className="max-h-60 overflow-y-auto custom-scrollbar py-1" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {filteredSuggestions.map((suggestion, idx) => ( 
+                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-4 py-2.5 hover:bg-slate-800/60 cursor-pointer text-slate-300 hover:text-cyan-300 transition-colors flex items-center gap-3 text-xs border-b border-slate-800/30 last:border-0">
+                        <span className="text-cyan-600 text-[10px] w-5">{String(idx + 1).padStart(2, '0')}</span> {suggestion}
+                      </li> 
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
 
-            {/* Quick Actions */}
-            <div className="mt-12 flex flex-wrap justify-center gap-4">
-              <button onClick={() => setIsExploring(true)} className="group relative px-6 py-2 bg-transparent overflow-hidden">
-                <div className="absolute inset-0 border border-slate-700 group-hover:border-cyan-500/50 transition-colors"></div>
-                <div className="absolute inset-0 bg-slate-800/30 translate-y-full group-hover:translate-y-0 transition-transform"></div>
-                <span className="relative font-mono text-xs text-slate-400 group-hover:text-cyan-300 tracking-widest transition-colors flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-slate-600 group-hover:bg-cyan-400 animate-pulse"></span>
-                  TRUY CẬP TRẠM ĐIỀU KHIỂN (BỎ QUA TÌM KIẾM)
-                </span>
-              </button>
-            </div>
+            {/* Skip to explorer */}
+            <button onClick={() => setIsExploring(true)} className="mt-10 btn-ghost rounded-lg px-6 py-2.5 cursor-pointer flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
+              <span className="text-xs tracking-wider">Skip to Mission Control</span>
+            </button>
           </div>
           
-          {/* Bottom Telemetry Footer */}
-          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end text-slate-600 font-mono text-[10px] pointer-events-none">
-            <div className="flex flex-col gap-1">
-              <span>LAT: 28.5721° N, LON: 80.6480° W</span>
-              <span>UPLINK: SECURE | ENCRYPTION: QUANTUM-256</span>
+          {/* Footer */}
+          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
+            <div className="flex flex-col gap-0.5 text-[10px] text-slate-700">
+              <span>VIFOTEC 2026</span>
             </div>
-            <div className="text-right">
-              <span>VIFOTEC 2026 EDITION</span>
-              <br/>
-              <span className="text-cyan-700">UI/UX PRO MAX ENGINE</span>
+            <div className="text-right text-[10px] text-slate-700">
+              <span>Powered by NASA MAST + Gemini AI</span>
             </div>
           </div>
         </div>
@@ -655,9 +636,10 @@ function App() {
             showSuggestions={showSuggestions}
             onSuggestionClick={handleSuggestionClick}
             onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }}
+            activeLayer={activeLayer}
           />
 
-          {/* Bottom HUD - Apple Dock Style */}
+          {/* Bottom HUD - View Switcher Dock */}
           {bottomDockOpen && <BottomDock items={dockItems} />}
 
           {/* Left Floating Panel - Tools & Controls */}
@@ -709,24 +691,26 @@ function App() {
             />
           </FloatingPanel>
 
-          {/* HUD Toggle Controls */}
-          <div className="absolute bottom-6 left-6 z-50 flex gap-2">
+          {/* Panel Toggle Controls */}
+          <div className="absolute bottom-20 left-3 z-50 flex flex-col gap-2">
             <button 
               onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-              className={`w-10 h-10 rounded-full backdrop-blur flex items-center justify-center border transition-colors ${leftPanelOpen ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:text-white'}`}
-              title="Tắt/Bật bảng trái"
+              className={`btn-icon rounded-lg cursor-pointer ${leftPanelOpen ? 'active' : ''}`}
+              title="Toggle Tools Panel"
+              aria-label="Toggle tools panel"
             >
-              🛠️
+              <IconPanel size={16} />
             </button>
           </div>
 
-          <div className="absolute bottom-6 right-6 z-50 flex gap-2">
+          <div className="absolute bottom-20 right-3 z-50 flex flex-col gap-2">
             <button 
               onClick={() => setRightPanelOpen(!rightPanelOpen)}
-              className={`w-10 h-10 rounded-full backdrop-blur flex items-center justify-center border transition-colors ${rightPanelOpen ? 'bg-blue-500/20 border-blue-500/50 text-blue-400' : 'bg-slate-900/50 border-slate-700 text-slate-400 hover:text-white'}`}
-              title="Tắt/Bật Trợ lý AI"
+              className={`btn-icon rounded-lg cursor-pointer ${rightPanelOpen ? 'active' : ''}`}
+              title="Toggle AI Assistant"
+              aria-label="Toggle AI assistant"
             >
-              🤖
+              <IconBrain size={16} />
             </button>
           </div>
           

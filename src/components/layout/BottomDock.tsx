@@ -3,7 +3,7 @@ import React from 'react';
 interface DockItem {
   id: string;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   isActive: boolean;
   onClick: () => void;
 }
@@ -14,39 +14,45 @@ interface BottomDockProps {
 
 export const BottomDock: React.FC<BottomDockProps> = ({ items }) => {
   return (
-    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 ease-out font-mono">
-      <div className="bg-[#0B0F19]/80 backdrop-blur-3xl border-t border-l border-r border-cyan-500/40 p-2 flex items-center gap-1 shadow-[0_0_30px_rgba(34,211,238,0.2)] relative">
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-300"></div>
-        <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-300"></div>
-
+    <nav 
+      className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[100]"
+      role="tablist"
+      aria-label="View switcher"
+    >
+      <div className="hud-panel rounded-xl px-2 py-1.5 flex items-center gap-1">
         {items.map((item) => (
           <button
             key={item.id}
             onClick={item.onClick}
+            role="tab"
+            aria-selected={item.isActive}
+            aria-label={item.label}
             className={`
               relative group flex flex-col items-center justify-center
-              w-14 h-14 md:w-20 md:h-16 transition-all duration-300
-              ${item.isActive ? 'bg-cyan-600/30 border border-cyan-400 shadow-[inset_0_0_15px_rgba(34,211,238,0.4)]' : 'bg-cyan-950/20 border border-cyan-900/50 hover:bg-cyan-900/50 hover:border-cyan-500/50'}
+              w-14 h-12 md:w-16 md:h-12 rounded-lg cursor-pointer
+              transition-all duration-200
+              ${item.isActive 
+                ? 'bg-cyan-500/15 border border-cyan-500/40 text-cyan-300 shadow-[0_0_12px_rgba(0,255,255,0.1)]' 
+                : 'bg-transparent border border-transparent text-slate-500 hover:bg-slate-800/50 hover:text-slate-300'}
             `}
           >
-            <span className={`text-xl md:text-2xl transition-transform duration-300 ${item.isActive ? 'scale-110 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'group-hover:scale-110 group-hover:-translate-y-1 opacity-70 group-hover:opacity-100'}`}>
+            <span className={`transition-transform duration-200 ${item.isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
               {item.icon}
             </span>
             
-            {/* Active Indicator */}
+            {/* Active dot */}
             {item.isActive && (
-              <span className="absolute bottom-1 w-8 h-1 bg-cyan-400 shadow-[0_0_10px_#22d3ee]" />
+              <span className="absolute -bottom-0.5 w-5 h-0.5 rounded-full bg-cyan-400" />
             )}
 
             {/* Tooltip */}
-            <div className="absolute -top-12 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-200 bg-[#0B0F19]/95 border border-cyan-500/50 text-cyan-300 text-[10px] uppercase tracking-widest font-bold px-3 py-1.5 whitespace-nowrap pointer-events-none shadow-[0_0_15px_rgba(34,211,238,0.3)]">
+            <div className="absolute -top-10 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-150 hud-panel rounded-md text-slate-300 text-[10px] px-2.5 py-1 whitespace-nowrap pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
               {item.label}
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#0B0F19] border-b border-r border-cyan-500/50 rotate-45"></div>
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-[#12121A] border-b border-r border-slate-700/50 rotate-45" />
             </div>
           </button>
         ))}
       </div>
-    </div>
+    </nav>
   );
 };
