@@ -12,6 +12,13 @@ import { SpectrumPanel } from './components/SpectrumPanel';
 import { VRGallery } from './components/VRGallery';
 import { StellariumSky } from './components/StellariumSky';
 
+// HUD Components
+import { TopHUD } from './components/layout/TopHUD';
+import { BottomDock } from './components/layout/BottomDock';
+import { FloatingPanel } from './components/layout/FloatingPanel';
+import { LeftHUD } from './components/layout/LeftHUD';
+import { RightHUD } from './components/layout/RightHUD';
+
 function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isExploring, setIsExploring] = useState<boolean>(false);
