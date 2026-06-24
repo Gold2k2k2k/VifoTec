@@ -28,8 +28,9 @@ function App() {
   // Session & UI Management
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>('');
-  const [showSessionSidebar, setShowSessionSidebar] = useState<boolean>(false);
-  const [showAiSidebar, setShowAiSidebar] = useState<boolean>(false);
+  const [leftPanelOpen, setLeftPanelOpen] = useState<boolean>(true);
+  const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(true);
+  const [bottomDockOpen, setBottomDockOpen] = useState<boolean>(true);
 
   // File Upload QA & Voice
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -60,9 +61,7 @@ function App() {
   // Feature States
   const [showQuiz, setShowQuiz] = useState(false);
   const [badges, setBadges] = useState<string[]>([]);
-  const [showRadar, setShowRadar] = useState(false);
-  const [showVRGallery, setShowVRGallery] = useState(false);
-  const [showStellarium, setShowStellarium] = useState(false);
+  const [activeLayer, setActiveLayer] = useState<string>('deepsky');
 
   // Data Sonification State
   const [isSonifying, setIsSonifying] = useState(false);
