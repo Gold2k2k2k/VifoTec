@@ -118,9 +118,10 @@ const eqToHoriz = (raHours: number, decDegrees: number, lstDegrees: number, latD
 interface StellariumSkyProps {
   onClose: () => void;
   onSelectObject?: (name: string, type: string, details: string) => void;
+  isVisible?: boolean;
 }
 
-export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectObject }) => {
+export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectObject, isVisible = true }) => {
   const [useOfficialEngine, setUseOfficialEngine] = useState<boolean>(true);
   const [showControlsMobile, setShowControlsMobile] = useState<boolean>(false);
   const [isAREnabled, setIsAREnabled] = useState<boolean>(false);
@@ -1485,7 +1486,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   };
 
   return (
-    <div className="absolute inset-0 bg-slate-950 flex flex-col z-40 overflow-hidden font-sans text-slate-200">
+    <div className={`absolute inset-0 bg-slate-950 flex flex-col z-40 overflow-hidden font-sans text-slate-200 ${!isVisible ? 'hidden' : ''}`}>
       {/* Header Controls */}
       <header className="flex flex-col md:flex-row items-start md:items-center justify-between p-2 md:p-3 bg-slate-900/90 backdrop-blur border-b border-slate-800 z-50 gap-2 md:gap-0">
         <div className="flex flex-wrap md:flex-nowrap items-center gap-2 md:gap-3 w-full md:w-auto">
