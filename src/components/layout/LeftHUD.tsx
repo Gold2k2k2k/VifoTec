@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { SpectrumPanel } from '../SpectrumPanel';
 import { SpectrumMode } from '../../data';
 
@@ -22,14 +22,37 @@ interface LeftHUDProps {
   badges: string[];
 }
 
+type TabType = 'IMAGE' | 'ANALYSIS' | 'TOOLS';
+
 export const LeftHUD: React.FC<LeftHUDProps> = ({
   activeLayer, dziUrl, filters, setFilters, handleDownload, isSonifying, toggleSonification, generateCitizenReport,
   spectrumMode, setSpectrumMode, timeMachineYear, setTimeMachineYear, controls, interactionMode, isCockpitMode, setShowQuiz, badges
 }) => {
+  const [activeTab, setActiveTab] = useState<TabType>('IMAGE');
+
   return (
     <div className="flex flex-col gap-3 font-mono">
-      {/* Quick Tools for Deep Sky */}
+      {/* Tabs Navigation */}
       {activeLayer === 'deepsky' && dziUrl && (
+        <div className="flex w-full bg-slate-900/50 backdrop-blur border border-cyan-500/30 p-1">
+          {(['IMAGE', 'ANALYSIS', 'TOOLS'] as TabType[]).map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 py-1.5 text-[9px] font-bold tracking-widest transition-colors ${
+                activeTab === tab
+                  ? 'bg-cyan-600/40 text-cyan-100 shadow-[inset_0_0_10px_rgba(34,211,238,0.3)]'
+                  : 'text-slate-400 hover:text-cyan-300 hover:bg-slate-800/50'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Tab Content: IMAGE */}
+      {activeLayer === 'deepsky' && dziUrl && activeTab === 'IMAGE' && (
         <div className="flex flex-col gap-3">
           {/* Image Analysis Bento Box */}
           <div className="bg-[#0B0F19]/60 p-3 rounded-none border border-cyan-500/30 backdrop-blur shadow-[0_0_15px_rgba(6,182,212,0.1)] relative">
@@ -43,21 +66,26 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
             
             <div className="mb-2">
               <div className="flex justify-between text-cyan-700 text-[9px] mb-1 tracking-widest"><span>BRIGHTNESS</span><span className="text-cyan-300">[{filters.brightness}%]</span></div>
-              <input type="range" min="50" max="200" value={filters.brightness} onChange={e => setFilters({...filters, brightness: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none" />
+              <input type="range" min="50" max="200" value={filters.brightness} onChange={e => setFilters({...filters, brightness: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none cursor-ew-resize" />
             </div>
             <div className="mb-2">
               <div className="flex justify-between text-cyan-700 text-[9px] mb-1 tracking-widest"><span>CONTRAST</span><span className="text-cyan-300">[{filters.contrast}%]</span></div>
-              <input type="range" min="50" max="200" value={filters.contrast} onChange={e => setFilters({...filters, contrast: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none" />
+              <input type="range" min="50" max="200" value={filters.contrast} onChange={e => setFilters({...filters, contrast: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none cursor-ew-resize" />
             </div>
             <div className="mb-4">
               <div className="flex justify-between text-cyan-700 text-[9px] mb-1 tracking-widest"><span>SATURATION</span><span className="text-cyan-300">[{filters.saturate}%]</span></div>
-              <input type="range" min="0" max="200" value={filters.saturate} onChange={e => setFilters({...filters, saturate: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none" />
+              <input type="range" min="0" max="200" value={filters.saturate} onChange={e => setFilters({...filters, saturate: parseInt(e.target.value)})} className="w-full accent-cyan-500 h-[2px] bg-cyan-950 appearance-none cursor-ew-resize" />
             </div>
             <button onClick={handleDownload} className="w-full bg-cyan-950/50 hover:bg-cyan-900 border border-cyan-500/50 text-cyan-300 py-1.5 font-bold tracking-widest transition-all text-[10px] uppercase shadow-[inset_0_0_10px_rgba(6,182,212,0.2)] flex items-center justify-center gap-2">
               [ CAPTURE_DATA ]
             </button>
           </div>
+        </div>
+      )}
 
+      {/* Tab Content: ANALYSIS */}
+      {activeLayer === 'deepsky' && dziUrl && activeTab === 'ANALYSIS' && (
+        <div className="flex flex-col gap-3">
           {/* Audio & Report Bento Box */}
           <div className="bg-[#0B0F19]/60 p-3 rounded-none border border-cyan-500/30 backdrop-blur shadow-[0_0_15px_rgba(6,182,212,0.1)] relative">
             <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-400"></div>
@@ -82,8 +110,8 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
         </div>
       )}
 
-      {/* Tool Grid Bento Box */}
-      {activeLayer === 'deepsky' && (
+      {/* Tab Content: TOOLS */}
+      {activeLayer === 'deepsky' && dziUrl && activeTab === 'TOOLS' && (
         <div className="bg-[#0B0F19]/60 p-3 rounded-none border border-cyan-500/30 backdrop-blur shadow-[0_0_15px_rgba(6,182,212,0.1)] relative">
             <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-400"></div>
             
@@ -102,7 +130,7 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
       )}
 
       {/* Quiz Button */}
-      <button onClick={() => setShowQuiz(true)} className="w-full relative group overflow-hidden bg-[#0B0F19]/80 border border-purple-500/50 py-3 text-[10px] font-bold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] uppercase tracking-widest">
+      <button onClick={() => setShowQuiz(true)} className="w-full relative group overflow-hidden bg-[#0B0F19]/80 border border-purple-500/50 py-3 text-[10px] font-bold flex items-center justify-center gap-2 transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.4)] uppercase tracking-widest mt-2">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(168,85,247,0.2),transparent)] translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
         <span className="w-1.5 h-1.5 bg-purple-500 group-hover:animate-ping"></span>
         <span className="relative z-10 text-purple-400 group-hover:text-purple-200 transition-colors">INITIATE.TRAINING.SIM</span>
@@ -110,7 +138,7 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
       
       {/* Badge display */}
       {badges.length > 0 && (
-        <div className="bg-[#0B0F19]/60 p-3 border border-cyan-500/30 flex flex-wrap gap-2 justify-center backdrop-blur relative">
+        <div className="bg-[#0B0F19]/60 p-3 border border-cyan-500/30 flex flex-wrap gap-2 justify-center backdrop-blur relative mt-2">
           <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-cyan-400"></div>
           {badges.map((b, i) => <span key={i} title={b} className="text-2xl drop-shadow-[0_0_10px_rgba(34,211,238,0.6)] hover:scale-110 transition-transform cursor-help">🎖️</span>)}
         </div>

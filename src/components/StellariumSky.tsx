@@ -1555,6 +1555,13 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
             allowFullScreen
             allow="geolocation"
           />
+          {/* Overlay to block the mobile app prompt from Stellarium Web */}
+          <div className="absolute top-0 left-0 w-full h-[60px] bg-slate-950 z-50 md:hidden flex items-center justify-center border-b border-cyan-500/30">
+            <div className="flex items-center gap-2 text-cyan-500 font-mono text-[10px] tracking-widest animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+              VIFOTEC HUB LINK ACTIVE
+            </div>
+          </div>
         </div>
       ) : (
         <div className="flex-1 flex relative overflow-hidden">
