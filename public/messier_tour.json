@@ -1,0 +1,442 @@
+[
+  {
+    "id": "M1",
+    "text": "Supernova remnant - Taurus - Winter"
+  },
+  {
+    "id": "M2",
+    "text": "Globular Cluster - Aquarius - Autumn / Early Winter"
+  },
+  {
+    "id": "M3",
+    "text": "Globular Cluster - Canes Venatici - Early Spring"
+  },
+  {
+    "id": "M4",
+    "text": "Globular Cluster - Scorpio - Mid-Summer"
+  },
+  {
+    "id": "M5",
+    "text": "Globular Cluster - Serpens Caput - Mid-Summer"
+  },
+  {
+    "id": "M6",
+    "text": "Open Cluster - Scorpius - Mid-Summer"
+  },
+  {
+    "id": "M7",
+    "text": "Open Cluster - Scorpius - Mid-Summer"
+  },
+  {
+    "id": "M8",
+    "text": "Lagoon Nebula - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M9",
+    "text": "Globular Cluster - Ophiucus - Mid-Summer"
+  },
+  {
+    "id": "M10",
+    "text": "Globular Cluster - Ophiucus - Mid-Summer"
+  },
+  {
+    "id": "M11",
+    "text": "Open Cluster - Scutum - Late Summer"
+  },
+  {
+    "id": "M12",
+    "text": "Globular Cluster - Ophiucus - Mid-Summer"
+  },
+  {
+    "id": "M13",
+    "text": "Globular Cluster - Hercules - Mid-Summer"
+  },
+  {
+    "id": "M14",
+    "text": "Globular Cluster - Ophiucus - Mid-Summer"
+  },
+  {
+    "id": "M15",
+    "text": "Globular Cluster - Pegasus - Autumn / Early Winter"
+  },
+  {
+    "id": "M16",
+    "text": "Open Cluster - Serpens Claudia - Late Summer"
+  },
+  {
+    "id": "M17",
+    "text": "Diffuse Nebula - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M18",
+    "text": "Open Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M19",
+    "text": "Globular Cluster - Ophiucus - Mid-Summer"
+  },
+  {
+    "id": "M20",
+    "text": "Trifid Nebula - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M21",
+    "text": "Open Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M22",
+    "text": "Globular Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M23",
+    "text": "Open Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M24",
+    "text": "Star Cloud - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M25",
+    "text": "Open Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M26",
+    "text": "Open Cluster - Scutum - Late Summer"
+  },
+  {
+    "id": "M27",
+    "text": "Planetary Nebula - Vulpecula - Autumn / Early Winter"
+  },
+  {
+    "id": "M28",
+    "text": "Globular Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M29",
+    "text": "Open Cluster - Cygnus - Autumn / Early Winter"
+  },
+  {
+    "id": "M30",
+    "text": "Globular Cluster - Capricornus - Autumn / Early Winter"
+  },
+  {
+    "id": "M31",
+    "text": "Spiral Galaxy - Andromeda - Winter"
+  },
+  {
+    "id": "M32",
+    "text": "Elliptical Galaxy - Andromeda - Winter"
+  },
+  {
+    "id": "M33",
+    "text": "Spiral Galaxy - Triangulum - Winter"
+  },
+  {
+    "id": "M34",
+    "text": "Open Cluster - Perseus - Winter"
+  },
+  {
+    "id": "M35",
+    "text": "Open Cluster - Gemini - Winter"
+  },
+  {
+    "id": "M36",
+    "text": "Open Cluster - Auriga - Winter"
+  },
+  {
+    "id": "M37",
+    "text": "Open Cluster - Auriga - Winter"
+  },
+  {
+    "id": "M38",
+    "text": "Open Cluster - Auriga - Winter"
+  },
+  {
+    "id": "M39",
+    "text": "Open Cluster - Cygnus - Autumn / Early Winter"
+  },
+  {
+    "id": "M40",
+    "text": "Double Star - Ursa Major - Early Spring"
+  },
+  {
+    "id": "M41",
+    "text": "Open Cluster - Canis Major - Winter"
+  },
+  {
+    "id": "M42",
+    "text": "Diffuse Nebula - Orion - Winter"
+  },
+  {
+    "id": "M43",
+    "text": "Diffuse Nebula - Orion - Winter"
+  },
+  {
+    "id": "M44",
+    "text": "Open Cluster - Cancer - Early Spring"
+  },
+  {
+    "id": "M45",
+    "text": "Open Cluster - Taurus - Winter"
+  },
+  {
+    "id": "M46",
+    "text": "Open Cluster - Puppis - Winter"
+  },
+  {
+    "id": "M47",
+    "text": "Open Cluster - Puppis - Winter"
+  },
+  {
+    "id": "M48",
+    "text": "Open Cluster - Hydra - Early Spring"
+  },
+  {
+    "id": "M49",
+    "text": "Elliptical Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M50",
+    "text": "Open Cluster - Monocerus - Winter"
+  },
+  {
+    "id": "M51",
+    "text": "Spiral Galaxy - Ursa Major - Early Spring"
+  },
+  {
+    "id": "M52",
+    "text": "Open Cluster - Cassiopea - Winter"
+  },
+  {
+    "id": "M53",
+    "text": "Globular Cluster - Coma Berenices - Late Spring"
+  },
+  {
+    "id": "M54",
+    "text": "Globular Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M55",
+    "text": "Globular Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M56",
+    "text": "Globular Cluster - Lyra - Autumn / Early Winter"
+  },
+  {
+    "id": "M57",
+    "text": "Planetary Nebula - Lyra - Autumn / Early Winter"
+  },
+  {
+    "id": "M58",
+    "text": "Spiral Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M59",
+    "text": "Elliptical Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M60",
+    "text": "Elliptical Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M61",
+    "text": "Spiral Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M62",
+    "text": "Globular Cluster - Ophiucus - Mid-Summer"
+  },
+  {
+    "id": "M63",
+    "text": "Spiral Galaxy - Canes Venatici - Early Spring"
+  },
+  {
+    "id": "M64",
+    "text": "Spiral Galaxy - Coma Berenices - Late Spring"
+  },
+  {
+    "id": "M65",
+    "text": "Spiral Galaxy - Leo - Early Spring"
+  },
+  {
+    "id": "M66",
+    "text": "Spiral Galaxy - Leo - Early Spring"
+  },
+  {
+    "id": "M67",
+    "text": "Open Cluster - Cancer - Early Spring"
+  },
+  {
+    "id": "M68",
+    "text": "Globular Cluster - Hydra - Late Spring"
+  },
+  {
+    "id": "M69",
+    "text": "Globular Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M70",
+    "text": "Globular Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M71",
+    "text": "Globular Cluster - Sagitta - Autumn / Early Winter"
+  },
+  {
+    "id": "M72",
+    "text": "Globular Cluster - Aquarius - Autumn / Early Winter"
+  },
+  {
+    "id": "M73",
+    "text": "Asterism - Aquarius - Autumn / Early Winter"
+  },
+  {
+    "id": "M74",
+    "text": "Spiral Galaxy - Pisces - Autumn / Early Winter"
+  },
+  {
+    "id": "M75",
+    "text": "Globular Cluster - Sagittarius - Late Summer"
+  },
+  {
+    "id": "M76",
+    "text": "Planetary Nebula - Perseus - Winter"
+  },
+  {
+    "id": "M77",
+    "text": "Spiral Galaxy - Cetus - Autumn / Early Winter"
+  },
+  {
+    "id": "M78",
+    "text": "Diffuse Nebula - Orion - Winter"
+  },
+  {
+    "id": "M79",
+    "text": "Globular Cluster - Lepus - Winter"
+  },
+  {
+    "id": "M80",
+    "text": "Globular Cluster - Scorpius - Mid-Summer"
+  },
+  {
+    "id": "M81",
+    "text": "Spiral Galaxy - Ursa Major - Early Spring"
+  },
+  {
+    "id": "M82",
+    "text": "Irregular Galaxy - Ursa Major - Late Spring"
+  },
+  {
+    "id": "M83",
+    "text": "Spiral Galaxy - Hydra - Mid-Summer"
+  },
+  {
+    "id": "M84",
+    "text": "Lenticular (S0) Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M85",
+    "text": "Lenticular (S0) Galaxy - Coma Berenices - Late Spring"
+  },
+  {
+    "id": "M86",
+    "text": "Lenticular (S0) Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M87",
+    "text": "Elliptical Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M88",
+    "text": "Spiral Galaxy - Coma Berenices - Late Spring"
+  },
+  {
+    "id": "M89",
+    "text": "Elliptical Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M90",
+    "text": "Spiral Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M91",
+    "text": "Spiral Galaxy - Coma Berenices - Late Spring"
+  },
+  {
+    "id": "M92",
+    "text": "Globular Cluster - Hercules - Mid-Summer"
+  },
+  {
+    "id": "M93",
+    "text": "Open Cluster - Puppis - Winter"
+  },
+  {
+    "id": "M94",
+    "text": "Spiral Galaxy - Canes Venatici - Early Spring"
+  },
+  {
+    "id": "M95",
+    "text": "Spiral Galaxy - Leo - Early Spring"
+  },
+  {
+    "id": "M96",
+    "text": "Spiral Galaxy - Leo - Early Spring"
+  },
+  {
+    "id": "M97",
+    "text": "Planetary Nebula - Ursa Major - Late Spring"
+  },
+  {
+    "id": "M98",
+    "text": "Spiral Galaxy - Coma Berenices - Late Spring"
+  },
+  {
+    "id": "M99",
+    "text": "Spiral Galaxy - Coma Berenices - Autumn / Early Winter"
+  },
+  {
+    "id": "M100",
+    "text": "Spiral Galaxy - Coma Berenices - Late Spring"
+  },
+  {
+    "id": "M101",
+    "text": "Spiral Galaxy - Ursa Major - Early Spring"
+  },
+  {
+    "id": "M102",
+    "text": "Lenticular (S0) Galaxy - Draco - Mid-Summer"
+  },
+  {
+    "id": "M103",
+    "text": "Open Cluster - Cassiopeia - Winter"
+  },
+  {
+    "id": "M104",
+    "text": "Spiral Galaxy - Virgo - Late Spring"
+  },
+  {
+    "id": "M105",
+    "text": "Elliptical Galaxy - Leo - Early Spring"
+  },
+  {
+    "id": "M106",
+    "text": "Spiral Galaxy - Ursa Major - Early Spring"
+  },
+  {
+    "id": "M107",
+    "text": "Globular Cluster - Ophiucus - Mid-Summer"
+  },
+  {
+    "id": "M108",
+    "text": "Spiral Galaxy - Ursa Major - Early Spring"
+  },
+  {
+    "id": "M109",
+    "text": "Spiral Galaxy - Ursa Major - Early Spring"
+  },
+  {
+    "id": "M110",
+    "text": "Elliptical Galaxy - Andromeda - Winter"
+  }
+]

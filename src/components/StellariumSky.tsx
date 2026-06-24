@@ -10,6 +10,7 @@ import {
   DSO,
   Planet
 } from '../data/stellariumData';
+import { STELLARIUM_TOURS } from '../stellarium_tours';
 
 // Keplerian Planet position calculator
 const computePlanetPosition = (planetId: string, d: number): { ra: number; dec: number } => {
@@ -174,6 +175,10 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [trackingSelected, setTrackingSelected] = useState<boolean>(false);
 
+  // Tour State
+  const [activeTour, setActiveTour] = useState<{ id: string, steps: {target: string, label: string}[], currentIndex: number } | null>(null);
+  const [tourSubtitle, setTourSubtitle] = useState<string | null>(null);
+
   // Animation values for smooth movement
   const targetYawRef = useRef<number>(lookYaw);
   const targetPitchRef = useRef<number>(lookPitch);
@@ -312,6 +317,35 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     enableAR();
     return () => window.removeEventListener('deviceorientation', handleOrientation);
   }, [isAREnabled]);
+
+  // Tour execution logic
+  useEffect(() => {
+    if (!activeTour) {
+      setTourSubtitle(null);
+      return;
+    }
+
+    const { steps, currentIndex } = activeTour;
+    if (currentIndex >= steps.length) {
+      // Tour finished
+      setActiveTour(null);
+      setTourSubtitle("Chuyến tham quan đã kết thúc.");
+      setTimeout(() => setTourSubtitle(null), 3000);
+      return;
+    }
+
+    const currentStep = steps[currentIndex];
+    // Trigger search to point camera
+    executeSearch(currentStep.target);
+    setTourSubtitle(`${currentStep.target}: ${currentStep.label}`);
+
+    // Wait 5 seconds before moving to next step
+    const timer = setTimeout(() => {
+      setActiveTour(prev => prev ? { ...prev, currentIndex: prev.currentIndex + 1 } : null);
+    }, 6000); // 6s per target
+
+    return () => clearTimeout(timer);
+  }, [activeTour]);
 
   // Geolocation trigger
   const handleGeolocation = () => {
@@ -1596,6 +1630,30 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
               </div>
             </div>
 
+            {/* Stellarium Tours */}
+            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
+              <h3 className="text-xs font-bold text-fuchsia-400 uppercase tracking-wider mb-2">🚀 Stellarium Tours</h3>
+              <div className="flex flex-col gap-1.5">
+                {Object.values(STELLARIUM_TOURS).map(tour => (
+                  <button
+                    key={tour.id}
+                    onClick={() => {
+                      if (activeTour && activeTour.id === tour.id) {
+                        setActiveTour(null);
+                        setTourSubtitle(null);
+                      } else {
+                        setActiveTour({ id: tour.id, steps: tour.steps, currentIndex: 0 });
+                      }
+                    }}
+                    className={`text-left px-2 py-1.5 rounded text-xs border transition-colors ${activeTour?.id === tour.id ? 'bg-fuchsia-900/50 border-fuchsia-500 text-fuchsia-200' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'}`}
+                  >
+                    <div className="font-bold">{tour.name}</div>
+                    <div className="text-[9px] opacity-70 truncate">{tour.description}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Layers and Settings */}
             <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
               <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3">🛠️ Tùy Chọn Lớp Hiển Thị</h3>
@@ -1684,6 +1742,20 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
               onTouchEnd={handleTouchEnd}
               onTouchCancel={handleTouchEnd}
             />
+
+            {/* Tour Subtitle Overlay */}
+            {tourSubtitle && (
+              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 w-11/12 max-w-2xl">
+                <div className="bg-slate-900/80 backdrop-blur-md border border-fuchsia-500/50 text-fuchsia-100 px-6 py-4 rounded-xl text-center shadow-[0_0_30px_rgba(217,70,239,0.2)] animate-pulse">
+                  <div className="text-[10px] uppercase tracking-widest text-fuchsia-400 mb-2 font-bold flex items-center justify-center gap-2">
+                    <span className="w-8 h-px bg-fuchsia-400/50"></span>
+                    🚀 CHUYẾN THAM QUAN STELLARIUM
+                    <span className="w-8 h-px bg-fuchsia-400/50"></span>
+                  </div>
+                  <div className="text-sm md:text-base font-medium">{tourSubtitle}</div>
+                </div>
+              </div>
+            )}
 
             {/* Compass Rose Mini Widget */}
             <div className="absolute bottom-4 right-4 bg-slate-900/90 border border-slate-700 rounded-lg p-2 flex flex-col gap-1 items-center z-20 pointer-events-none w-28 text-center text-[10px] font-mono shadow-2xl">
