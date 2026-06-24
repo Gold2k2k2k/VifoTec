@@ -193,10 +193,17 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   const stardroidStarsRef = useRef<number[][]>([]);
   const stardroidConstellationsRef = useRef<{name: string, lines: number[][][]}[]>([]);
 
+  // Gaia Map Cache
+  const gaiaMapImgRef = useRef<HTMLImageElement | null>(null);
+
   useEffect(() => {
     const img = new Image();
     img.src = '/trees_512.png';
     img.onload = () => { landscapeImgRef.current = img; };
+
+    const gaiaImg = new Image();
+    gaiaImg.src = '/mw_top.jpg'; // or gaiasky_static.jpg
+    gaiaImg.onload = () => { gaiaMapImgRef.current = gaiaImg; };
 
     fetch('/stardroid_stars.json')
       .then(res => res.json())
@@ -408,6 +415,34 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     }
     ctx.fillStyle = skyGradient;
     ctx.fillRect(0, 0, width, height);
+
+    // Gaia Sky AR Background
+    if (isAREnabled && gaiaMapImgRef.current) {
+      const img = gaiaMapImgRef.current;
+      ctx.save();
+      
+      const fovRatio = 360 / fov;
+      const imgWidth = width * fovRatio;
+      const imgHeight = img.height * (imgWidth / img.width);
+      
+      const wrapYaw = ((lookYaw % 360) + 360) % 360;
+      const xOffset = -(wrapYaw / 360) * imgWidth;
+      
+      // Pitch offset (assuming equirectangular)
+      const pitchRatio = lookPitch / 180;
+      const yOffset = pitchRatio * imgHeight;
+      
+      const drawY = (height / 2) - (imgHeight / 2) + yOffset;
+
+      ctx.globalAlpha = 0.5; // Blend with background
+      ctx.drawImage(img, xOffset + width / 2, drawY, imgWidth, imgHeight);
+      if (xOffset + width / 2 > 0) {
+        ctx.drawImage(img, xOffset + width / 2 - imgWidth, drawY, imgWidth, imgHeight);
+      } else {
+        ctx.drawImage(img, xOffset + width / 2 + imgWidth, drawY, imgWidth, imgHeight);
+      }
+      ctx.restore();
+    }
 
     // 3D Celestial to Camera projection helper
     const project = (az: number, alt: number): { x: number; y: number; visible: boolean } => {
@@ -1120,7 +1155,8 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     showTelescope,
     skyCulture,
     selectedObj,
-    stardroidMode
+    stardroidMode,
+    isAREnabled
   ]);
 
   // Object Selection Handler
@@ -1619,7 +1655,12 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
                   <span>Ống kính viễn vọng (Oculars Plugin)</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer text-amber-400 font-bold hover:text-white mt-2 pt-2 border-t border-slate-700">
+                <label className="flex items-center gap-2 cursor-pointer text-indigo-400 font-bold hover:text-white mt-1 pt-2 border-t border-slate-700">
+                  <input type="checkbox" checked={isAREnabled} onChange={e => setIsAREnabled(e.target.checked)} className="rounded text-indigo-500" />
+                  <span>📱 Chế độ AR (Sensor/Cảm biến)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer text-amber-400 font-bold hover:text-white mt-1 pt-1">
                   <input type="checkbox" checked={stardroidMode} onChange={e => setStardroidMode(e.target.checked)} className="rounded text-amber-500" />
                   <span>⭐ Kích hoạt giao diện Stardroid Classic</span>
                 </label>
