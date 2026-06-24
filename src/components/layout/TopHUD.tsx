@@ -20,38 +20,46 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   onFocus
 }) => {
   return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-2xl">
+    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-2xl font-mono">
       <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-fuchsia-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-        <form onSubmit={onSearch} className="relative flex w-full bg-slate-950/80 backdrop-blur-xl border border-slate-700/50 rounded-full shadow-2xl">
+        {/* HUD Scanline */}
+        <div className="absolute -inset-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent blur opacity-50 group-hover:opacity-100 transition duration-500 pointer-events-none"></div>
+        
+        <form onSubmit={onSearch} className="relative flex w-full bg-[#0B0F19]/80 backdrop-blur-xl border border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.15)] rounded-none">
+          {/* Decorative Corners */}
+          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-cyan-400"></div>
+          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-cyan-400"></div>
+
+          <div className="flex items-center pl-4 text-cyan-500 text-xs">
+            <span className="animate-pulse">{'>'}</span>
+          </div>
+
           <input 
             type="text" 
-            className="w-full px-6 py-3 bg-transparent text-slate-100 placeholder-slate-400 focus:outline-none rounded-l-full text-sm font-medium tracking-wide"
-            placeholder="Tìm kiếm mục tiêu thiên văn (e.g. M31, Orion...)" 
+            className="w-full px-4 py-3 bg-transparent text-cyan-100 placeholder-cyan-900 focus:outline-none text-xs tracking-[0.2em] uppercase"
+            placeholder="INPUT_TARGET_COORDINATES..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={onFocus}
           />
           <button 
             type="submit" 
-            className="px-6 py-3 text-slate-300 hover:text-white transition-colors border-l border-slate-700/50 hover:bg-slate-800/50 rounded-r-full"
+            className="px-6 py-3 text-cyan-500 hover:text-cyan-100 transition-colors border-l border-cyan-500/30 hover:bg-cyan-900/50 text-xs font-bold tracking-[0.2em] uppercase"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            SCAN
           </button>
         </form>
 
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/90 backdrop-blur-xl border border-slate-700/50 rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] overflow-hidden">
+          <div className="absolute top-full left-0 right-0 mt-2 bg-[#0B0F19]/90 backdrop-blur-xl border border-cyan-500/50 shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden">
             <ul className="max-h-64 overflow-y-auto custom-scrollbar py-2">
               {suggestions.map((suggestion, idx) => (
                 <li 
                   key={idx} 
                   onClick={() => onSuggestionClick(suggestion)}
-                  className="px-6 py-2 hover:bg-blue-600/30 cursor-pointer text-slate-300 transition-colors flex items-center gap-3 text-sm"
+                  className="px-6 py-2 hover:bg-cyan-900/50 cursor-pointer text-cyan-300 transition-colors flex items-center gap-3 text-[10px] uppercase tracking-widest border-b border-cyan-900/30 last:border-0"
                 >
-                  <span className="text-blue-400 text-xs">✨</span> 
+                  <span className="text-cyan-500">[{idx < 9 ? '0'+(idx+1) : idx+1}]</span> 
                   {suggestion}
                 </li>
               ))}
