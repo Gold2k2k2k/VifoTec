@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  brightStars, 
-  westernConstellations, 
-  vietnameseConstellations, 
-  deepSkyObjects, 
-  planets, 
-  Star, 
-  Constellation, 
-  DSO, 
-  Planet 
+import {
+  brightStars,
+  westernConstellations,
+  vietnameseConstellations,
+  deepSkyObjects,
+  planets,
+  Star,
+  Constellation,
+  DSO,
+  Planet
 } from '../data/stellariumData';
 
 // Keplerian Planet position calculator
@@ -24,7 +24,7 @@ const computePlanetPosition = (planetId: string, d: number): { ra: number; dec: 
     if (ra < 0) ra += 24;
     return { ra, dec: delta * 180 / Math.PI };
   }
-  
+
   // Moon
   if (planetId === 'moon') {
     const L = (218.316 + 13.176396 * d) * Math.PI / 180;
@@ -51,7 +51,7 @@ const computePlanetPosition = (planetId: string, d: number): { ra: number; dec: 
     jupiter: { period: 4331, phase: 0.5, incl: 1.3 },
     saturn: { period: 10747, phase: 0.8, incl: 2.49 }
   };
-  
+
   const data = rates[planetId];
   if (data) {
     const angle = (d / data.period) * 2 * Math.PI + data.phase;
@@ -105,7 +105,7 @@ const eqToHoriz = (raHours: number, decDegrees: number, lstDegrees: number, latD
   const y = -Math.sin(ha) * Math.cos(dec);
   const x = Math.sin(dec) * Math.cos(lat) - Math.cos(dec) * Math.sin(lat) * Math.cos(ha);
   let az = Math.atan2(y, x);
-  
+
   // Convert to degrees and map Azimuth from North (0) Eastward (90)
   let azDeg = az * 180 / Math.PI;
   if (azDeg < 0) azDeg += 360;
@@ -124,7 +124,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   const [showControlsMobile, setShowControlsMobile] = useState<boolean>(false);
   const [isAREnabled, setIsAREnabled] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   // Observation settings
   const [date, setDate] = useState<Date>(new Date());
   const [isTimeRunning, setIsTimeRunning] = useState<boolean>(true);
@@ -155,6 +155,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   const [showLandscape, setShowLandscape] = useState<boolean>(true);
   const [showTelescope, setShowTelescope] = useState<boolean>(false);
   const [skyCulture, setSkyCulture] = useState<'western' | 'vietnamese'>('western');
+  const [stardroidMode, setStardroidMode] = useState<boolean>(false);
 
   // Selected state
   const [selectedObj, setSelectedObj] = useState<{
@@ -183,15 +184,29 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
   const previousMousePosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // Meteors State
-  const meteorsRef = useRef<{x: number, y: number, length: number, angle: number, life: number, maxLife: number}[]>([]);
+  const meteorsRef = useRef<{ x: number, y: number, length: number, angle: number, life: number, maxLife: number }[]>([]);
 
   // Landscape Image Cache
   const landscapeImgRef = useRef<HTMLImageElement | null>(null);
+
+  // Stardroid Data Cache
+  const stardroidStarsRef = useRef<number[][]>([]);
+  const stardroidConstellationsRef = useRef<{name: string, lines: number[][][]}[]>([]);
 
   useEffect(() => {
     const img = new Image();
     img.src = '/trees_512.png';
     img.onload = () => { landscapeImgRef.current = img; };
+
+    fetch('/stardroid_stars.json')
+      .then(res => res.json())
+      .then(data => { stardroidStarsRef.current = data; })
+      .catch(err => console.error(err));
+
+    fetch('/stardroid_constellations.json')
+      .then(res => res.json())
+      .then(data => { stardroidConstellationsRef.current = data; })
+      .catch(err => console.error(err));
   }, []);
 
   // Update date/time
@@ -233,10 +248,10 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         return prev + (target - prev) * 0.1;
       });
       setFov(prev => prev + (targetFovRef.current - prev) * 0.1);
-      
+
       animFrame = requestAnimationFrame(updateCamera);
     };
-    
+
     animFrame = requestAnimationFrame(updateCamera);
     return () => cancelAnimationFrame(animFrame);
   }, []);
@@ -262,7 +277,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       if (e.alpha !== null && e.beta !== null) {
         let az = 360 - e.alpha; // invert so rotating phone right looks right
         let alt = 90 - e.beta; // 90 beta is standing up (horizon). 0 is flat on table (zenith).
-        
+
         targetYawRef.current = (az + 360) % 360;
         targetPitchRef.current = Math.max(-85, Math.min(85, alt));
       }
@@ -343,7 +358,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     const height = rect.height;
     const cx = width / 2;
     const cy = height / 2;
-    
+
     // Scale factor: how many pixels per degree of FOV
     const minDim = Math.min(width, height);
     const scale = (minDim / 2) / Math.tan((fov / 2) * Math.PI / 180);
@@ -365,7 +380,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     const sunAlt = sunHoriz.alt;
     let skyGradient = ctx.createRadialGradient(cx, cy, 10, cx, cy, minDim);
 
-    if (showAtmosphere) {
+    if (showAtmosphere && !stardroidMode) {
       if (sunAlt > 5) {
         // Daytime sky
         skyGradient.addColorStop(0, '#38bdf8'); // sky blue
@@ -387,8 +402,8 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         skyGradient.addColorStop(1, '#090d16');
       }
     } else {
-      // Space mode (atmosphere off)
-      skyGradient.addColorStop(0, '#030712');
+      // Space mode (atmosphere off) or Stardroid Mode
+      skyGradient.addColorStop(0, stardroidMode ? '#000000' : '#030712');
       skyGradient.addColorStop(1, '#000000');
     }
     ctx.fillStyle = skyGradient;
@@ -427,11 +442,11 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       return { x: 0, y: 0, visible: false };
     };
 
-    // 2. RENDER AZIMUTHAL GRID (Emerald)
+    // 2. RENDER AZIMUTHAL GRID
     if (showAzimutGrid) {
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.12)';
-      ctx.lineWidth = 1;
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.4)';
+      ctx.strokeStyle = stardroidMode ? 'rgba(0, 255, 0, 0.4)' : 'rgba(16, 185, 129, 0.12)';
+      ctx.lineWidth = stardroidMode ? 1.5 : 1;
+      ctx.fillStyle = stardroidMode ? 'rgba(0, 255, 0, 0.8)' : 'rgba(16, 185, 129, 0.4)';
       ctx.font = '10px monospace';
 
       // Altitude concentric circles
@@ -480,11 +495,11 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       });
     }
 
-    // 3. RENDER EQUATORIAL GRID (Cyan)
+    // 3. RENDER EQUATORIAL GRID
     if (showEquatorGrid) {
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.08)';
-      ctx.lineWidth = 1;
-      ctx.fillStyle = 'rgba(6, 182, 212, 0.35)';
+      ctx.strokeStyle = stardroidMode ? 'rgba(255, 0, 0, 0.4)' : 'rgba(6, 182, 212, 0.08)';
+      ctx.lineWidth = stardroidMode ? 1.5 : 1;
+      ctx.fillStyle = stardroidMode ? 'rgba(255, 0, 0, 0.8)' : 'rgba(6, 182, 212, 0.35)';
       ctx.font = '9px monospace';
 
       // Declination lines
@@ -605,8 +620,8 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     // UPDATE AND RENDER SATELLITES (e.g. ISS)
     if (showSatellites) {
       const timeSec = date.getTime() / 1000;
-      const issAz = (timeSec * 0.5) % 360; 
-      const issAlt = 45 + Math.sin(timeSec * 0.05) * 30; 
+      const issAz = (timeSec * 0.5) % 360;
+      const issAlt = 45 + Math.sin(timeSec * 0.05) * 30;
 
       const scr = project(issAz, issAlt);
       if (scr.visible && (!showAtmosphere || issAlt > 0)) {
@@ -615,7 +630,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         ctx.arc(scr.x, scr.y, 2, 0, Math.PI * 2);
         ctx.fillStyle = '#ff3333';
         ctx.fill();
-        
+
         ctx.shadowColor = '#ff3333';
         ctx.shadowBlur = 8;
         ctx.fill();
@@ -636,87 +651,144 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
 
     // 5. RENDER CONSTELLATION LINES
     const selectedCultureConsts = skyCulture === 'western' ? westernConstellations : vietnameseConstellations;
-    if ((skyCulture === 'western' && showWesternLines) || (skyCulture === 'vietnamese' && showVnLines) || skyCulture === 'vietnamese') {
-      ctx.strokeStyle = skyCulture === 'vietnamese' ? 'rgba(244, 63, 94, 0.35)' : 'rgba(96, 165, 250, 0.25)'; // Rose for VN, Blue for Western
-      ctx.lineWidth = 1.2;
-      
-      selectedCultureConsts.forEach(constellation => {
-        constellation.lines.forEach(pair => {
-          const star1 = calculatedStars.find(s => s.id === pair[0]);
-          const star2 = calculatedStars.find(s => s.id === pair[1]);
+    if ((skyCulture === 'western' && showWesternLines) || (skyCulture === 'vietnamese' && showVnLines) || skyCulture === 'vietnamese' || stardroidMode) {
+      ctx.strokeStyle = stardroidMode ? '#00ff00' : (skyCulture === 'vietnamese' ? 'rgba(244, 63, 94, 0.35)' : 'rgba(96, 165, 250, 0.25)'); // Rose for VN, Blue for Western, Green for Stardroid
+      ctx.lineWidth = stardroidMode ? 1.5 : 1.2;
 
-          if (star1 && star2 && star1.scr.visible && star2.scr.visible) {
-            // Cutoff if below horizon and atmosphere on
-            if (showAtmosphere && (star1.alt < 0 || star2.alt < 0)) return;
-
-            ctx.beginPath();
-            ctx.moveTo(star1.scr.x, star1.scr.y);
-            ctx.lineTo(star2.scr.x, star2.scr.y);
-            ctx.stroke();
-          }
+      if (stardroidMode) {
+        stardroidConstellationsRef.current.forEach(c => {
+          c.lines.forEach(line => {
+            let first = true;
+            line.forEach(vertex => {
+              const horiz = eqToHoriz(vertex[0], vertex[1], lst, lat);
+              const pt = project(horiz.az, horiz.alt);
+              if (pt.visible) {
+                if (showAtmosphere && horiz.alt < 0 && !stardroidMode) {
+                   first = true; return;
+                }
+                if (first) {
+                  ctx.moveTo(pt.x, pt.y);
+                  first = false;
+                } else {
+                  ctx.lineTo(pt.x, pt.y);
+                }
+              } else {
+                first = true; // break line if a point goes off-screen
+              }
+            });
+          });
         });
-      });
+        ctx.stroke();
+      } else {
+        selectedCultureConsts.forEach(constellation => {
+          constellation.lines.forEach(pair => {
+            const star1 = calculatedStars.find(s => s.id === pair[0]);
+            const star2 = calculatedStars.find(s => s.id === pair[1]);
+
+            if (star1 && star2 && star1.scr.visible && star2.scr.visible) {
+              // Cutoff if below horizon and atmosphere on
+              if (showAtmosphere && (star1.alt < 0 || star2.alt < 0)) return;
+
+              ctx.beginPath();
+              ctx.moveTo(star1.scr.x, star1.scr.y);
+              ctx.lineTo(star2.scr.x, star2.scr.y);
+              ctx.stroke();
+            }
+          });
+        });
+      }
     }
 
     // 6. RENDER CONSTELLATION NAMES
-    if (showWesternNames) {
-      ctx.fillStyle = skyCulture === 'vietnamese' ? 'rgba(251, 113, 133, 0.7)' : 'rgba(147, 197, 253, 0.6)';
-      ctx.font = 'bold 10px sans-serif';
+    if (showWesternNames || stardroidMode) {
+      ctx.fillStyle = stardroidMode ? '#aaaaaa' : (skyCulture === 'vietnamese' ? 'rgba(251, 113, 133, 0.7)' : 'rgba(147, 197, 253, 0.6)');
+      ctx.font = stardroidMode ? 'bold 12px sans-serif' : 'bold 10px sans-serif';
       ctx.textAlign = 'center';
 
-      selectedCultureConsts.forEach(constellation => {
-        // Average coordinates of constellation stars
-        let sumX = 0, sumY = 0, count = 0;
-        constellation.lines.forEach(pair => {
-          const star1 = calculatedStars.find(s => s.id === pair[0]);
-          if (star1 && star1.scr.visible) {
-            if (showAtmosphere && star1.alt < 0) return;
-            sumX += star1.scr.x;
-            sumY += star1.scr.y;
-            count++;
+      if (stardroidMode) {
+        stardroidConstellationsRef.current.forEach(c => {
+          // Average position for label
+          let raSum = 0, decSum = 0, count = 0;
+          c.lines.forEach(line => {
+            line.forEach(v => { raSum += v[0]; decSum += v[1]; count++; });
+          });
+          if (count > 0) {
+            const horiz = eqToHoriz(raSum/count, decSum/count, lst, lat);
+            const pt = project(horiz.az, horiz.alt);
+            if (pt.visible) ctx.fillText(c.name.toUpperCase(), pt.x, pt.y);
           }
         });
+      } else {
+        selectedCultureConsts.forEach(constellation => {
+          // Average coordinates of constellation stars
+          let sumX = 0, sumY = 0, count = 0;
+          constellation.lines.forEach(pair => {
+            const star1 = calculatedStars.find(s => s.id === pair[0]);
+            if (star1 && star1.scr.visible) {
+              if (showAtmosphere && star1.alt < 0) return;
+              sumX += star1.scr.x;
+              sumY += star1.scr.y;
+              count++;
+            }
+          });
 
-        if (count > 0) {
-          const cx = sumX / count;
-          const cy = sumY / count;
-          ctx.fillText(skyCulture === 'vietnamese' ? constellation.vnName : constellation.name, cx, cy);
-        }
-      });
+          if (count > 0) {
+            const cx = sumX / count;
+            const cy = sumY / count;
+            ctx.fillText(skyCulture === 'vietnamese' ? constellation.vnName : constellation.name, cx, cy);
+          }
+        });
+      }
     }
 
     // 7. RENDER STARS
     if (showStars) {
-      calculatedStars.forEach(star => {
-        if (!star.scr.visible) return;
-        if (showAtmosphere && star.alt < 0) return; // Horizon cutoff
+      if (stardroidMode) {
+        // Stardroid thousands of stars
+        ctx.fillStyle = '#ffffff';
+        stardroidStarsRef.current.forEach(s => {
+          const horiz = eqToHoriz(s[0], s[1], lst, lat);
+          const pt = project(horiz.az, horiz.alt);
+          if (pt.visible) {
+            const size = Math.max(0.5, s[2] * (fov < 40 ? 1.5 : 0.8));
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+      } else {
+        // Regular Stellarium Stars
+        calculatedStars.forEach(star => {
+          if (!star.scr.visible) return;
+          if (showAtmosphere && star.alt < 0) return; // Horizon cutoff
 
-        // Size proportional to brightness (smaller magnitude = brighter)
-        const rad = Math.max(0.6, (4.5 - star.mag) * 0.7);
-        
-        ctx.beginPath();
-        ctx.arc(star.scr.x, star.scr.y, rad, 0, 2 * Math.PI);
-        ctx.fillStyle = star.color;
+          // Size proportional to brightness (smaller magnitude = brighter)
+          const rad = Math.max(0.6, (4.5 - star.mag) * 0.7);
 
-        // Bright stars get a halo glow
-        if (star.mag < 1.6) {
-          ctx.save();
-          ctx.shadowColor = star.color;
-          ctx.shadowBlur = rad * 4;
-          ctx.fill();
-          ctx.restore();
-        } else {
-          ctx.fill();
-        }
+          ctx.beginPath();
+          ctx.arc(star.scr.x, star.scr.y, rad, 0, 2 * Math.PI);
+          ctx.fillStyle = star.color;
 
-        // Draw name for bright stars if zoomed in
-        if (star.mag < 2.0 || fov < 45) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
-          ctx.font = '9px sans-serif';
-          ctx.textAlign = 'left';
-          ctx.fillText(star.name, star.scr.x + rad + 3, star.scr.y + 3);
-        }
-      });
+          // Bright stars get a halo glow
+          if (star.mag < 1.6) {
+            ctx.save();
+            ctx.shadowColor = star.color;
+            ctx.shadowBlur = rad * 4;
+            ctx.fill();
+            ctx.restore();
+          } else {
+            ctx.fill();
+          }
+
+          // Draw name for bright stars if zoomed in
+          if (star.mag < 2.0 || fov < 45) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+            ctx.font = '9px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(star.name, star.scr.x + rad + 3, star.scr.y + 3);
+          }
+        });
+      }
     }
 
     // 8. RENDER DEEP SKY OBJECTS (DSOs)
@@ -762,14 +834,14 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         const { az, alt } = eqToHoriz(pos.ra, pos.dec, lst, lat);
         const scr = project(az, alt);
         if (!scr.visible) return;
-        
+
         // Sun cutoff atmosphere logic
         if (showAtmosphere && alt < -1 && p.id !== 'sun') return;
         if (showAtmosphere && p.id === 'sun' && alt < -2) return;
 
         ctx.fillStyle = p.color;
         ctx.beginPath();
-        
+
         if (p.id === 'sun') {
           // Draw sun with massive solar glow
           ctx.save();
@@ -782,16 +854,16 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
           // Calculate moon phase (simplified)
           const sunPos = computePlanetPosition('sun', d);
           const moonElongation = (pos.ra - sunPos.ra) * 15; // approximate angle in degrees
-          
+
           ctx.save();
           ctx.arc(scr.x, scr.y, p.size, 0, 2 * Math.PI);
           ctx.fillStyle = '#f1f5f9';
           ctx.fill();
-          
+
           // Draw crescent shadow overlay
           ctx.globalCompositeOperation = 'source-atop';
           ctx.fillStyle = '#0f172a'; // dark shadow color
-          
+
           const phase = Math.cos(moonElongation * Math.PI / 180); // -1 (new), 0 (half), 1 (full)
           if (phase < 0) {
             // Draw crescent shadow
@@ -835,7 +907,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)'; // Red horizon line
       ctx.lineWidth = 2;
       ctx.beginPath();
-      
+
       let horizonStarted = false;
       for (let az = 0; az <= 360; az += 2) {
         const pt = project(az, 0); // Alt = 0
@@ -851,7 +923,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       ctx.stroke();
 
       // Render ground overlay
-      if (showAtmosphere || showLandscape) {
+      if ((showAtmosphere || showLandscape) && !stardroidMode) {
         ctx.save();
         ctx.beginPath();
         let polyStarted = false;
@@ -870,25 +942,25 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         ctx.lineTo(width, height);
         ctx.lineTo(0, height);
         ctx.closePath();
-        
+
         if (showLandscape && landscapeImgRef.current) {
           ctx.clip(); // clip drawing to below horizon
           const img = landscapeImgRef.current;
-          
+
           const fovRatio = 360 / fov;
           const imgWidth = width * fovRatio;
           const imgHeight = img.height * (imgWidth / img.width) * 0.55;
-          
+
           const wrapYaw = ((lookYaw % 360) + 360) % 360;
           const xOffset = -(wrapYaw / 360) * imgWidth;
           const horizCenter = project(lookYaw, 0);
           const yPos = horizCenter.y - imgHeight * 0.49;
 
-          ctx.drawImage(img, xOffset + width/2, yPos, imgWidth, imgHeight);
-          if (xOffset + width/2 > 0) {
-            ctx.drawImage(img, xOffset + width/2 - imgWidth, yPos, imgWidth, imgHeight);
+          ctx.drawImage(img, xOffset + width / 2, yPos, imgWidth, imgHeight);
+          if (xOffset + width / 2 > 0) {
+            ctx.drawImage(img, xOffset + width / 2 - imgWidth, yPos, imgWidth, imgHeight);
           } else {
-            ctx.drawImage(img, xOffset + width/2 + imgWidth, yPos, imgWidth, imgHeight);
+            ctx.drawImage(img, xOffset + width / 2 + imgWidth, yPos, imgWidth, imgHeight);
           }
         } else if (showAtmosphere) {
           ctx.fillStyle = 'rgba(15, 23, 42, 0.85)'; // Solid dark ground
@@ -908,7 +980,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       ctx.fillStyle = '#f87171';
       ctx.font = 'bold 12px monospace';
       ctx.textAlign = 'center';
-      
+
       cardinalPoints.forEach(cp => {
         const pt = project(cp.az, 0);
         if (pt.visible) {
@@ -934,7 +1006,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         ctx.strokeStyle = 'rgba(59, 130, 246, 0.8)'; // Sky blue bracket
         ctx.lineWidth = 1.5;
         const size = 15;
-        
+
         // Draw brackets
         ctx.beginPath();
         // Top Left
@@ -953,7 +1025,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         ctx.moveTo(scr.x + size, scr.y + size - 5);
         ctx.lineTo(scr.x + size, scr.y + size);
         ctx.lineTo(scr.x + size - 5, scr.y + size);
-        
+
         ctx.stroke();
 
         // Selected label
@@ -969,7 +1041,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       const cx = width / 2;
       const cy = height / 2;
       const radius = Math.min(cx, cy) * 0.9;
-      
+
       // Draw outer dark mask
       ctx.beginPath();
       ctx.rect(0, 0, width, height);
@@ -999,7 +1071,29 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       ctx.font = '10px monospace';
       ctx.textAlign = 'right';
       ctx.fillText(`FOV: ${fov.toFixed(2)}°`, cx + radius - 10, cy + 15);
+
+      ctx.restore();
+    }
+
+    // STARDROID RETICLE (Orange crosshairs in center)
+    if (stardroidMode) {
+      ctx.save();
+      const cx = width / 2;
+      const cy = height / 2;
+      ctx.strokeStyle = 'rgba(255, 100, 0, 0.8)';
+      ctx.lineWidth = 2;
+      const r = Math.min(width, height) * 0.15;
       
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(cx - r - 10, cy); ctx.lineTo(cx - r/2, cy);
+      ctx.moveTo(cx + r/2, cy); ctx.lineTo(cx + r + 10, cy);
+      ctx.moveTo(cx, cy - r - 10); ctx.lineTo(cx, cy - r/2);
+      ctx.moveTo(cx, cy + r/2); ctx.lineTo(cx, cy + r + 10);
+      ctx.stroke();
       ctx.restore();
     }
   }, [
@@ -1020,8 +1114,13 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
     showPlanets,
     showDSOs,
     showCompass,
+    showMeteors,
+    showSatellites,
+    showLandscape,
+    showTelescope,
     skyCulture,
-    selectedObj
+    selectedObj,
+    stardroidMode
   ]);
 
   // Object Selection Handler
@@ -1278,7 +1377,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-      
+
       const delta = initialPinchDistance.current - dist;
       targetFovRef.current = Math.max(5, Math.min(120, targetFovRef.current + delta * 0.1));
       initialPinchDistance.current = dist;
@@ -1326,7 +1425,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
           <h1 className="text-sm md:text-lg font-bold text-sky-400 tracking-wider flex items-center gap-2 whitespace-nowrap">
             <span>🌌</span> {useOfficialEngine ? 'STELLARIUM (OFFICIAL)' : 'STELLARIUM WEB 2D'}
           </h1>
-          <button 
+          <button
             onClick={() => setUseOfficialEngine(!useOfficialEngine)}
             className={`md:ml-4 px-3 md:px-4 py-1.5 text-[10px] md:text-xs rounded-full font-bold transition-all whitespace-nowrap ${useOfficialEngine ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.6)] hover:shadow-[0_0_25px_rgba(37,99,235,0.8)]'}`}
           >
@@ -1337,7 +1436,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
         {/* Global Presets / Quick Search */}
         <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto justify-between md:justify-end">
           {!useOfficialEngine && (
-            <button 
+            <button
               onClick={() => setIsAREnabled(!isAREnabled)}
               className={`px-3 py-1 text-[10px] md:text-xs font-bold rounded flex items-center gap-1 ${isAREnabled ? 'bg-orange-600 text-white animate-pulse shadow-[0_0_10px_rgba(234,88,12,0.8)]' : 'bg-slate-800 text-orange-400 hover:bg-slate-700'}`}
               title="Cảm biến thiết bị AR Tracker"
@@ -1346,7 +1445,7 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
             </button>
           )}
           {!useOfficialEngine && (
-            <button 
+            <button
               onClick={() => setShowControlsMobile(!showControlsMobile)}
               className="md:hidden px-3 py-1 bg-slate-800 text-sky-300 rounded text-xs font-bold"
             >
@@ -1354,9 +1453,9 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
             </button>
           )}
           <form onSubmit={handleSearchSubmit} className="relative flex flex-1 md:flex-none">
-            <input 
-              type="text" 
-              placeholder="Tìm sao (VD: Sirius)" 
+            <input
+              type="text"
+              placeholder="Tìm sao (VD: Sirius)"
               className="w-full md:w-72 bg-slate-950 border border-slate-700 px-3 py-1 rounded-l text-xs focus:outline-none focus:border-sky-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -1378,8 +1477,8 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       {/* Main Workspace layout */}
       {useOfficialEngine ? (
         <div className="flex-1 w-full relative bg-black">
-          <iframe 
-            src="https://stellarium-web.org/" 
+          <iframe
+            src="https://stellarium-web.org/"
             className="w-full h-full border-none"
             title="Stellarium Web Engine"
             allowFullScreen
@@ -1387,259 +1486,263 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
           />
         </div>
       ) : (
-      <div className="flex-1 flex relative overflow-hidden">
-        {/* Left Side Panel (Controls) */}
-        <div className={`${showControlsMobile ? 'flex' : 'hidden'} md:flex absolute md:relative w-full md:w-80 h-[50%] md:h-full bottom-0 md:bottom-auto bg-slate-900/95 md:bg-slate-900/80 backdrop-blur border-t md:border-t-0 md:border-r border-slate-800 flex-col z-40 p-4 gap-4 overflow-y-auto`}>
-          {/* Observation Coordinates */}
-          <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
-            <h3 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">📍 Địa Điểm & Vĩ Độ</h3>
-            <div className="text-xs flex flex-col gap-1.5">
-              <div className="flex justify-between"><span className="text-slate-400">Vị trí:</span> <span className="font-semibold">{locationName}</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Vĩ độ:</span> <span className="font-mono">{lat.toFixed(4)}° N</span></div>
-              <div className="flex justify-between"><span className="text-slate-400">Kinh độ:</span> <span className="font-mono">{lng.toFixed(4)}° E</span></div>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-1 mt-3">
-              <button onClick={() => handleLocationPreset('hanoi')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Hà Nội</button>
-              <button onClick={() => handleLocationPreset('hcm')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">TP HCM</button>
-              <button onClick={() => handleLocationPreset('danang')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Đà Nẵng</button>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-1 mt-1">
-              <button onClick={handleGeolocation} className="bg-sky-950/50 border border-sky-800 text-sky-300 hover:bg-sky-900/50 text-[10px] py-1 rounded transition-colors flex items-center justify-center gap-1">
-                📡 GPS Tự Động
-              </button>
-              <button onClick={() => handleLocationPreset('london')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Ngoại Quốc</button>
-            </div>
-          </div>
-
-          {/* Sky Culture */}
-          <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
-            <h3 className="text-xs font-bold text-pink-400 uppercase tracking-wider mb-2">🌸 Văn Hóa Bầu Trời</h3>
-            <div className="flex bg-slate-900 rounded p-0.5 border border-slate-800">
-              <button 
-                onClick={() => { setSkyCulture('western'); setShowWesternLines(true); setShowVnLines(false); }}
-                className={`flex-1 text-center py-1 text-xs rounded transition-all ${skyCulture === 'western' ? 'bg-sky-600 font-bold text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
-              >
-                Tây Phương (IAU)
-              </button>
-              <button 
-                onClick={() => { setSkyCulture('vietnamese'); setShowWesternLines(false); setShowVnLines(true); }}
-                className={`flex-1 text-center py-1 text-xs rounded transition-all ${skyCulture === 'vietnamese' ? 'bg-rose-600 font-bold text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
-              >
-                Việt Nam (Cổ)
-              </button>
-            </div>
-            <p className="text-[10px] text-slate-400 italic mt-2">
-              {skyCulture === 'western' 
-                ? "Bộ chòm sao quốc tế chuẩn IAU với 88 chòm sao thiên văn hiện đại." 
-                : "Hệ chòm sao Nhị Thập Bát Tú và Tam Viên truyền thống theo Thiên văn học Việt Nam và Đông Á cổ đại."
-              }
-            </p>
-          </div>
-
-          {/* Time Machine controls */}
-          <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
-            <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">⏱️ Cỗ Máy Thời Gian</h3>
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between items-center gap-1">
-                <button onClick={() => setTimeSpeed(-1000)} className="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded" title="Tua nhanh về quá khứ">⏪</button>
-                <button onClick={() => setTimeSpeed(prev => Math.max(1, prev / 2))} className="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded" title="Giảm tốc">➖</button>
-                <button onClick={() => setIsTimeRunning(!isTimeRunning)} className="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1 rounded font-bold">
-                  {isTimeRunning ? '⏸ Tạm dừng' : '▶ Chạy'}
-                </button>
-                <button onClick={() => setTimeSpeed(prev => prev * 2)} className="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded" title="Tăng tốc">➕</button>
-                <button onClick={() => setTimeSpeed(1000)} className="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded" title="Tua nhanh tới tương lai">⏩</button>
+        <div className="flex-1 flex relative overflow-hidden">
+          {/* Left Side Panel (Controls) */}
+          <div className={`${showControlsMobile ? 'flex' : 'hidden'} md:flex absolute md:relative w-full md:w-80 h-[50%] md:h-full bottom-0 md:bottom-auto bg-slate-900/95 md:bg-slate-900/80 backdrop-blur border-t md:border-t-0 md:border-r border-slate-800 flex-col z-40 p-4 gap-4 overflow-y-auto`}>
+            {/* Observation Coordinates */}
+            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
+              <h3 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">📍 Địa Điểm & Vĩ Độ</h3>
+              <div className="text-xs flex flex-col gap-1.5">
+                <div className="flex justify-between"><span className="text-slate-400">Vị trí:</span> <span className="font-semibold">{locationName}</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">Vĩ độ:</span> <span className="font-mono">{lat.toFixed(4)}° N</span></div>
+                <div className="flex justify-between"><span className="text-slate-400">Kinh độ:</span> <span className="font-mono">{lng.toFixed(4)}° E</span></div>
               </div>
 
-              <div className="flex justify-between text-[10px] text-slate-400 px-1 mt-1">
-                <span>Tốc độ: {timeSpeed}x</span>
-                <button onClick={() => { setDate(new Date()); setTimeSpeed(1); setIsTimeRunning(true); }} className="text-emerald-400 hover:underline">
-                  Reset Hiện Tại
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Layers and Settings */}
-          <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
-            <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3">🛠️ Tùy Chọn Lớp Hiển Thị</h3>
-            <div className="flex flex-col gap-2 text-xs">
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showAtmosphere} onChange={e => setShowAtmosphere(e.target.checked)} className="rounded text-sky-600 focus:ring-0" />
-                <span>Bầu khí quyển (Khúc xạ ngày/đêm)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={skyCulture === 'western' ? showWesternLines : showVnLines} onChange={e => skyCulture === 'western' ? setShowWesternLines(e.target.checked) : setShowVnLines(e.target.checked)} className="rounded text-sky-600" />
-                <span>Vẽ đường nối chòm sao</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showWesternNames} onChange={e => setShowWesternNames(e.target.checked)} className="rounded text-sky-600" />
-                <span>Hiển thị tên chòm sao</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showEquatorGrid} onChange={e => setShowEquatorGrid(e.target.checked)} className="rounded text-sky-600" />
-                <span>Lưới tọa độ Xích Đạo (Equatorial)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showAzimutGrid} onChange={e => setShowAzimutGrid(e.target.checked)} className="rounded text-sky-600" />
-                <span>Lưới tọa độ Chân Trời (Azimuthal)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showMilkyWay} onChange={e => setShowMilkyWay(e.target.checked)} className="rounded text-sky-600" />
-                <span>Hiển thị Dải Ngân Hà (Milky Way)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showMeteors} onChange={e => setShowMeteors(e.target.checked)} className="rounded text-sky-600" />
-                <span>Mưa sao băng (Meteors Plugin)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showSatellites} onChange={e => setShowSatellites(e.target.checked)} className="rounded text-sky-600" />
-                <span>Vệ tinh nhân tạo ISS (Satellites Plugin)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showCompass} onChange={e => setShowCompass(e.target.checked)} className="rounded text-sky-600" />
-                <span>Đường chân trời & Đông Tây Nam Bắc</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showLandscape} onChange={e => setShowLandscape(e.target.checked)} className="rounded text-sky-600" />
-                <span>Hiển thị cảnh quan (Landscapes)</span>
-              </label>
-
-              <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                <input type="checkbox" checked={showTelescope} onChange={e => setShowTelescope(e.target.checked)} className="rounded text-sky-600" />
-                <span>Ống kính viễn vọng (Oculars Plugin)</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        {/* Center Planetarium Viewport */}
-        <div className="flex-1 relative bg-black select-none">
-          <canvas 
-            ref={canvasRef}
-            className="w-full h-full cursor-grab active:cursor-grabbing block"
-            onClick={handleCanvasClick}
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onWheel={handleWheel}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd}
-          />
-
-          {/* Compass Rose Mini Widget */}
-          <div className="absolute bottom-4 right-4 bg-slate-900/90 border border-slate-700 rounded-lg p-2 flex flex-col gap-1 items-center z-20 pointer-events-none w-28 text-center text-[10px] font-mono shadow-2xl">
-            <span className="text-slate-400">Góc nhìn</span>
-            <div className="text-emerald-400 font-bold">Yaw: {lookYaw.toFixed(0)}°</div>
-            <div className="text-emerald-400 font-bold">Pitch: {lookPitch.toFixed(0)}°</div>
-            <div className="text-sky-400">Trường nhìn: {fov.toFixed(0)}°</div>
-          </div>
-
-          {/* Help overlay */}
-          <div className="absolute top-4 right-4 bg-slate-900/75 border border-slate-800 rounded p-2 text-[10px] text-slate-400 pointer-events-none z-10">
-            🖱️ Kéo chuột để xoay camera | 📜 Cuộn chuột để Phóng to/Thu nhỏ | 🔘 Click để chọn
-          </div>
-        </div>
-
-        {/* Right Info Panel (Star details & AI Analysis) */}
-        {selectedObj && (
-          <aside className="absolute md:relative right-0 top-0 bottom-0 md:bottom-auto md:h-full w-full md:w-80 bg-slate-900/95 md:bg-slate-900/90 backdrop-blur border-l border-slate-800 flex flex-col z-50 p-4 gap-4 overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-              <h2 className="text-sm font-bold text-sky-400 uppercase tracking-wider">📡 Thông Tin Thiên Thể</h2>
-              <button 
-                onClick={() => setSelectedObj(null)}
-                className="text-xs text-slate-500 hover:text-slate-200"
-              >
-                Đóng ✕
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <div className="bg-slate-950 p-3 rounded border border-slate-800">
-                <h3 className="text-base font-bold text-white mb-1">{selectedObj.name}</h3>
-                <span className="inline-block px-1.5 py-0.5 bg-sky-900/50 border border-sky-600 rounded text-[9px] uppercase font-semibold text-sky-300 tracking-wider">
-                  {selectedObj.type === 'star' ? 'Hằng Tinh (Star)' : selectedObj.type === 'planet' ? 'Hành Tinh' : 'Thiên thể Sâu (DSO)'}
-                </span>
-
-                <div className="mt-3 flex flex-col gap-1.5 text-xs font-mono border-t border-slate-800 pt-3">
-                  <div className="flex justify-between"><span className="text-slate-400">RA (Xích kinh):</span> <span>{selectedObj.ra.toFixed(2)}h</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">Dec (Xích vĩ):</span> <span>{selectedObj.dec.toFixed(1)}°</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">Az (Phương vị):</span> <span>{selectedObj.az.toFixed(1)}°</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">Alt (Độ cao):</span> <span className={selectedObj.alt >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{selectedObj.alt.toFixed(1)}° {selectedObj.alt < 0 && '(Dưới chân trời)'}</span></div>
-                  {selectedObj.mag !== undefined && <div className="flex justify-between"><span className="text-slate-400">Cấp sao (Mag):</span> <span className="text-amber-400">{selectedObj.mag.toFixed(2)}</span></div>}
-                  {selectedObj.dist !== undefined && <div className="flex justify-between"><span className="text-slate-400">Khoảng cách:</span> <span>{selectedObj.dist >= 10000 ? `${(selectedObj.dist/1000000).toFixed(2)}M ly` : `${selectedObj.dist.toLocaleString()} ly`}</span></div>}
-                </div>
+              <div className="grid grid-cols-3 gap-1 mt-3">
+                <button onClick={() => handleLocationPreset('hanoi')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Hà Nội</button>
+                <button onClick={() => handleLocationPreset('hcm')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">TP HCM</button>
+                <button onClick={() => handleLocationPreset('danang')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Đà Nẵng</button>
               </div>
 
-              {/* Quick actions */}
-              <div className="grid grid-cols-2 gap-2">
-                <button 
-                  onClick={() => {
-                    targetYawRef.current = selectedObj.az;
-                    targetPitchRef.current = selectedObj.alt;
-                    targetFovRef.current = selectedObj.type === 'star' ? 10 : 25;
-                  }}
-                  className="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 rounded text-xs transition-colors flex items-center justify-center gap-1 shadow-lg shadow-sky-950"
-                >
-                  🚀 Hướng Kính
+              <div className="grid grid-cols-2 gap-1 mt-1">
+                <button onClick={handleGeolocation} className="bg-sky-950/50 border border-sky-800 text-sky-300 hover:bg-sky-900/50 text-[10px] py-1 rounded transition-colors flex items-center justify-center gap-1">
+                  📡 GPS Tự Động
                 </button>
-                <button 
-                  onClick={() => setTrackingSelected(!trackingSelected)}
-                  className={`font-bold py-2 rounded text-xs transition-colors flex items-center justify-center gap-1 border ${
-                    trackingSelected 
-                      ? 'bg-emerald-600 border-emerald-400 text-white animate-pulse' 
-                      : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200'
-                  }`}
-                >
-                  🎯 {trackingSelected ? 'Đang Khóa' : 'Khóa Bám Nét'}
-                </button>
+                <button onClick={() => handleLocationPreset('london')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Ngoại Quốc</button>
               </div>
+            </div>
 
-              {selectedObj.desc && (
-                <div className="bg-slate-950/40 p-3 rounded border border-slate-800 text-xs leading-relaxed text-slate-300">
-                  <h4 className="font-bold text-slate-200 mb-1">Chi tiết & Lịch sử:</h4>
-                  <p>{selectedObj.desc}</p>
-                </div>
-              )}
-
-              {/* VIFOTEC AI Ask button */}
-              <div className="bg-indigo-950/40 border border-indigo-900 p-3 rounded mt-2">
-                <h4 className="text-xs font-bold text-indigo-300 uppercase mb-2 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-ping"></span> Trợ lý Nghiên Cứu Gemini
-                </h4>
-                <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">Gửi yêu cầu phân tích chuyên sâu về thiên thể này vào giao diện Chat của hệ thống.</p>
+            {/* Sky Culture */}
+            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
+              <h3 className="text-xs font-bold text-pink-400 uppercase tracking-wider mb-2">🌸 Văn Hóa Bầu Trời</h3>
+              <div className="flex bg-slate-900 rounded p-0.5 border border-slate-800">
                 <button
-                  onClick={() => {
-                    if (onSelectObject) {
-                      onSelectObject(
-                        selectedObj.name,
-                        selectedObj.type,
-                        `Hãy kể chi tiết cho tôi về hằng tinh/hành tinh/chòm sao có tên là ${selectedObj.name}. Giải thích đầy đủ về vị trí thiên văn học, các phát hiện khoa học gần đây cũng như truyền thuyết dân gian, lịch sử văn hóa gắn liền với nó trong lịch sử nhân loại.`
-                      );
-                    }
-                  }}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 rounded text-[10px] transition-colors"
+                  onClick={() => { setSkyCulture('western'); setShowWesternLines(true); setShowVnLines(false); }}
+                  className={`flex-1 text-center py-1 text-xs rounded transition-all ${skyCulture === 'western' ? 'bg-sky-600 font-bold text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
                 >
-                  🧬 Phân Tích Khoa Học & Văn Hóa
+                  Tây Phương (IAU)
+                </button>
+                <button
+                  onClick={() => { setSkyCulture('vietnamese'); setShowWesternLines(false); setShowVnLines(true); }}
+                  className={`flex-1 text-center py-1 text-xs rounded transition-all ${skyCulture === 'vietnamese' ? 'bg-rose-600 font-bold text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                >
+                  Việt Nam (Cổ)
                 </button>
               </div>
+              <p className="text-[10px] text-slate-400 italic mt-2">
+                {skyCulture === 'western'
+                  ? "Bộ chòm sao quốc tế chuẩn IAU với 88 chòm sao thiên văn hiện đại."
+                  : "Hệ chòm sao Nhị Thập Bát Tú và Tam Viên truyền thống theo Thiên văn học Việt Nam và Đông Á cổ đại."
+                }
+              </p>
             </div>
-          </aside>
-        )}
-      </div>
+
+            {/* Time Machine controls */}
+            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
+              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2">⏱️ Cỗ Máy Thời Gian</h3>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-center gap-1">
+                  <button onClick={() => setTimeSpeed(-1000)} className="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded" title="Tua nhanh về quá khứ">⏪</button>
+                  <button onClick={() => setTimeSpeed(prev => Math.max(1, prev / 2))} className="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded" title="Giảm tốc">➖</button>
+                  <button onClick={() => setIsTimeRunning(!isTimeRunning)} className="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1 rounded font-bold">
+                    {isTimeRunning ? '⏸ Tạm dừng' : '▶ Chạy'}
+                  </button>
+                  <button onClick={() => setTimeSpeed(prev => prev * 2)} className="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded" title="Tăng tốc">➕</button>
+                  <button onClick={() => setTimeSpeed(1000)} className="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded" title="Tua nhanh tới tương lai">⏩</button>
+                </div>
+
+                <div className="flex justify-between text-[10px] text-slate-400 px-1 mt-1">
+                  <span>Tốc độ: {timeSpeed}x</span>
+                  <button onClick={() => { setDate(new Date()); setTimeSpeed(1); setIsTimeRunning(true); }} className="text-emerald-400 hover:underline">
+                    Reset Hiện Tại
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Layers and Settings */}
+            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
+              <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3">🛠️ Tùy Chọn Lớp Hiển Thị</h3>
+              <div className="flex flex-col gap-2 text-xs">
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showAtmosphere} onChange={e => setShowAtmosphere(e.target.checked)} className="rounded text-sky-600 focus:ring-0" />
+                  <span>Bầu khí quyển (Khúc xạ ngày/đêm)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={skyCulture === 'western' ? showWesternLines : showVnLines} onChange={e => skyCulture === 'western' ? setShowWesternLines(e.target.checked) : setShowVnLines(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Vẽ đường nối chòm sao</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showWesternNames} onChange={e => setShowWesternNames(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Hiển thị tên chòm sao</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showEquatorGrid} onChange={e => setShowEquatorGrid(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Lưới tọa độ Xích Đạo (Equatorial)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showAzimutGrid} onChange={e => setShowAzimutGrid(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Lưới tọa độ Chân Trời (Azimuthal)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showMilkyWay} onChange={e => setShowMilkyWay(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Hiển thị Dải Ngân Hà (Milky Way)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showMeteors} onChange={e => setShowMeteors(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Mưa sao băng (Meteors Plugin)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showSatellites} onChange={e => setShowSatellites(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Vệ tinh nhân tạo ISS (Satellites Plugin)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showCompass} onChange={e => setShowCompass(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Đường chân trời & Đông Tây Nam Bắc</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showLandscape} onChange={e => setShowLandscape(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Hiển thị cảnh quan (Landscapes)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
+                  <input type="checkbox" checked={showTelescope} onChange={e => setShowTelescope(e.target.checked)} className="rounded text-sky-600" />
+                  <span>Ống kính viễn vọng (Oculars Plugin)</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer text-amber-400 font-bold hover:text-white mt-2 pt-2 border-t border-slate-700">
+                  <input type="checkbox" checked={stardroidMode} onChange={e => setStardroidMode(e.target.checked)} className="rounded text-amber-500" />
+                  <span>⭐ Kích hoạt giao diện Stardroid Classic</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Center Planetarium Viewport */}
+          <div className="flex-1 relative bg-black select-none">
+            <canvas
+              ref={canvasRef}
+              className="w-full h-full cursor-grab active:cursor-grabbing block"
+              onClick={handleCanvasClick}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onWheel={handleWheel}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
+            />
+
+            {/* Compass Rose Mini Widget */}
+            <div className="absolute bottom-4 right-4 bg-slate-900/90 border border-slate-700 rounded-lg p-2 flex flex-col gap-1 items-center z-20 pointer-events-none w-28 text-center text-[10px] font-mono shadow-2xl">
+              <span className="text-slate-400">Góc nhìn</span>
+              <div className="text-emerald-400 font-bold">Yaw: {lookYaw.toFixed(0)}°</div>
+              <div className="text-emerald-400 font-bold">Pitch: {lookPitch.toFixed(0)}°</div>
+              <div className="text-sky-400">Trường nhìn: {fov.toFixed(0)}°</div>
+            </div>
+
+            {/* Help overlay */}
+            <div className="absolute top-4 right-4 bg-slate-900/75 border border-slate-800 rounded p-2 text-[10px] text-slate-400 pointer-events-none z-10">
+              🖱️ Kéo chuột để xoay camera | 📜 Cuộn chuột để Phóng to/Thu nhỏ | 🔘 Click để chọn
+            </div>
+          </div>
+
+          {/* Right Info Panel (Star details & AI Analysis) */}
+          {selectedObj && (
+            <aside className="absolute md:relative right-0 top-0 bottom-0 md:bottom-auto md:h-full w-full md:w-80 bg-slate-900/95 md:bg-slate-900/90 backdrop-blur border-l border-slate-800 flex flex-col z-50 p-4 gap-4 overflow-y-auto">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h2 className="text-sm font-bold text-sky-400 uppercase tracking-wider">📡 Thông Tin Thiên Thể</h2>
+                <button
+                  onClick={() => setSelectedObj(null)}
+                  className="text-xs text-slate-500 hover:text-slate-200"
+                >
+                  Đóng ✕
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <div className="bg-slate-950 p-3 rounded border border-slate-800">
+                  <h3 className="text-base font-bold text-white mb-1">{selectedObj.name}</h3>
+                  <span className="inline-block px-1.5 py-0.5 bg-sky-900/50 border border-sky-600 rounded text-[9px] uppercase font-semibold text-sky-300 tracking-wider">
+                    {selectedObj.type === 'star' ? 'Hằng Tinh (Star)' : selectedObj.type === 'planet' ? 'Hành Tinh' : 'Thiên thể Sâu (DSO)'}
+                  </span>
+
+                  <div className="mt-3 flex flex-col gap-1.5 text-xs font-mono border-t border-slate-800 pt-3">
+                    <div className="flex justify-between"><span className="text-slate-400">RA (Xích kinh):</span> <span>{selectedObj.ra.toFixed(2)}h</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Dec (Xích vĩ):</span> <span>{selectedObj.dec.toFixed(1)}°</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Az (Phương vị):</span> <span>{selectedObj.az.toFixed(1)}°</span></div>
+                    <div className="flex justify-between"><span className="text-slate-400">Alt (Độ cao):</span> <span className={selectedObj.alt >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{selectedObj.alt.toFixed(1)}° {selectedObj.alt < 0 && '(Dưới chân trời)'}</span></div>
+                    {selectedObj.mag !== undefined && <div className="flex justify-between"><span className="text-slate-400">Cấp sao (Mag):</span> <span className="text-amber-400">{selectedObj.mag.toFixed(2)}</span></div>}
+                    {selectedObj.dist !== undefined && <div className="flex justify-between"><span className="text-slate-400">Khoảng cách:</span> <span>{selectedObj.dist >= 10000 ? `${(selectedObj.dist / 1000000).toFixed(2)}M ly` : `${selectedObj.dist.toLocaleString()} ly`}</span></div>}
+                  </div>
+                </div>
+
+                {/* Quick actions */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => {
+                      targetYawRef.current = selectedObj.az;
+                      targetPitchRef.current = selectedObj.alt;
+                      targetFovRef.current = selectedObj.type === 'star' ? 10 : 25;
+                    }}
+                    className="bg-sky-600 hover:bg-sky-500 text-white font-bold py-2 rounded text-xs transition-colors flex items-center justify-center gap-1 shadow-lg shadow-sky-950"
+                  >
+                    🚀 Hướng Kính
+                  </button>
+                  <button
+                    onClick={() => setTrackingSelected(!trackingSelected)}
+                    className={`font-bold py-2 rounded text-xs transition-colors flex items-center justify-center gap-1 border ${trackingSelected
+                        ? 'bg-emerald-600 border-emerald-400 text-white animate-pulse'
+                        : 'bg-slate-800 border-slate-700 hover:bg-slate-700 text-slate-200'
+                      }`}
+                  >
+                    🎯 {trackingSelected ? 'Đang Khóa' : 'Khóa Bám Nét'}
+                  </button>
+                </div>
+
+                {selectedObj.desc && (
+                  <div className="bg-slate-950/40 p-3 rounded border border-slate-800 text-xs leading-relaxed text-slate-300">
+                    <h4 className="font-bold text-slate-200 mb-1">Chi tiết & Lịch sử:</h4>
+                    <p>{selectedObj.desc}</p>
+                  </div>
+                )}
+
+                {/* VIFOTEC AI Ask button */}
+                <div className="bg-indigo-950/40 border border-indigo-900 p-3 rounded mt-2">
+                  <h4 className="text-xs font-bold text-indigo-300 uppercase mb-2 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-ping"></span> Trợ lý Nghiên Cứu Gemini
+                  </h4>
+                  <p className="text-[10px] text-slate-400 mb-2 leading-relaxed">Gửi yêu cầu phân tích chuyên sâu về thiên thể này vào giao diện Chat của hệ thống.</p>
+                  <button
+                    onClick={() => {
+                      if (onSelectObject) {
+                        onSelectObject(
+                          selectedObj.name,
+                          selectedObj.type,
+                          `Hãy kể chi tiết cho tôi về hằng tinh/hành tinh/chòm sao có tên là ${selectedObj.name}. Giải thích đầy đủ về vị trí thiên văn học, các phát hiện khoa học gần đây cũng như truyền thuyết dân gian, lịch sử văn hóa gắn liền với nó trong lịch sử nhân loại.`
+                        );
+                      }
+                    }}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-1.5 rounded text-[10px] transition-colors"
+                  >
+                    🧬 Phân Tích Khoa Học & Văn Hóa
+                  </button>
+                </div>
+              </div>
+            </aside>
+          )}
+        </div>
       )}
     </div>
   );
