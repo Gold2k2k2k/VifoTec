@@ -43,9 +43,11 @@ export const RightHUD: React.FC<RightHUDProps> = ({
   const [chatInput, setChatInput] = useState('');
   const [isListening, setIsListening] = useState(false);
   
+  const hasSpeechSupport = typeof window !== 'undefined' && !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+  
   const startListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy dùng Google Chrome/Edge."); return; }
+    if (!SpeechRecognition) return;
     const recognition = new SpeechRecognition();
     recognition.lang = 'vi-VN'; recognition.continuous = false; recognition.interimResults = false;
     recognition.onstart = () => setIsListening(true);
@@ -105,10 +107,10 @@ export const RightHUD: React.FC<RightHUDProps> = ({
               <div className="text-[9px] text-slate-600 mb-1 uppercase tracking-wider" style={{ fontFamily: 'var(--font-mono)' }}>
                 {msg.role === 'ai' ? 'System' : 'You'}
               </div>
-              <div className={`p-3 text-[12px] leading-relaxed max-w-[95%] overflow-x-auto rounded-lg ${
+              <div className={`p-3 text-[12px] leading-relaxed max-w-[95%] overflow-x-auto rounded-sm ${
                 msg.role === 'ai' 
-                  ? 'bg-slate-800/40 text-slate-200 border border-slate-700/30' 
-                  : 'bg-blue-900/20 text-blue-100 border border-blue-800/30'
+                  ? 'bg-slate-800/40 text-slate-200 border border-slate-700/30 border-l-2 border-l-cyan-500' 
+                  : 'bg-blue-900/20 text-blue-100 border border-blue-800/30 border-r-2 border-r-blue-500'
               }`}>
                 <div className="prose-sm">
                   {msg.role === 'ai' ? (
@@ -118,7 +120,7 @@ export const RightHUD: React.FC<RightHUDProps> = ({
                           const {children, className, node, ...rest} = props;
                           const match = /language-(\w+)/.exec(className || '');
                           return match ? (
-                            <div className="relative mt-2 mb-2 rounded-lg overflow-hidden border border-slate-700/30">
+                            <div className="relative mt-2 mb-2 rounded-sm overflow-hidden border border-slate-700/30">
                               <div className="flex justify-between items-center bg-slate-900 px-3 py-1 border-b border-slate-700/30">
                                 <span className="hud-label text-slate-500">{match[1]}</span>
                                 <div className="flex gap-2">
@@ -166,7 +168,7 @@ export const RightHUD: React.FC<RightHUDProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="p-2 bg-slate-900/40 border-t border-slate-700/30 shrink-0">
+      <div className="p-2 bg-[#0f172a]/60 backdrop-blur-md border-t border-slate-700/50 shrink-0">
         {/* Quick prompts */}
         <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-2">
           {PROMPT_TEMPLATES.map((t, i) => ( 
@@ -194,14 +196,17 @@ export const RightHUD: React.FC<RightHUDProps> = ({
         )}
         
         {/* Text input */}
-        <div className="flex items-end gap-1 bg-[#0B0B10] rounded-lg border border-slate-700/50 focus-within:border-cyan-500/40 transition-all duration-200 p-1">
-          <button 
-            onClick={startListening} 
-            className={`btn-icon w-8 h-8 border-0 rounded-md shrink-0 cursor-pointer ${isListening ? 'text-red-400 bg-red-950/30' : ''}`} 
-            aria-label="Voice input"
-          >
-            <IconMic size={14} />
-          </button>
+        <div className="flex items-end gap-1 bg-[#0B0B10] rounded-sm border border-slate-700/50 focus-within:border-cyan-500/40 transition-all duration-200 p-1">
+          {hasSpeechSupport && (
+            <button 
+              onClick={startListening} 
+              className={`btn-icon w-8 h-8 border-0 rounded-md shrink-0 cursor-pointer ${isListening ? 'text-red-400 bg-red-950/30' : ''}`} 
+              aria-label="Voice input"
+              title="Voice Input (Chrome/Edge)"
+            >
+              <IconMic size={14} />
+            </button>
+          )}
           
           <input type="file" accept=".txt,.md,.csv,.json" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
           
@@ -230,7 +235,7 @@ export const RightHUD: React.FC<RightHUDProps> = ({
           
           <button 
             onClick={() => submitChat()} 
-            className="w-8 h-8 flex items-center justify-center bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-md shrink-0 transition-all duration-200 cursor-pointer"  
+            className="w-8 h-8 flex items-center justify-center bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-sm shrink-0 transition-all duration-200 cursor-pointer"  
             aria-label="Send message"
           >
             <IconSend size={14} />

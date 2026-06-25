@@ -12,8 +12,9 @@ interface LayoutState {
 export const LayoutContext = createContext<LayoutState | undefined>(undefined);
 
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
-  const [leftPanelOpen, setLeftPanelOpen] = useState(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const [leftPanelOpen, setLeftPanelOpen] = useState(!isMobile);
+  const [rightPanelOpen, setRightPanelOpen] = useState(!isMobile);
   const [bottomDockOpen, setBottomDockOpen] = useState(true);
 
   return (

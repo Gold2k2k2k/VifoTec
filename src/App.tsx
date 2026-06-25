@@ -3,9 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import OpenSeadragon from 'openseadragon';
 import { ChatSession, InteractionMode, SpectrumMode, POPULAR_TARGETS, PROMPT_TEMPLATES, MOCK_TOURS } from './data';
 import { SpaceNewsTicker } from './components/SpaceNewsTicker';
-import { Radar3D } from './components/Radar3D';
+const Radar3D = React.lazy(() => import('./components/Radar3D').then(m => ({ default: m.Radar3D })));
+const VRGallery = React.lazy(() => import('./components/VRGallery').then(m => ({ default: m.VRGallery })));
 import { QuizOverlay } from './components/QuizOverlay';
-import { VRGallery } from './components/VRGallery';
 import { StellariumSky } from './components/StellariumSky';
 import {
   IconStar, IconTelescope, IconGallery, IconRadar, IconSearch,
@@ -48,6 +48,7 @@ function App() {
   const [isWaitingForDzi, setIsWaitingForDzi] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(180); 
   const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturate: 100 });
+  const reticleCoordsRef = useRef<HTMLDivElement>(null);
   const [isCockpitMode, setIsCockpitMode] = useState<boolean>(false);
   const mousePosRef = useRef({x: window.innerWidth/2, y: window.innerHeight/2});
   const blackholeRef = useRef<HTMLDivElement>(null);
@@ -196,6 +197,13 @@ function App() {
       viewer.addHandler('open', () => {
          const nav = document.querySelector('.navigator') as HTMLElement;
          if (nav) { nav.style.border = '2px solid #3b82f6'; nav.style.borderRadius = '8px'; nav.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)'; }
+      });
+
+      viewer.addHandler('animation', () => {
+         if (reticleCoordsRef.current && osdViewerRef.current) {
+            const centerPoint = osdViewerRef.current.viewport.getCenter();
+            reticleCoordsRef.current.innerText = `RA: ${centerPoint.x.toFixed(4)} | DEC: ${centerPoint.y.toFixed(4)}`;
+         }
       });
 
       osdViewerRef.current = viewer;
@@ -386,7 +394,31 @@ function App() {
      speakText("Đã trích xuất báo cáo thành công.");
   };
 
+  const playShutterSound = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + 0.1);
+    } catch (e) { console.warn('AudioContext not supported'); }
+  };
+
   const handleDownload = () => {
+    const flash = document.createElement('div');
+    flash.className = "fixed inset-0 bg-white z-[9999] pointer-events-none transition-opacity duration-500 opacity-100";
+    document.body.appendChild(flash);
+    playShutterSound();
+    setTimeout(() => { flash.style.opacity = '0'; }, 50);
+    setTimeout(() => { document.body.removeChild(flash); }, 550);
+
     const canvas = document.querySelector('#osd-viewer canvas') as HTMLCanvasElement;
     if (canvas) {
       try {
@@ -397,21 +429,35 @@ function App() {
           ctx.drawImage(canvas, 0, 0); 
           
           ctx.filter = 'none';
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-          ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+          ctx.fillStyle = 'black';
+          ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
           
-          ctx.fillStyle = '#60a5fa';
-          ctx.font = 'bold 24px monospace';
-          ctx.fillText(`JWST SPACE EXPLORER - VIFOTEC 2026`, 20, canvas.height - 50);
+          ctx.fillStyle = 'white';
+          ctx.font = 'bold 32px sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText(`JWST | ${currentTarget ? currentTarget.toUpperCase() : 'DEEP FIELD UNKNOWN'}`, 30, canvas.height - 70);
           
           ctx.fillStyle = '#a7f3d0';
-          ctx.font = '16px monospace';
-          ctx.fillText(`Target: ${currentTarget ? currentTarget.toUpperCase() : 'UNKNOWN'} | Filter: ${spectrumMode} | Era: ${timeMachineYear}`, 20, canvas.height - 20);
+          ctx.font = '18px monospace';
+          ctx.fillText(`VIFOTEC 2026 SPACE EXPLORER PROJECT`, 30, canvas.height - 35);
           
-          ctx.fillStyle = '#f87171';
+          ctx.fillStyle = 'white';
           ctx.textAlign = 'right';
+          ctx.font = '18px monospace';
+          ctx.fillText(`INSTRUMENT: NIRCam / MIRI`, canvas.width - 30, canvas.height - 75);
+          ctx.fillText(`FILTER: ${spectrumMode.toUpperCase()} | ERA: ${timeMachineYear}`, canvas.width - 30, canvas.height - 50);
+          
           const centerPoint = osdViewerRef.current?.viewport.getCenter();
-          ctx.fillText(`RA: ${(centerPoint?.x || 0).toFixed(4)} | DEC: ${(centerPoint?.y || 0).toFixed(4)}`, canvas.width - 20, canvas.height - 35);
+          ctx.fillStyle = '#f87171';
+          ctx.fillText(`RA: ${(centerPoint?.x || 0).toFixed(6)} | DEC: ${(centerPoint?.y || 0).toFixed(6)}`, canvas.width - 30, canvas.height - 25);
+          
+          ctx.strokeStyle = 'white';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(canvas.width - 350, canvas.height - 80);
+          ctx.lineTo(canvas.width - 350, canvas.height - 40);
+          ctx.lineTo(canvas.width - 320, canvas.height - 40);
+          ctx.stroke();
           
           const link = document.createElement('a'); link.download = `jwst_${searchQuery}_${spectrumMode}_${Date.now()}.png`; link.href = tempCanvas.toDataURL('image/png', 1.0); link.click(); 
         }
@@ -552,10 +598,16 @@ function App() {
                 )}
                 
                 {isWaitingForDzi && (
-                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
-                    <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-                    <h2 className="text-2xl font-bold text-blue-400 animate-pulse tracking-widest text-center">ĐANG TRUY XUẤT NASA MAST</h2>
-                    <p className="text-slate-300 mt-4 text-xl text-center">Thời gian dự kiến còn lại: <span className="text-emerald-400 font-mono font-bold text-3xl ml-2">{timeLeft > 0 ? `${timeLeft}s` : 'Đang đồng bộ...'}</span></p>
+                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#0B0B10]/90 backdrop-blur-md">
+                    <div className="scanline-overlay"></div>
+                    <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(0,255,255,0.5)]"></div>
+                    <h2 className="text-2xl font-bold text-cyan-400 tracking-widest text-center glitch" style={{ fontFamily: 'var(--font-heading)' }}>ĐANG TRUY XUẤT NASA MAST</h2>
+                    <p className="text-slate-300 mt-4 text-sm text-center" style={{ fontFamily: 'var(--font-mono)' }}>THỜI GIAN DỰ KIẾN CÒN LẠI: <span className="text-emerald-400 font-bold text-xl ml-2">{timeLeft > 0 ? `${timeLeft}s` : 'ĐANG ĐỒNG BỘ...'}</span></p>
+                    
+                    {/* Fake progress bar */}
+                    <div className="w-64 h-1 bg-slate-800 rounded-full mt-6 overflow-hidden">
+                      <div className="h-full bg-cyan-500 animate-[pulse_1s_ease-in-out_infinite]" style={{ width: `${Math.min(100, Math.max(5, (180 - timeLeft) / 180 * 100))}%` }}></div>
+                    </div>
                   </div>
                 )}
                 
@@ -581,12 +633,41 @@ function App() {
                   <div className="absolute -left-16 w-32 h-full bg-gradient-to-r from-transparent to-orange-500/20"></div>
                 </div>
                 
+                {/* Center Reticle (Signature) */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex flex-col items-center justify-center">
+                  <div className="relative w-[150px] h-[150px] flex items-center justify-center animate-[spin_60s_linear_infinite]">
+                    {/* Outer dashed ring */}
+                    <svg className="absolute inset-0 w-full h-full text-cyan-500/30" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 6" />
+                      <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                    </svg>
+                    {/* Crosshairs */}
+                    <div className="absolute top-0 bottom-0 w-[1px] bg-cyan-500/50"></div>
+                    <div className="absolute left-0 right-0 h-[1px] bg-cyan-500/50"></div>
+                    <div className="w-2 h-2 border border-cyan-400"></div>
+                  </div>
+                  <div className="absolute top-[110%] flex flex-col items-center">
+                    <div className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1" style={{ fontFamily: 'var(--font-heading)' }}>TARGET: {currentTarget || 'UNKNOWN'}</div>
+                    <div ref={reticleCoordsRef} id="reticle-coords-text" className="text-emerald-400 text-[10px] whitespace-nowrap bg-slate-900/80 px-2 py-1 rounded-sm border border-slate-700/50 backdrop-blur-md shadow-[0_0_10px_rgba(16,185,129,0.1)]" style={{ fontFamily: 'var(--font-mono)' }}>
+                      RA: 0.0000 | DEC: 0.0000
+                    </div>
+                  </div>
+                </div>
+
                 <SpaceNewsTicker />
               </div>
             )}
 
-            {activeLayer === 'vrgallery' && <VRGallery onClose={() => setActiveLayer('stellarium')} speakText={speakText} />}
-            {activeLayer === 'radar' && <div className="absolute inset-0 bg-slate-900"><Radar3D /></div>}
+            {activeLayer === 'vrgallery' && (
+              <React.Suspense fallback={<div className="absolute inset-0 bg-slate-900 flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">INITIATING VR ENVIRONMENT...</div>}>
+                <VRGallery onClose={() => setActiveLayer('stellarium')} speakText={speakText} />
+              </React.Suspense>
+            )}
+            {activeLayer === 'radar' && (
+              <React.Suspense fallback={<div className="absolute inset-0 bg-slate-900 flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">CONNECTING TO RADAR TELEMETRY...</div>}>
+                <div className="absolute inset-0 bg-slate-900"><Radar3D /></div>
+              </React.Suspense>
+            )}
           </div>
 
           {/* Top HUD - Search Bar */}

@@ -33,14 +33,14 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
     <div className="flex flex-col gap-2">
       {/* Tab Navigation */}
       {hasDeepSkyData && (
-        <div className="flex bg-slate-900/50 rounded-lg p-0.5 gap-0.5" role="tablist">
+        <div className="flex bg-slate-900/80 rounded-sm p-0.5 gap-0.5 border border-slate-700/50" role="tablist">
           {(['IMAGE', 'ANALYSIS', 'TOOLS'] as TabType[]).map(tab => (
             <button
               key={tab}
               role="tab"
               aria-selected={activeTab === tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-1.5 text-[10px] font-semibold tracking-wider rounded-md cursor-pointer transition-all duration-200 ${
+              className={`flex-1 py-1.5 text-[10px] font-semibold tracking-wider rounded-sm cursor-pointer transition-all duration-200 ${
                 activeTab === tab
                   ? 'bg-cyan-500/15 text-cyan-300 shadow-[0_0_8px_rgba(0,255,255,0.1)]'
                   : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/40'
@@ -55,7 +55,7 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
 
       {/* IMAGE Tab */}
       {hasDeepSkyData && activeTab === 'IMAGE' && (
-        <div className="flex flex-col gap-3 p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
+        <div className="flex flex-col gap-3 p-3 bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50 border-l-2 border-l-cyan-500 shadow-[inset_0_0_20px_rgba(0,255,255,0.02)]">
           <h4 className="hud-label text-cyan-400 flex items-center gap-2">
             <span className="w-1 h-1 rounded-full bg-cyan-400" />
             Optical Analysis
@@ -93,7 +93,7 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
       {/* ANALYSIS Tab */}
       {hasDeepSkyData && activeTab === 'ANALYSIS' && (
         <div className="flex flex-col gap-3">
-          <div className="p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
+          <div className="p-3 bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50 border-l-2 border-l-cyan-500 shadow-[inset_0_0_20px_rgba(0,255,255,0.02)]">
             <h4 className="hud-label text-cyan-400 flex items-center gap-2 mb-3">
               <span className="w-1 h-1 rounded-full bg-cyan-400" />
               Science Tools
@@ -113,7 +113,7 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
             </div>
           </div>
 
-          <div className="bg-slate-900/30 rounded-lg border border-slate-700/30 overflow-hidden">
+          <div className="bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50 border-l-2 border-l-purple-500 shadow-[inset_0_0_20px_rgba(168,85,247,0.02)] overflow-hidden">
             <SpectrumPanel spectrumMode={spectrumMode} setSpectrumMode={setSpectrumMode} timeMachineYear={timeMachineYear} setTimeMachineYear={setTimeMachineYear} />
           </div>
         </div>
@@ -121,7 +121,7 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
 
       {/* TOOLS Tab */}
       {hasDeepSkyData && activeTab === 'TOOLS' && (
-        <div className="p-3 bg-slate-900/30 rounded-lg border border-slate-700/30">
+        <div className="p-3 bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50 border-l-2 border-l-cyan-500 shadow-[inset_0_0_20px_rgba(0,255,255,0.02)]">
           <h4 className="hud-label text-cyan-400 flex items-center gap-2 mb-3">
             <span className="w-1 h-1 rounded-full bg-cyan-400" />
             Interaction Modes
@@ -133,7 +133,7 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
                 onClick={control.action} 
                 title={control.title}
                 aria-label={control.title}
-                className={`btn-icon rounded-lg h-10 w-full ${
+                className={`btn-icon rounded-sm h-10 w-full ${
                   ['mark', 'select', 'measure', 'magnify', 'blackhole', 'cockpit'].includes(control.type) && 
                   (interactionMode === control.type || (control.type === 'cockpit' && isCockpitMode)) 
                     ? 'active' : ''
@@ -156,7 +156,7 @@ export const LeftHUD: React.FC<LeftHUDProps> = ({
       </button>
       
       {badges.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 justify-center p-2 bg-slate-900/30 rounded-lg border border-slate-700/30">
+        <div className="flex flex-wrap gap-1.5 justify-center p-2 bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50">
           {badges.map((b, i) => (
             <span key={i} title={b} className="w-8 h-8 flex items-center justify-center bg-cyan-500/10 border border-cyan-500/20 rounded-lg cursor-help transition-transform hover:scale-110">
               <IconTrophy size={16} className="text-cyan-400" />
