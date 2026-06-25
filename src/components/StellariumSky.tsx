@@ -122,7 +122,7 @@ interface StellariumSkyProps {
 }
 
 export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectObject, isVisible = true }) => {
-  const [useOfficialEngine, setUseOfficialEngine] = useState<boolean>(true);
+  const [useOfficialEngine, setUseOfficialEngine] = useState<boolean>(false);
   const [showControlsMobile, setShowControlsMobile] = useState<boolean>(false);
   const [isAREnabled, setIsAREnabled] = useState<boolean>(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1584,48 +1584,48 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
       ) : (
         <div className="flex-1 flex relative overflow-hidden">
           {/* Left Side Panel (Controls) */}
-          <div className={`${showControlsMobile ? 'flex' : 'hidden'} md:flex absolute md:relative w-full md:w-80 h-[50%] md:h-full bottom-0 md:bottom-auto bg-slate-900/95 md:bg-slate-900/80 backdrop-blur border-t md:border-t-0 md:border-r border-slate-800 flex-col z-40 p-4 gap-4 overflow-y-auto`}>
+          <div className={`${showControlsMobile ? 'flex' : 'hidden'} md:flex absolute md:relative w-full md:w-80 h-[50%] md:h-full bottom-0 md:bottom-auto glass-panel flex-col z-40 p-5 gap-5 overflow-y-auto m-0 md:m-4 md:mr-0`}>
             {/* Observation Coordinates */}
-            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
-              <h3 className="text-xs font-bold text-sky-400 uppercase tracking-wider mb-2">📍 Địa Điểm & Vĩ Độ</h3>
-              <div className="text-xs flex flex-col gap-1.5">
-                <div className="flex justify-between"><span className="text-slate-400">Vị trí:</span> <span className="font-semibold">{locationName}</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Vĩ độ:</span> <span className="font-mono">{lat.toFixed(4)}° N</span></div>
-                <div className="flex justify-between"><span className="text-slate-400">Kinh độ:</span> <span className="font-mono">{lng.toFixed(4)}° E</span></div>
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <h3 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-3 font-mono">📍 Địa Điểm & Vĩ Độ</h3>
+              <div className="text-xs flex flex-col gap-2">
+                <div className="flex justify-between"><span className="text-white/40">Vị trí:</span> <span className="font-semibold text-white/80">{locationName}</span></div>
+                <div className="flex justify-between"><span className="text-white/40">Vĩ độ:</span> <span className="font-mono text-white/80">{lat.toFixed(4)}° N</span></div>
+                <div className="flex justify-between"><span className="text-white/40">Kinh độ:</span> <span className="font-mono text-white/80">{lng.toFixed(4)}° E</span></div>
               </div>
 
-              <div className="grid grid-cols-3 gap-1 mt-3">
-                <button onClick={() => handleLocationPreset('hanoi')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Hà Nội</button>
-                <button onClick={() => handleLocationPreset('hcm')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">TP HCM</button>
-                <button onClick={() => handleLocationPreset('danang')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Đà Nẵng</button>
+              <div className="grid grid-cols-3 gap-2 mt-4">
+                <button onClick={() => handleLocationPreset('hanoi')} className="glass-btn text-[10px] py-1.5 px-0">Hà Nội</button>
+                <button onClick={() => handleLocationPreset('hcm')} className="glass-btn text-[10px] py-1.5 px-0">TP HCM</button>
+                <button onClick={() => handleLocationPreset('danang')} className="glass-btn text-[10px] py-1.5 px-0">Đà Nẵng</button>
               </div>
 
-              <div className="grid grid-cols-2 gap-1 mt-1">
-                <button onClick={handleGeolocation} className="bg-sky-950/50 border border-sky-800 text-sky-300 hover:bg-sky-900/50 text-[10px] py-1 rounded transition-colors flex items-center justify-center gap-1">
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <button onClick={handleGeolocation} className="glass-btn text-[10px] py-1.5 px-0 bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 hover:text-cyan-300">
                   📡 GPS Tự Động
                 </button>
-                <button onClick={() => handleLocationPreset('london')} className="bg-slate-800 hover:bg-slate-700 text-[10px] py-1 rounded transition-colors">Ngoại Quốc</button>
+                <button onClick={() => handleLocationPreset('london')} className="glass-btn text-[10px] py-1.5 px-0">Ngoại Quốc</button>
               </div>
             </div>
 
             {/* Sky Culture */}
-            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
-              <h3 className="text-xs font-bold text-pink-400 uppercase tracking-wider mb-2">🌸 Văn Hóa Bầu Trời</h3>
-              <div className="flex bg-slate-900 rounded p-0.5 border border-slate-800">
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <h3 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-3 font-mono">🌸 Văn Hóa Bầu Trời</h3>
+              <div className="flex bg-black/20 rounded-lg p-1 border border-white/10">
                 <button
                   onClick={() => { setSkyCulture('western'); setShowWesternLines(true); setShowVnLines(false); }}
-                  className={`flex-1 text-center py-1 text-xs rounded transition-all ${skyCulture === 'western' ? 'bg-sky-600 font-bold text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                  className={`flex-1 text-center py-1.5 text-xs rounded-md transition-all ${skyCulture === 'western' ? 'bg-white/20 font-bold text-white shadow-md' : 'text-white/40 hover:text-white/80'}`}
                 >
                   Tây Phương (IAU)
                 </button>
                 <button
                   onClick={() => { setSkyCulture('vietnamese'); setShowWesternLines(false); setShowVnLines(true); }}
-                  className={`flex-1 text-center py-1 text-xs rounded transition-all ${skyCulture === 'vietnamese' ? 'bg-rose-600 font-bold text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}
+                  className={`flex-1 text-center py-1.5 text-xs rounded-md transition-all ${skyCulture === 'vietnamese' ? 'bg-white/20 font-bold text-white shadow-md' : 'text-white/40 hover:text-white/80'}`}
                 >
                   Việt Nam (Cổ)
                 </button>
               </div>
-              <p className="text-[10px] text-slate-400 italic mt-2">
+              <p className="text-[10px] text-white/40 italic mt-3">
                 {skyCulture === 'western'
                   ? "Bộ chòm sao quốc tế chuẩn IAU với 88 chòm sao thiên văn hiện đại."
                   : "Hệ chòm sao Nhị Thập Bát Tú và Tam Viên truyền thống theo Thiên văn học Việt Nam và Đông Á cổ đại."
@@ -1657,9 +1657,9 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
             </div>
 
             {/* Stellarium Tours */}
-            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
-              <h3 className="text-xs font-bold text-fuchsia-400 uppercase tracking-wider mb-2">🚀 Stellarium Tours</h3>
-              <div className="flex flex-col gap-1.5">
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10 mb-2">
+              <h3 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-3 font-mono">🚀 Stellarium Tours</h3>
+              <div className="flex flex-col gap-2">
                 {Object.values(STELLARIUM_TOURS).map(tour => (
                   <button
                     key={tour.id}
@@ -1671,71 +1671,71 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
                         setActiveTour({ id: tour.id, steps: tour.steps, currentIndex: 0 });
                       }
                     }}
-                    className={`text-left px-2 py-1.5 rounded text-xs border transition-colors ${activeTour?.id === tour.id ? 'bg-fuchsia-900/50 border-fuchsia-500 text-fuchsia-200' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'}`}
+                    className={`text-left px-3 py-2 rounded-lg text-xs border transition-colors ${activeTour?.id === tour.id ? 'bg-white/20 border-white/40 text-white shadow-md' : 'bg-black/20 border-white/5 text-white/60 hover:bg-white/10 hover:border-white/20'}`}
                   >
-                    <div className="font-bold">{tour.name}</div>
-                    <div className="text-[9px] opacity-70 truncate">{tour.description}</div>
+                    <div className="font-bold mb-1">{tour.name}</div>
+                    <div className="text-[9px] opacity-70 line-clamp-2">{tour.description}</div>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* Layers and Settings */}
-            <div className="bg-slate-950/60 p-3 rounded border border-slate-800">
-              <h3 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-3">🛠️ Tùy Chọn Lớp Hiển Thị</h3>
+            <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+              <h3 className="text-xs font-bold text-white/80 uppercase tracking-wider mb-3 font-mono">🛠️ Tùy Chọn Lớp Hiển Thị</h3>
               <div className="flex flex-col gap-2 text-xs">
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showAtmosphere} onChange={e => setShowAtmosphere(e.target.checked)} className="rounded text-sky-600 focus:ring-0" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showAtmosphere} onChange={e => setShowAtmosphere(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Bầu khí quyển (Khúc xạ ngày/đêm)</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={skyCulture === 'western' ? showWesternLines : showVnLines} onChange={e => skyCulture === 'western' ? setShowWesternLines(e.target.checked) : setShowVnLines(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={skyCulture === 'western' ? showWesternLines : showVnLines} onChange={e => skyCulture === 'western' ? setShowWesternLines(e.target.checked) : setShowVnLines(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Vẽ đường nối chòm sao</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showWesternNames} onChange={e => setShowWesternNames(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showWesternNames} onChange={e => setShowWesternNames(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Hiển thị tên chòm sao</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showEquatorGrid} onChange={e => setShowEquatorGrid(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showEquatorGrid} onChange={e => setShowEquatorGrid(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Lưới tọa độ Xích Đạo (Equatorial)</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showAzimutGrid} onChange={e => setShowAzimutGrid(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showAzimutGrid} onChange={e => setShowAzimutGrid(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Lưới tọa độ Chân Trời (Azimuthal)</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showMilkyWay} onChange={e => setShowMilkyWay(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showMilkyWay} onChange={e => setShowMilkyWay(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Hiển thị Dải Ngân Hà (Milky Way)</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showMeteors} onChange={e => setShowMeteors(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showMeteors} onChange={e => setShowMeteors(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Mưa sao băng (Meteors Plugin)</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showSatellites} onChange={e => setShowSatellites(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showSatellites} onChange={e => setShowSatellites(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Vệ tinh nhân tạo ISS (Satellites Plugin)</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showCompass} onChange={e => setShowCompass(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showCompass} onChange={e => setShowCompass(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Đường chân trời & Đông Tây Nam Bắc</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showLandscape} onChange={e => setShowLandscape(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showLandscape} onChange={e => setShowLandscape(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Hiển thị cảnh quan (Landscapes)</span>
                 </label>
 
-                <label className="flex items-center gap-2 cursor-pointer hover:text-white">
-                  <input type="checkbox" checked={showTelescope} onChange={e => setShowTelescope(e.target.checked)} className="rounded text-sky-600" />
+                <label className="flex items-center gap-3 cursor-pointer text-white/70 hover:text-white transition-colors">
+                  <input type="checkbox" checked={showTelescope} onChange={e => setShowTelescope(e.target.checked)} className="accent-white w-3 h-3" />
                   <span>Ống kính viễn vọng (Oculars Plugin)</span>
                 </label>
 
