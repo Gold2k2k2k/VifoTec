@@ -64,21 +64,21 @@ export const RightHUD: React.FC<RightHUDProps> = ({
     }
   };
   return (
-    <div className="flex flex-col h-full relative overflow-hidden">
+    <div className="flex flex-col h-full relative overflow-hidden glass-panel">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-slate-700/40 flex justify-between items-center bg-slate-900/30 shrink-0">
+      <div className="px-3 py-3 border-b border-white/10 flex justify-between items-center bg-black/20 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" style={{ animation: 'pulse-glow 2s infinite' }} />
-          <span className="hud-label text-cyan-400">AI Assistant</span>
+          <div className="w-1.5 h-1.5 rounded-full bg-white/50" style={{ animation: 'pulse-glow 2s infinite' }} />
+          <span className="text-[10px] uppercase tracking-[0.2em] font-semibold text-white/80">AI Assistant</span>
         </div>
-        <span className="text-[9px] text-slate-600" style={{ fontFamily: 'var(--font-mono)' }}>GEMINI</span>
+        <span className="text-[9px] text-white/40" style={{ fontFamily: 'var(--font-mono)' }}>GEMINI</span>
       </div>
 
       {/* Session tabs */}
-      <div className="flex gap-1 overflow-x-auto hide-scrollbar px-2 py-1.5 border-b border-slate-800/30 shrink-0">
+      <div className="flex gap-1 overflow-x-auto hide-scrollbar px-2 py-1.5 border-b border-white/5 shrink-0 bg-white/5">
         <button 
           onClick={handleNewSession} 
-          className="btn-ghost flex items-center gap-1 shrink-0 text-[10px] py-1 cursor-pointer"
+          className="flex items-center gap-1 shrink-0 text-[10px] py-1 px-2 cursor-pointer bg-white/5 text-white/60 hover:text-white rounded hover:bg-white/10 transition-colors"
           aria-label="New chat session"
         >
           <IconPlus size={12} /> New
@@ -89,8 +89,8 @@ export const RightHUD: React.FC<RightHUDProps> = ({
             onClick={() => handleSwitchSession(s.id)} 
             className={`px-2 py-1 text-[10px] truncate max-w-[100px] shrink-0 rounded cursor-pointer transition-all duration-200 ${
               currentSessionId === s.id 
-                ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30' 
-                : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/40 border border-transparent'
+                ? 'bg-white/10 text-white border border-white/20' 
+                : 'text-white/40 hover:text-white hover:bg-white/5 border border-transparent'
             }`}
             style={{ fontFamily: 'var(--font-mono)' }}
           >
@@ -104,15 +104,15 @@ export const RightHUD: React.FC<RightHUDProps> = ({
         <div className="flex flex-col gap-4">
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex flex-col group ${msg.role === 'ai' ? 'items-start' : 'items-end'}`}>
-              <div className="text-[9px] text-slate-600 mb-1 uppercase tracking-wider" style={{ fontFamily: 'var(--font-mono)' }}>
+              <div className="text-[9px] text-white/30 mb-1 uppercase tracking-wider" style={{ fontFamily: 'var(--font-mono)' }}>
                 {msg.role === 'ai' ? 'System' : 'You'}
               </div>
-              <div className={`p-3 text-[12px] leading-relaxed max-w-[95%] overflow-x-auto rounded-sm ${
+              <div className={`p-3 text-[12px] leading-relaxed max-w-[95%] overflow-x-auto rounded-xl ${
                 msg.role === 'ai' 
-                  ? 'bg-slate-800/40 text-slate-200 border border-slate-700/30 border-l-2 border-l-cyan-500' 
-                  : 'bg-blue-900/20 text-blue-100 border border-blue-800/30 border-r-2 border-r-blue-500'
+                  ? 'bg-white/10 text-white border border-white/5 shadow-xl backdrop-blur-md' 
+                  : 'bg-blue-500/20 text-white border border-blue-400/20 shadow-xl backdrop-blur-md'
               }`}>
-                <div className="prose-sm">
+                <div className="prose-sm text-white/90">
                   {msg.role === 'ai' ? (
                     <ReactMarkdown 
                       components={{
@@ -168,14 +168,15 @@ export const RightHUD: React.FC<RightHUDProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="p-2 bg-[#0f172a]/60 backdrop-blur-md border-t border-slate-700/50 shrink-0">
+      <div className="p-3 bg-black/40 backdrop-blur-xl border-t border-white/10 shrink-0">
+        
         {/* Quick prompts */}
         <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-2">
           {PROMPT_TEMPLATES.map((t, i) => ( 
             <button 
               key={i} 
               onClick={() => setChatInput(t)} 
-              className="btn-ghost text-[9px] py-1 px-2 shrink-0 cursor-pointer whitespace-nowrap"
+              className="text-[9px] py-1 px-2 shrink-0 cursor-pointer whitespace-nowrap bg-white/5 border border-white/10 text-white/60 hover:text-white rounded-full hover:bg-white/10 transition-colors"
             >
               {t.substring(0, 25)}...
             </button> 
@@ -184,23 +185,23 @@ export const RightHUD: React.FC<RightHUDProps> = ({
         
         {/* Attached file */}
         {selectedFile && (
-          <div className="flex items-center justify-between bg-slate-800/40 border border-slate-700/30 rounded px-2 py-1 mb-2 text-[10px] text-slate-300" style={{ fontFamily: 'var(--font-mono)' }}>
+          <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-lg px-2 py-1 mb-2 text-[10px] text-white/80" style={{ fontFamily: 'var(--font-mono)' }}>
             <span className="truncate max-w-[200px] flex items-center gap-1.5">
-              <IconPaperclip size={11} className="text-cyan-500" />
+              <IconPaperclip size={11} className="text-white/50" />
               {selectedFile.name}
             </span>
-            <button onClick={() => { setSelectedFile(null); setFileContent(''); if(fileInputRef.current) fileInputRef.current.value = ''; }} className="text-slate-500 hover:text-red-400 transition-colors cursor-pointer ml-2">
+            <button onClick={() => { setSelectedFile(null); setFileContent(''); if(fileInputRef.current) fileInputRef.current.value = ''; }} className="text-white/40 hover:text-red-400 transition-colors cursor-pointer ml-2">
               <IconClose size={12} />
             </button>
           </div>
         )}
         
         {/* Text input */}
-        <div className="flex items-end gap-1 bg-[#0B0B10] rounded-sm border border-slate-700/50 focus-within:border-cyan-500/40 transition-all duration-200 p-1">
+        <div className="flex items-end gap-1 bg-white/5 rounded-xl border border-white/10 focus-within:border-white/30 focus-within:bg-white/10 transition-all duration-200 p-1">
           {hasSpeechSupport && (
             <button 
               onClick={startListening} 
-              className={`btn-icon w-8 h-8 border-0 rounded-md shrink-0 cursor-pointer ${isListening ? 'text-red-400 bg-red-950/30' : ''}`} 
+              className={`w-8 h-8 flex items-center justify-center border-0 rounded-lg shrink-0 cursor-pointer text-white/60 hover:text-white hover:bg-white/10 transition-colors ${isListening ? 'text-red-400 bg-red-900/30' : ''}`} 
               aria-label="Voice input"
               title="Voice Input (Chrome/Edge)"
             >
@@ -212,7 +213,7 @@ export const RightHUD: React.FC<RightHUDProps> = ({
           
           <button 
             onClick={() => fileInputRef.current?.click()} 
-            className="btn-icon w-8 h-8 border-0 rounded-md shrink-0 cursor-pointer" 
+            className="w-8 h-8 flex items-center justify-center border-0 rounded-lg shrink-0 cursor-pointer text-white/60 hover:text-white hover:bg-white/10 transition-colors" 
             aria-label="Attach file"
           >
             <IconPaperclip size={14} />
@@ -220,7 +221,7 @@ export const RightHUD: React.FC<RightHUDProps> = ({
           
           <textarea 
             placeholder="Ask anything..." 
-            className="flex-1 bg-transparent border-none focus:outline-none text-slate-200 placeholder-slate-600 text-xs py-2 px-1 min-h-[32px] max-h-24 resize-none custom-scrollbar" 
+            className="flex-1 bg-transparent border-none focus:outline-none text-white placeholder-white/30 text-xs py-2 px-1 min-h-[32px] max-h-24 resize-none custom-scrollbar" 
             style={{ fontFamily: 'var(--font-body)' }}
             value={chatInput} 
             onChange={(e) => setChatInput(e.target.value)} 
@@ -235,7 +236,7 @@ export const RightHUD: React.FC<RightHUDProps> = ({
           
           <button 
             onClick={() => submitChat()} 
-            className="w-8 h-8 flex items-center justify-center bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-sm shrink-0 transition-all duration-200 cursor-pointer"  
+            className="w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 text-white rounded-lg shrink-0 transition-all duration-200 cursor-pointer"  
             aria-label="Send message"
           >
             <IconSend size={14} />

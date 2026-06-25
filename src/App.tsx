@@ -520,11 +520,10 @@ function App() {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden relative" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--color-text)', fontFamily: 'var(--font-body)' }}>
       <SettingsToggle />
-      {/* Landing Page (PC Optimized Hologram & Grid) */}
+      {/* Landing Page (Premium Glassmorphism) */}
       {!isExploring && (
-        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
-          {/* 3D Grid Background */}
-          <div className="bg-grid-3d pointer-events-none opacity-40"></div>
+        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-deep-space">
+          {/* Subtle star particles background could be added here */}
           
           <div className="relative z-10 flex flex-col items-center w-full max-w-4xl px-6">
             
@@ -536,34 +535,34 @@ function App() {
               <IconTelescope size={40} className="text-cyan-400 opacity-80" />
             </div>
 
-            {/* Status */}
-            <div className="flex items-center gap-3 mb-6" style={{ fontFamily: 'var(--font-mono)' }}>
-              <span className="w-2 h-2 bg-emerald-400 shadow-[0_0_10px_#10b981]" style={{ animation: 'pulse-glow 2s infinite' }} />
-              <span className="text-[11px] text-cyan-500 tracking-[0.3em]">{t('hologram_online')}</span>
+            {/* Status Pill */}
+            <div className="flex items-center gap-3 mb-8 glass-pill px-4 py-2">
+              <span className="w-2 h-2 rounded-full bg-white/50" style={{ animation: 'pulse-glow 2s infinite' }} />
+              <span className="text-[11px] text-white/70 tracking-[0.2em]">{t('system_ready')}</span>
             </div>
 
             {/* Title */}
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-4 text-center neon-text-cyan" style={{ fontFamily: 'var(--font-heading)' }}>
+            <h1 className="text-6xl md:text-8xl font-medium tracking-tighter mb-4 text-center text-gradient" style={{ fontFamily: 'var(--font-heading)' }}>
               JWST EXPLORER
             </h1>
-            <p className="text-cyan-600/80 text-xs md:text-sm tracking-[0.2em] mb-16 text-center uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
-              Deep Space Data Retrieval System — NASA MAST
+            <p className="text-white/40 text-xs md:text-sm tracking-[0.3em] mb-16 text-center uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
+              NASA MAST Observatory
             </p>
 
-            {/* Terminal Search */}
+            {/* Glass Search Pill */}
             <div className="relative w-full max-w-2xl" ref={searchContainerRef}>
-              <form onSubmit={handleSearchSubmit} className="relative flex items-center border-b-2 border-cyan-500/50 focus-within:border-cyan-400 transition-colors pb-2">
-                <span className="text-cyan-500 mr-4 font-bold text-xl">&gt;</span>
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center glass-pill px-6 py-4 focus-within:bg-white/10 focus-within:border-white/20 transition-all">
+                <span className="text-white/30 mr-4 font-mono text-xl">/</span>
                 <input 
                   type="text" 
-                  className="w-full bg-transparent outline-none text-cyan-300 font-mono text-lg tracking-widest placeholder-cyan-700/50"
+                  className="w-full bg-transparent outline-none text-white font-mono text-base tracking-widest placeholder-white/20"
                   placeholder={t('search_placeholder')} 
                   value={searchQuery} 
                   onChange={handleInputChange} 
                   onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} 
                 />
-                <button type="submit" className="ml-4 px-6 py-2 bg-cyan-500/20 text-cyan-300 font-mono text-sm tracking-widest hover:bg-cyan-500/40 hover:text-white transition-all border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                  [ {t('scan')} ]
+                <button type="submit" className="ml-4 px-6 py-2 bg-white/10 text-white font-mono text-xs tracking-widest rounded-full hover:bg-white/20 hover:scale-105 transition-all">
+                  {t('scan')}
                 </button>
               </form>
               
@@ -581,18 +580,17 @@ function App() {
             </div>
 
             {/* Skip to explorer */}
-            <button onClick={() => setIsExploring(true)} className="mt-16 text-cyan-600 hover:text-cyan-300 transition-colors flex items-center gap-3 group">
-              <span className="w-1 h-1 bg-cyan-600 group-hover:bg-cyan-300" />
+            <button onClick={() => setIsExploring(true)} className="mt-16 text-white/40 hover:text-white transition-all flex items-center gap-3 group">
               <span className="text-[10px] tracking-[0.2em] uppercase font-mono">{t('skip_startup')}</span>
             </button>
           </div>
           
           {/* Footer */}
           <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
-            <div className="flex flex-col gap-1 text-[10px] text-cyan-800 tracking-widest">
+            <div className="text-left text-[10px] text-white/30 tracking-widest">
               <span>VIFOTEC 2026</span>
             </div>
-            <div className="text-right text-[10px] text-cyan-800 tracking-widest">
+            <div className="text-right text-[10px] text-white/30 tracking-widest">
               <span>{t('powered_by')}</span>
             </div>
           </div>
