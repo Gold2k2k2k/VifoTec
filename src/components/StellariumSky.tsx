@@ -1555,11 +1555,29 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
             allowFullScreen
             allow="geolocation"
           />
-          {/* Overlay to block the mobile app prompt from Stellarium Web */}
-          <div className="absolute top-0 left-0 w-full h-[60px] bg-slate-950 z-50 md:hidden flex items-center justify-center border-b border-cyan-500/30">
-            <div className="flex items-center gap-2 text-cyan-500 font-mono text-[10px] tracking-widest animate-pulse">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+          {/* Overlay to block the mobile app prompt from Stellarium Web (Top Mobile) */}
+          <div className="absolute top-0 left-0 w-full h-[60px] bg-[#0B0B10]/90 backdrop-blur-xl z-50 md:hidden flex items-center justify-center border-b border-white/10">
+            <div className="flex items-center gap-2 text-white/80 font-mono text-[10px] tracking-widest animate-pulse">
+              <span className="w-1.5 h-1.5 rounded-full bg-white/50"></span>
               VIFOTEC HUB LINK ACTIVE
+            </div>
+          </div>
+          
+          {/* Overlay to block the "Stellarium Mobile" ad and footer on Desktop (Bottom Left) */}
+          <div className="absolute bottom-0 left-0 w-[400px] h-[380px] bg-[#0B0B10] z-40 hidden md:flex flex-col items-center justify-center p-6 border-t border-white/5 pointer-events-auto">
+            <div className="glass-panel p-6 w-full h-full flex flex-col items-center justify-center text-center">
+              <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                <span className="text-white/60 text-xl">✨</span>
+              </div>
+              <h3 className="text-white/80 font-mono text-sm tracking-widest mb-2">VIFOTEC SYSTEM</h3>
+              <p className="text-white/40 text-[10px] font-mono leading-relaxed mb-6">
+                Observatory synchronized. Deep space telemetry active.
+              </p>
+              <div className="flex gap-2">
+                <div className="w-1 h-1 rounded-full bg-white/20 animate-pulse"></div>
+                <div className="w-1 h-1 rounded-full bg-white/40 animate-pulse" style={{ animationDelay: '200ms' }}></div>
+                <div className="w-1 h-1 rounded-full bg-white/60 animate-pulse" style={{ animationDelay: '400ms' }}></div>
+              </div>
             </div>
           </div>
         </div>
