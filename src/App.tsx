@@ -20,6 +20,8 @@ import { BottomDock } from './components/layout/BottomDock';
 import { FloatingPanel } from './components/layout/FloatingPanel';
 import { LeftHUD } from './components/layout/LeftHUD';
 import { RightHUD } from './components/layout/RightHUD';
+import { useLayout } from './context/LayoutContext';
+import { useViewer } from './context/ViewerContext';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -27,12 +29,10 @@ function App() {
   const [chatInput, setChatInput] = useState<string>('');
   const [messages, setMessages] = useState<{role: string, text: string}[]>([]);
 
-  // Session & UI Management
+  // Session & UI Management (UI Managed by LayoutContext)
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>('');
-  const [leftPanelOpen, setLeftPanelOpen] = useState<boolean>(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState<boolean>(true);
-  const [bottomDockOpen, setBottomDockOpen] = useState<boolean>(true);
+  const { leftPanelOpen, rightPanelOpen, bottomDockOpen, setLeftPanelOpen, setRightPanelOpen, setBottomDockOpen } = useLayout();
 
   // File Upload QA & Voice
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -45,13 +45,11 @@ function App() {
   const [dziUrl, setDziUrl] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const osdViewerRef = useRef<OpenSeadragon.Viewer | null>(null);
-  const [interactionMode, setInteractionMode] = useState<InteractionMode>('none');
+  const { interactionMode, setInteractionMode, spectrumMode, setSpectrumMode, timeMachineYear, setTimeMachineYear, isSonifying, setIsSonifying } = useViewer();
   const interactionModeRef = useRef(interactionMode);
   const [isWaitingForDzi, setIsWaitingForDzi] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(180); 
   const [filters, setFilters] = useState({ brightness: 100, contrast: 100, saturate: 100 });
-  const [spectrumMode, setSpectrumMode] = useState<SpectrumMode>('NIRCAM');
-  const [timeMachineYear, setTimeMachineYear] = useState<number>(2026);
   const [isCockpitMode, setIsCockpitMode] = useState<boolean>(false);
   const mousePosRef = useRef({x: window.innerWidth/2, y: window.innerHeight/2});
   const blackholeRef = useRef<HTMLDivElement>(null);
@@ -65,8 +63,7 @@ function App() {
   const [badges, setBadges] = useState<string[]>([]);
   const [activeLayer, setActiveLayer] = useState<string>('deepsky');
 
-  // Data Sonification State
-  const [isSonifying, setIsSonifying] = useState(false);
+  // Data Sonification State (Managed by ViewerContext)
   const scannerRef = useRef<HTMLDivElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const oscRef = useRef<OscillatorNode | null>(null);
@@ -650,15 +647,9 @@ function App() {
               filters={filters}
               setFilters={setFilters}
               handleDownload={handleDownload}
-              isSonifying={isSonifying}
               toggleSonification={toggleSonification}
               generateCitizenReport={generateCitizenReport}
-              spectrumMode={spectrumMode}
-              setSpectrumMode={setSpectrumMode}
-              timeMachineYear={timeMachineYear}
-              setTimeMachineYear={setTimeMachineYear}
               controls={controls}
-              interactionMode={interactionMode}
               isCockpitMode={isCockpitMode}
               setShowQuiz={setShowQuiz}
               badges={badges}

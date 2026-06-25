@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SpectrumPanel } from '../SpectrumPanel';
 import { SpectrumMode } from '../../data';
 import { IconDownload, IconWave, IconReport, IconTrophy } from '../Icons';
+import { useViewer } from '../../context/ViewerContext';
 
 interface LeftHUDProps {
   activeLayer: string;
@@ -9,15 +10,9 @@ interface LeftHUDProps {
   filters: { brightness: number; contrast: number; saturate: number };
   setFilters: (f: { brightness: number; contrast: number; saturate: number }) => void;
   handleDownload: () => void;
-  isSonifying: boolean;
   toggleSonification: () => void;
   generateCitizenReport: () => void;
-  spectrumMode: SpectrumMode;
-  setSpectrumMode: (m: SpectrumMode) => void;
-  timeMachineYear: number;
-  setTimeMachineYear: (y: number) => void;
   controls: any[];
-  interactionMode: string;
   isCockpitMode: boolean;
   setShowQuiz: (s: boolean) => void;
   badges: string[];
@@ -26,9 +21,10 @@ interface LeftHUDProps {
 type TabType = 'IMAGE' | 'ANALYSIS' | 'TOOLS';
 
 export const LeftHUD: React.FC<LeftHUDProps> = ({
-  activeLayer, dziUrl, filters, setFilters, handleDownload, isSonifying, toggleSonification, generateCitizenReport,
-  spectrumMode, setSpectrumMode, timeMachineYear, setTimeMachineYear, controls, interactionMode, isCockpitMode, setShowQuiz, badges
+  activeLayer, dziUrl, filters, setFilters, handleDownload, toggleSonification, generateCitizenReport,
+  controls, isCockpitMode, setShowQuiz, badges
 }) => {
+  const { isSonifying, spectrumMode, setSpectrumMode, timeMachineYear, setTimeMachineYear, interactionMode } = useViewer();
   const [activeTab, setActiveTab] = useState<TabType>('IMAGE');
 
   const hasDeepSkyData = activeLayer === 'deepsky' && dziUrl;
