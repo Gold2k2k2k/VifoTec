@@ -57,6 +57,34 @@ function App() {
   const [badges, setBadges] = useState<string[]>([]);
   const [activeLayer, setActiveLayer] = useState<string>('deepsky');
 
+  // Landing Page Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (value.trim().length > 0) {
+      setFilteredSuggestions(POPULAR_TARGETS.filter(t => t.toLowerCase().includes(value.toLowerCase())));
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    executeSearch(suggestion);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSearch(searchQuery);
+  };
+
   // Data Sonification State (Managed by ViewerContext)
   const scannerRef = useRef<HTMLDivElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -459,7 +487,7 @@ function App() {
           ctx.lineTo(canvas.width - 320, canvas.height - 40);
           ctx.stroke();
           
-          const link = document.createElement('a'); link.download = `jwst_${searchQuery}_${spectrumMode}_${Date.now()}.png`; link.href = tempCanvas.toDataURL('image/png', 1.0); link.click(); 
+          const link = document.createElement('a'); link.download = `jwst_${currentTarget}_${spectrumMode}_${Date.now()}.png`; link.href = tempCanvas.toDataURL('image/png', 1.0); link.click(); 
         }
       } catch (err) { alert("Lỗi xuất ảnh: Không thể tải ảnh do giới hạn bảo mật CORS."); }
     }
