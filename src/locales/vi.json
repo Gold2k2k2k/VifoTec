@@ -1,0 +1,14 @@
+{
+  "translation": {
+    "hello": "Xin chào",
+    "theme_dark": "Chế độ Tối",
+    "theme_light": "Chế độ Sáng",
+    "scan": "QUÉT",
+    "search_placeholder": "NHẬP TỌA ĐỘ / TÊN THIÊN HÀ...",
+    "system_ready": "HỆ THỐNG SẴN SÀNG",
+    "skip_startup": "BỎ QUA KHỞI ĐỘNG >",
+    "hologram_online": "GIAO DIỆN HOLOGRAM ĐÃ BẬT",
+    "target": "MỤC TIÊU",
+    "powered_by": "MAST API / GEMINI AI"
+  }
+}

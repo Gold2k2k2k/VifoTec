@@ -20,10 +20,13 @@ import { BottomDock } from './components/layout/BottomDock';
 import { FloatingPanel } from './components/layout/FloatingPanel';
 import { LeftHUD } from './components/layout/LeftHUD';
 import { RightHUD } from './components/layout/RightHUD';
+import { SettingsToggle } from './components/layout/SettingsToggle';
 import { useLayout } from './context/LayoutContext';
 import { useViewer } from './context/ViewerContext';
+import { useTranslation } from 'react-i18next';
 
 function App() {
+  const { t } = useTranslation();
   const [currentTarget, setCurrentTarget] = useState<string>('DEFAULT');
   const [isExploring, setIsExploring] = useState<boolean>(false);
   const [messages, setMessages] = useState<{role: string, text: string}[]>([]);
@@ -515,10 +518,11 @@ function App() {
   ];
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden relative" style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', fontFamily: 'var(--font-body)' }}>
+    <div className="flex flex-col h-screen w-screen overflow-hidden relative" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--color-text)', fontFamily: 'var(--font-body)' }}>
+      <SettingsToggle />
       {/* Landing Page (PC Optimized Hologram & Grid) */}
       {!isExploring && (
-        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-black">
+        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
           {/* 3D Grid Background */}
           <div className="bg-grid-3d pointer-events-none opacity-40"></div>
           
@@ -535,7 +539,7 @@ function App() {
             {/* Status */}
             <div className="flex items-center gap-3 mb-6" style={{ fontFamily: 'var(--font-mono)' }}>
               <span className="w-2 h-2 bg-emerald-400 shadow-[0_0_10px_#10b981]" style={{ animation: 'pulse-glow 2s infinite' }} />
-              <span className="text-[11px] text-cyan-500 tracking-[0.3em]">HOLOGRAM INTERFACE ONLINE</span>
+              <span className="text-[11px] text-cyan-500 tracking-[0.3em]">{t('hologram_online')}</span>
             </div>
 
             {/* Title */}
@@ -553,13 +557,13 @@ function App() {
                 <input 
                   type="text" 
                   className="w-full bg-transparent outline-none text-cyan-300 font-mono text-lg tracking-widest placeholder-cyan-700/50"
-                  placeholder="NHẬP TỌA ĐỘ / TÊN THIÊN HÀ..." 
+                  placeholder={t('search_placeholder')} 
                   value={searchQuery} 
                   onChange={handleInputChange} 
                   onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} 
                 />
                 <button type="submit" className="ml-4 px-6 py-2 bg-cyan-500/20 text-cyan-300 font-mono text-sm tracking-widest hover:bg-cyan-500/40 hover:text-white transition-all border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-                  [ QUÉT ]
+                  [ {t('scan')} ]
                 </button>
               </form>
               
@@ -579,7 +583,7 @@ function App() {
             {/* Skip to explorer */}
             <button onClick={() => setIsExploring(true)} className="mt-16 text-cyan-600 hover:text-cyan-300 transition-colors flex items-center gap-3 group">
               <span className="w-1 h-1 bg-cyan-600 group-hover:bg-cyan-300" />
-              <span className="text-[10px] tracking-[0.2em] uppercase font-mono">Bỏ qua khởi động &gt;</span>
+              <span className="text-[10px] tracking-[0.2em] uppercase font-mono">{t('skip_startup')}</span>
             </button>
           </div>
           
@@ -589,7 +593,7 @@ function App() {
               <span>VIFOTEC 2026</span>
             </div>
             <div className="text-right text-[10px] text-cyan-800 tracking-widest">
-              <span>MAST API / GEMINI AI</span>
+              <span>{t('powered_by')}</span>
             </div>
           </div>
         </div>

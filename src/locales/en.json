@@ -1,0 +1,14 @@
+{
+  "translation": {
+    "hello": "Hello",
+    "theme_dark": "Dark Mode",
+    "theme_light": "Light Mode",
+    "scan": "SCAN",
+    "search_placeholder": "ENTER COORDINATES / TARGET NAME...",
+    "system_ready": "SYSTEM READY",
+    "skip_startup": "SKIP TO MISSION CONTROL >",
+    "hologram_online": "HOLOGRAM INTERFACE ONLINE",
+    "target": "TARGET",
+    "powered_by": "MAST API / GEMINI AI"
+  }
+}
