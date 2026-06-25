@@ -516,53 +516,59 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden relative" style={{ backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', fontFamily: 'var(--font-body)' }}>
-      {/* Landing Page */}
+      {/* Landing Page (PC Optimized Hologram & Grid) */}
       {!isExploring && (
-        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--color-bg)' }}>
-          {/* Background */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,255,255,0.03),transparent_70%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]" />
+        <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-black">
+          {/* 3D Grid Background */}
+          <div className="bg-grid-3d pointer-events-none opacity-40"></div>
           
-          <div className="relative z-10 flex flex-col items-center w-full max-w-3xl px-6">
+          <div className="relative z-10 flex flex-col items-center w-full max-w-4xl px-6">
+            
+            {/* Centerpiece Hologram Sphere */}
+            <div className="relative w-40 h-40 mb-10 flex items-center justify-center">
+              <div className="absolute inset-0 border border-cyan-500/50 rounded-full animate-spin-slow" style={{ borderStyle: 'dashed' }}></div>
+              <div className="absolute inset-2 border-2 border-emerald-500/30 rounded-full animate-spin-slow-reverse" style={{ borderStyle: 'dotted' }}></div>
+              <div className="absolute inset-0 bg-cyan-500/10 rounded-full blur-md"></div>
+              <IconTelescope size={40} className="text-cyan-400 opacity-80" />
+            </div>
+
             {/* Status */}
-            <div className="flex items-center gap-3 mb-10" style={{ fontFamily: 'var(--font-mono)' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" style={{ animation: 'pulse-glow 2s infinite' }} />
-              <span className="text-[11px] text-slate-500 tracking-[0.2em]">SYSTEM READY</span>
+            <div className="flex items-center gap-3 mb-6" style={{ fontFamily: 'var(--font-mono)' }}>
+              <span className="w-2 h-2 bg-emerald-400 shadow-[0_0_10px_#10b981]" style={{ animation: 'pulse-glow 2s infinite' }} />
+              <span className="text-[11px] text-cyan-500 tracking-[0.3em]">HOLOGRAM INTERFACE ONLINE</span>
             </div>
 
             {/* Title */}
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-3 text-center" style={{ fontFamily: 'var(--font-heading)' }}>
-              <span className="text-transparent bg-clip-text bg-gradient-to-br from-cyan-300 via-white to-slate-300">
-                JWST Explorer
-              </span>
+            <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-4 text-center neon-text-cyan" style={{ fontFamily: 'var(--font-heading)' }}>
+              JWST EXPLORER
             </h1>
-            <p className="text-slate-500 text-sm md:text-base tracking-wide mb-14 text-center max-w-lg" style={{ fontFamily: 'var(--font-body)' }}>
+            <p className="text-cyan-600/80 text-xs md:text-sm tracking-[0.2em] mb-16 text-center uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
               Deep Space Data Retrieval System — NASA MAST
             </p>
 
-            {/* Search */}
-            <div className="relative w-full max-w-xl" ref={searchContainerRef}>
-              <form onSubmit={handleSearchSubmit} className="relative flex items-center">
-                <div className="absolute left-4 text-slate-500"><IconSearch size={16} /></div>
+            {/* Terminal Search */}
+            <div className="relative w-full max-w-2xl" ref={searchContainerRef}>
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center border-b-2 border-cyan-500/50 focus-within:border-cyan-400 transition-colors pb-2">
+                <span className="text-cyan-500 mr-4 font-bold text-xl">&gt;</span>
                 <input 
                   type="text" 
-                  className="input-hud w-full pl-11 pr-24 py-4 rounded-xl text-sm"
-                  placeholder="Search target (M101, Orion, Carina...)" 
+                  className="w-full bg-transparent outline-none text-cyan-300 font-mono text-lg tracking-widest placeholder-cyan-700/50"
+                  placeholder="NHẬP TỌA ĐỘ / TÊN THIÊN HÀ..." 
                   value={searchQuery} 
                   onChange={handleInputChange} 
                   onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} 
                 />
-                <button type="submit" className="absolute right-2 top-2 bottom-2 px-5 bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-400 rounded-lg cursor-pointer transition-all duration-200 text-xs font-semibold tracking-wider" style={{ fontFamily: 'var(--font-mono)' }}>
-                  SCAN
+                <button type="submit" className="ml-4 px-6 py-2 bg-cyan-500/20 text-cyan-300 font-mono text-sm tracking-widest hover:bg-cyan-500/40 hover:text-white transition-all border border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                  [ QUÉT ]
                 </button>
               </form>
               
               {showSuggestions && filteredSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 w-full mt-2 hud-panel rounded-xl overflow-hidden shadow-2xl z-50">
+                <div className="absolute top-full left-0 w-full mt-2 bg-black/90 border border-cyan-900 shadow-[0_0_20px_rgba(6,182,212,0.2)] z-50">
                   <ul className="max-h-60 overflow-y-auto custom-scrollbar py-1" style={{ fontFamily: 'var(--font-mono)' }}>
                     {filteredSuggestions.map((suggestion, idx) => ( 
-                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-4 py-2.5 hover:bg-slate-800/60 cursor-pointer text-slate-300 hover:text-cyan-300 transition-colors flex items-center gap-3 text-xs border-b border-slate-800/30 last:border-0">
-                        <span className="text-cyan-600 text-[10px] w-5">{String(idx + 1).padStart(2, '0')}</span> {suggestion}
+                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-4 py-3 hover:bg-cyan-900/40 cursor-pointer text-cyan-500 hover:text-cyan-300 transition-colors flex items-center gap-4 text-sm border-b border-cyan-900/30 last:border-0 uppercase tracking-wider">
+                        <span className="text-emerald-500/50 text-[10px] w-5">{(idx + 1).toString().padStart(2, '0')}</span> {suggestion}
                       </li> 
                     ))}
                   </ul>
@@ -571,19 +577,19 @@ function App() {
             </div>
 
             {/* Skip to explorer */}
-            <button onClick={() => setIsExploring(true)} className="mt-10 btn-ghost rounded-lg px-6 py-2.5 cursor-pointer flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-600" />
-              <span className="text-xs tracking-wider">Skip to Mission Control</span>
+            <button onClick={() => setIsExploring(true)} className="mt-16 text-cyan-600 hover:text-cyan-300 transition-colors flex items-center gap-3 group">
+              <span className="w-1 h-1 bg-cyan-600 group-hover:bg-cyan-300" />
+              <span className="text-[10px] tracking-[0.2em] uppercase font-mono">Bỏ qua khởi động &gt;</span>
             </button>
           </div>
           
           {/* Footer */}
-          <div className="absolute bottom-4 left-4 right-4 flex justify-between items-end pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
-            <div className="flex flex-col gap-0.5 text-[10px] text-slate-700">
+          <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
+            <div className="flex flex-col gap-1 text-[10px] text-cyan-800 tracking-widest">
               <span>VIFOTEC 2026</span>
             </div>
-            <div className="text-right text-[10px] text-slate-700">
-              <span>Powered by NASA MAST + Gemini AI</span>
+            <div className="text-right text-[10px] text-cyan-800 tracking-widest">
+              <span>MAST API / GEMINI AI</span>
             </div>
           </div>
         </div>
@@ -707,8 +713,8 @@ function App() {
           {/* Bottom HUD - View Switcher Dock */}
           {bottomDockOpen && <BottomDock items={dockItems} />}
 
-          {/* Left Floating Panel - Tools & Controls */}
-          <FloatingPanel position="left" isOpen={leftPanelOpen} title="Bảng Tùy Chỉnh (Tools)">
+          {/* Left HUD - Hologram Tools (No Floating Panel) */}
+          <div className={`absolute left-6 top-1/2 -translate-y-1/2 z-50 transition-opacity duration-300 ${leftPanelOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
             <LeftHUD 
               activeLayer={activeLayer}
               dziUrl={dziUrl}
@@ -722,7 +728,7 @@ function App() {
               setShowQuiz={setShowQuiz}
               badges={badges}
             />
-          </FloatingPanel>
+          </div>
 
           {/* Right Floating Panel - AI Assistant */}
           <FloatingPanel position="right" isOpen={rightPanelOpen} title="Trợ lý Gemini AI" width="w-80 md:w-96">

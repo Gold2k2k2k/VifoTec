@@ -96,9 +96,35 @@
 
   /* ---- Cards & Panels ---- */
   .hud-panel {
-    @apply bg-[#0f172a]/40 backdrop-blur-md border border-slate-700/50
-           shadow-lg overflow-hidden rounded-sm;
+    @apply bg-slate-900/40 backdrop-blur-md border border-cyan-500/30 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.1)];
   }
+
+  /* Hologram Button Style */
+  .hologram-btn {
+    @apply relative flex items-center justify-center p-3 text-cyan-400 bg-transparent cursor-pointer transition-all duration-300;
+    filter: drop-shadow(0 0 5px rgba(6, 182, 212, 0.5));
+  }
+  .hologram-btn:hover {
+    @apply text-cyan-300;
+    filter: drop-shadow(0 0 12px rgba(6, 182, 212, 1));
+    transform: scale(1.1);
+  }
+  .hologram-btn.active {
+    @apply text-emerald-400;
+    filter: drop-shadow(0 0 12px rgba(16, 185, 129, 1));
+  }
+  .hologram-btn .tooltip {
+    @apply absolute left-[120%] whitespace-nowrap text-cyan-300 font-mono text-[10px] tracking-widest uppercase opacity-0 translate-x-[-10px] pointer-events-none transition-all duration-300;
+  }
+  .hologram-btn:hover .tooltip {
+    @apply opacity-100 translate-x-0;
+  }
+
+  .neon-text-cyan {
+    @apply text-cyan-400;
+    text-shadow: 0 0 10px rgba(6, 182, 212, 0.8), 0 0 20px rgba(6, 182, 212, 0.4);
+  }
+
 
   .hud-panel-header {
     @apply flex items-center justify-between px-3 py-2
@@ -139,6 +165,39 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes spin-slow-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes grid-perspective {
+  0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+  100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+}
+
+.bg-grid-3d {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background-image: 
+    linear-gradient(rgba(6, 182, 212, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 182, 212, 0.2) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: grid-perspective 2s linear infinite;
+  transform-origin: center top;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-50%) translateX(-20px); }
+  to { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
 
   /* ---- Scanline Overlay ---- */
   .scanline-overlay {

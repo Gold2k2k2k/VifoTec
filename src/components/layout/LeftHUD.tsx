@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { SpectrumPanel } from '../SpectrumPanel';
-import { SpectrumMode } from '../../data';
 import { IconDownload, IconWave, IconReport, IconTrophy } from '../Icons';
 import { useViewer } from '../../context/ViewerContext';
 
@@ -18,150 +17,106 @@ interface LeftHUDProps {
   badges: string[];
 }
 
-type TabType = 'IMAGE' | 'ANALYSIS' | 'TOOLS';
-
 export const LeftHUD: React.FC<LeftHUDProps> = ({
   activeLayer, dziUrl, filters, setFilters, handleDownload, toggleSonification, generateCitizenReport,
   controls, isCockpitMode, setShowQuiz, badges
 }) => {
   const { isSonifying, spectrumMode, setSpectrumMode, timeMachineYear, setTimeMachineYear, interactionMode } = useViewer();
-  const [activeTab, setActiveTab] = useState<TabType>('IMAGE');
+  const [showSettings, setShowSettings] = useState(false);
 
   const hasDeepSkyData = activeLayer === 'deepsky' && dziUrl;
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* Tab Navigation */}
-      {hasDeepSkyData && (
-        <div className="flex bg-slate-900/80 rounded-sm p-0.5 gap-0.5 border border-slate-700/50" role="tablist">
-          {(['IMAGE', 'ANALYSIS', 'TOOLS'] as TabType[]).map(tab => (
-            <button
-              key={tab}
-              role="tab"
-              aria-selected={activeTab === tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-1.5 text-[10px] font-semibold tracking-wider rounded-sm cursor-pointer transition-all duration-200 ${
-                activeTab === tab
-                  ? 'bg-cyan-500/15 text-cyan-300 shadow-[0_0_8px_rgba(0,255,255,0.1)]'
-                  : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/40'
-              }`}
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* IMAGE Tab */}
-      {hasDeepSkyData && activeTab === 'IMAGE' && (
-        <div className="flex flex-col gap-3 p-3 bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50 border-l-2 border-l-cyan-500 shadow-[inset_0_0_20px_rgba(0,255,255,0.02)]">
-          <h4 className="hud-label text-cyan-400 flex items-center gap-2">
-            <span className="w-1 h-1 rounded-full bg-cyan-400" />
-            Optical Analysis
-          </h4>
-          
-          {[
-            { label: 'Brightness', key: 'brightness' as const, min: 50, max: 200 },
-            { label: 'Contrast', key: 'contrast' as const, min: 50, max: 200 },
-            { label: 'Saturation', key: 'saturate' as const, min: 0, max: 200 },
-          ].map(slider => (
-            <div key={slider.key}>
-              <div className="flex justify-between mb-1">
-                <span className="hud-label">{slider.label}</span>
-                <span className="text-[10px] text-cyan-400" style={{ fontFamily: 'var(--font-mono)' }}>{filters[slider.key]}%</span>
-              </div>
-              <input 
-                type="range" 
-                min={slider.min} 
-                max={slider.max} 
-                value={filters[slider.key]} 
-                onChange={e => setFilters({...filters, [slider.key]: parseInt(e.target.value)})} 
-                className="w-full"
-                aria-label={slider.label}
-              />
-            </div>
-          ))}
-
-          <button onClick={handleDownload} className="btn-primary flex items-center justify-center gap-2 w-full mt-1">
-            <IconDownload size={14} />
-            Capture Image
+    <div className="flex relative">
+      {/* Cột Hologram Icons Lơ lửng */}
+      <div className="flex flex-col gap-4 relative z-10">
+        {hasDeepSkyData && controls.map((control, idx) => (
+          <button 
+            key={idx} 
+            onClick={control.action} 
+            className={`hologram-btn ${
+              ['mark', 'select', 'measure', 'magnify', 'blackhole', 'cockpit'].includes(control.type) && 
+              (interactionMode === control.type || (control.type === 'cockpit' && isCockpitMode)) 
+                ? 'active' : ''
+            }`}
+          >
+            {control.icon}
+            <span className="tooltip">{control.title}</span>
           </button>
-        </div>
-      )}
+        ))}
 
-      {/* ANALYSIS Tab */}
-      {hasDeepSkyData && activeTab === 'ANALYSIS' && (
-        <div className="flex flex-col gap-3">
-          <div className="p-3 bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50 border-l-2 border-l-cyan-500 shadow-[inset_0_0_20px_rgba(0,255,255,0.02)]">
-            <h4 className="hud-label text-cyan-400 flex items-center gap-2 mb-3">
-              <span className="w-1 h-1 rounded-full bg-cyan-400" />
-              Science Tools
-            </h4>
-            <div className="flex flex-col gap-2">
-              <button 
-                onClick={toggleSonification} 
-                className={`btn-primary flex items-center justify-center gap-2 w-full ${isSonifying ? '!bg-amber-500/20 !border-amber-500/50 !text-amber-300' : ''}`}
-              >
-                <IconWave size={14} />
-                {isSonifying ? 'Sonification Active' : 'Start Sonification'}
-              </button>
-              <button onClick={generateCitizenReport} className="btn-ghost flex items-center justify-center gap-2 w-full">
-                <IconReport size={14} />
-                Export Report
-              </button>
-            </div>
-          </div>
+        {hasDeepSkyData && (
+          <>
+            <button onClick={handleDownload} className="hologram-btn">
+              <IconDownload size={18} />
+              <span className="tooltip">Xuất dữ liệu ảnh</span>
+            </button>
+            <button onClick={toggleSonification} className={`hologram-btn ${isSonifying ? 'active' : ''}`}>
+              <IconWave size={18} />
+              <span className="tooltip">{isSonifying ? 'Đang chuyển đổi âm thanh...' : 'Âm thanh hóa quang phổ'}</span>
+            </button>
+            <button onClick={() => setShowSettings(!showSettings)} className={`hologram-btn ${showSettings ? 'active' : ''}`}>
+              <span style={{ fontFamily: 'var(--font-mono)' }} className="text-sm font-bold">FILT</span>
+              <span className="tooltip">Bộ lọc & Phân tích</span>
+            </button>
+          </>
+        )}
 
-          <div className="bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50 border-l-2 border-l-purple-500 shadow-[inset_0_0_20px_rgba(168,85,247,0.02)] overflow-hidden">
-            <SpectrumPanel spectrumMode={spectrumMode} setSpectrumMode={setSpectrumMode} timeMachineYear={timeMachineYear} setTimeMachineYear={setTimeMachineYear} />
-          </div>
-        </div>
-      )}
+        <button onClick={() => setShowQuiz(true)} className="hologram-btn text-purple-400">
+          <IconTrophy size={18} />
+          <span className="tooltip">Mô phỏng Huấn luyện</span>
+        </button>
 
-      {/* TOOLS Tab */}
-      {hasDeepSkyData && activeTab === 'TOOLS' && (
-        <div className="p-3 bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50 border-l-2 border-l-cyan-500 shadow-[inset_0_0_20px_rgba(0,255,255,0.02)]">
-          <h4 className="hud-label text-cyan-400 flex items-center gap-2 mb-3">
-            <span className="w-1 h-1 rounded-full bg-cyan-400" />
-            Interaction Modes
-          </h4>
-          <div className="grid grid-cols-3 gap-1.5">
-            {controls.map((control, idx) => (
-              <button 
-                key={idx} 
-                onClick={control.action} 
-                title={control.title}
-                aria-label={control.title}
-                className={`btn-icon rounded-sm h-10 w-full ${
-                  ['mark', 'select', 'measure', 'magnify', 'blackhole', 'cockpit'].includes(control.type) && 
-                  (interactionMode === control.type || (control.type === 'cockpit' && isCockpitMode)) 
-                    ? 'active' : ''
-                }`}
-              >
-                {control.icon || control.label}
-              </button>
+        {badges.length > 0 && (
+          <div className="flex flex-col gap-2 mt-4">
+            {badges.map((b, i) => (
+              <span key={i} title={b} className="hologram-btn active !cursor-help">
+                <IconTrophy size={16} />
+              </span>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Quiz & Badges — always visible */}
-      <button 
-        onClick={() => setShowQuiz(true)} 
-        className="btn-ghost flex items-center justify-center gap-2 w-full border-purple-500/30 text-purple-400 hover:text-purple-300 hover:border-purple-500/50 hover:bg-purple-500/10 mt-1"
-      >
-        <IconTrophy size={14} />
-        Training Simulation
-      </button>
-      
-      {badges.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 justify-center p-2 bg-[#0f172a]/60 backdrop-blur-md rounded-sm border border-slate-700/50">
-          {badges.map((b, i) => (
-            <span key={i} title={b} className="w-8 h-8 flex items-center justify-center bg-cyan-500/10 border border-cyan-500/20 rounded-lg cursor-help transition-transform hover:scale-110">
-              <IconTrophy size={16} className="text-cyan-400" />
-            </span>
-          ))}
+      {/* Advanced Settings Hologram Panel (Mở rộng ra khi click) */}
+      {showSettings && hasDeepSkyData && (
+        <div className="absolute left-[100%] top-1/2 -translate-y-1/2 ml-6 w-72 bg-black/80 backdrop-blur-md border-l-2 border-cyan-500 p-4 shadow-[0_0_20px_rgba(6,182,212,0.3)] animate-[slideIn_0.3s_ease-out]">
+          <h4 className="text-cyan-400 font-mono text-xs uppercase tracking-widest mb-4 border-b border-cyan-500/30 pb-2">Hologram Settings</h4>
+          
+          <div className="flex flex-col gap-4">
+            {/* Sliders */}
+            <div className="flex flex-col gap-2">
+              {[
+                { label: 'Brightness', key: 'brightness' as const, min: 50, max: 200 },
+                { label: 'Contrast', key: 'contrast' as const, min: 50, max: 200 },
+                { label: 'Saturation', key: 'saturate' as const, min: 0, max: 200 },
+              ].map(slider => (
+                <div key={slider.key}>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-[10px] text-cyan-600 uppercase font-mono">{slider.label}</span>
+                    <span className="text-[10px] text-cyan-400 font-mono">{filters[slider.key]}%</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min={slider.min} 
+                    max={slider.max} 
+                    value={filters[slider.key]} 
+                    onChange={e => setFilters({...filters, [slider.key]: parseInt(e.target.value)})} 
+                    className="w-full accent-cyan-500"
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Spectrum Panel */}
+            <div className="mt-2 border-t border-cyan-500/30 pt-4">
+              <SpectrumPanel spectrumMode={spectrumMode} setSpectrumMode={setSpectrumMode} timeMachineYear={timeMachineYear} setTimeMachineYear={setTimeMachineYear} />
+            </div>
+            
+            <button onClick={generateCitizenReport} className="mt-2 w-full py-2 bg-transparent border border-cyan-500/50 text-cyan-400 font-mono text-xs uppercase hover:bg-cyan-500/20 transition-colors">
+              <IconReport size={14} className="inline mr-2" /> Báo cáo Citizen Science
+            </button>
+          </div>
         </div>
       )}
     </div>
