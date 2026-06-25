@@ -24,9 +24,8 @@ import { useLayout } from './context/LayoutContext';
 import { useViewer } from './context/ViewerContext';
 
 function App() {
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [currentTarget, setCurrentTarget] = useState<string>('DEFAULT');
   const [isExploring, setIsExploring] = useState<boolean>(false);
-  const [chatInput, setChatInput] = useState<string>('');
   const [messages, setMessages] = useState<{role: string, text: string}[]>([]);
 
   // Session & UI Management (UI Managed by LayoutContext)
@@ -38,7 +37,6 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileContent, setFileContent] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
 
   // Viewer State
@@ -53,11 +51,6 @@ function App() {
   const [isCockpitMode, setIsCockpitMode] = useState<boolean>(false);
   const mousePosRef = useRef({x: window.innerWidth/2, y: window.innerHeight/2});
   const blackholeRef = useRef<HTMLDivElement>(null);
-  // Suggestions
-  const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
-  const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-
   // Feature States
   const [showQuiz, setShowQuiz] = useState(false);
   const [badges, setBadges] = useState<string[]>([]);
@@ -179,28 +172,9 @@ function App() {
     }
   }, [interactionMode]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) setShowSuggestions(false);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value; setSearchQuery(value);
-    if (value.trim().length > 0) {
-      setFilteredSuggestions(POPULAR_TARGETS.filter(t => t.toLowerCase().includes(value.toLowerCase())));
-      setShowSuggestions(true);
-    } else setShowSuggestions(false);
-  };
 
-  const handleSuggestionClick = (suggestion: string) => { 
-    const query = suggestion.split(" (")[0];
-    setSearchQuery(query); 
-    setShowSuggestions(false); 
-    executeSearch(query);
-  };
+
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -278,7 +252,7 @@ function App() {
               } else if (mode === 'measure') {
                 const dx = currentPoint.x - dragStartPoint.x; const dy = currentPoint.y - dragStartPoint.y;
                 const distViewport = Math.sqrt(dx*dx + dy*dy); 
-                let scale = 100000; if (searchQuery.toUpperCase().includes('M101')) scale = 170000;
+                let scale = 100000; if (currentTarget.toUpperCase().includes('M101')) scale = 170000;
                 const ly = (distViewport * scale).toLocaleString('en-US', {maximumFractionDigits: 1});
                 selectionOverlayElement.innerHTML = `📏 Khảng cách: ~${ly} năm ánh sáng`;
                 osdViewerRef.current.updateOverlay(selectionOverlayElement, currentPoint);
@@ -303,16 +277,7 @@ function App() {
   const handleZoomOut = () => { osdViewerRef.current?.viewport.zoomBy(0.66); osdViewerRef.current?.viewport.applyConstraints(); };
   const handleToggleFullScreen = () => { if (osdViewerRef.current) osdViewerRef.current.setFullScreen(!osdViewerRef.current.isFullPage()); };
 
-  const startListening = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy dùng Google Chrome/Edge."); return; }
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'vi-VN'; recognition.continuous = false; recognition.interimResults = false;
-    recognition.onstart = () => setIsListening(true);
-    recognition.onresult = (event: any) => { setChatInput(prev => prev + (prev.length > 0 ? ' ' : '') + event.results[0][0].transcript); };
-    recognition.onerror = () => setIsListening(false); recognition.onend = () => setIsListening(false);
-    recognition.start();
-  };
+
 
   const speakText = (text: string) => {
     if (isSpeaking) { window.speechSynthesis.cancel(); setIsSpeaking(false); return; }
@@ -328,7 +293,7 @@ function App() {
 
   const startTour = async () => {
     if (!osdViewerRef.current) return;
-    const tourData = MOCK_TOURS[searchQuery.toUpperCase()] || MOCK_TOURS["DEFAULT"];
+    const tourData = MOCK_TOURS[currentTarget.toUpperCase()] || MOCK_TOURS["DEFAULT"];
     for (const point of tourData) {
        if (!osdViewerRef.current) break;
        osdViewerRef.current.viewport.panTo(new OpenSeadragon.Point(point.x, point.y));
@@ -341,8 +306,8 @@ function App() {
 
   const executeSearch = async (queryToSearch: string) => {
     if (queryToSearch.trim() === '') return;
-    setShowSuggestions(false); 
     const formattedQuery = queryToSearch.trim().toUpperCase().replace(/\s+/g, '_');
+    setCurrentTarget(queryToSearch.trim());
 
     setInteractionMode('none'); setFilters({ brightness: 100, contrast: 100, saturate: 100 }); setSpectrumMode('NIRCAM');
     if (osdViewerRef.current) osdViewerRef.current.clearOverlays();
@@ -386,16 +351,16 @@ function App() {
     } catch (error) { setIsWaitingForDzi(false); setMessages(prev => [...prev, { role: 'ai', text: 'Lỗi: Không thể kết nối tới máy chủ lõi.' }]); }
   };
 
-  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => { e.preventDefault(); executeSearch(searchQuery); };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => { const file = e.target.files?.[0]; if (file) { setSelectedFile(file); setFileContent(await file.text()); } };
 
   const handleChatSubmit = async (overrideText?: string) => {
-    const submitText = overrideText || chatInput.trim();
+    const submitText = overrideText || '';
     if (submitText !== '' || fileContent !== '') {
       let textToSend = submitText;
       if (fileContent) textToSend += `\n\n--- Dữ liệu đính kèm từ file ${selectedFile?.name} ---\n${fileContent}`;
       setMessages(prev => [...prev, { role: 'user', text: textToSend }]);
-      setChatInput(''); setSelectedFile(null); setFileContent(''); if (fileInputRef.current) fileInputRef.current.value = '';
+      setSelectedFile(null); setFileContent(''); if (fileInputRef.current) fileInputRef.current.value = '';
       setMessages(prev => [...prev, { role: 'ai', text: 'Đang phân tích dữ liệu...' }]);
 
       try {
@@ -410,7 +375,7 @@ function App() {
 
   const generateCitizenReport = () => {
      let md = `# BÁO CÁO KHÁM PHÁ VŨ TRỤ (CITIZEN SCIENCE)\n\n`;
-     md += `**Mục tiêu quan sát:** ${searchQuery.toUpperCase() || 'Không xác định'}\n`;
+     md += `**Mục tiêu quan sát:** ${currentTarget.toUpperCase() || 'Không xác định'}\n`;
      md += `**Ngày thực hiện:** ${new Date().toLocaleString('vi-VN')}\n\n`;
      md += `## Lịch sử Phân tích AI\n`;
      messages.filter(m => !m.text.includes('Đang thiết lập lại tọa độ')).forEach(m => { md += `**[${m.role === 'user' ? 'Nhà nghiên cứu' : 'Trợ lý JWST-AI'}]**: ${m.text}\n\n`; });
@@ -441,7 +406,7 @@ function App() {
           
           ctx.fillStyle = '#a7f3d0';
           ctx.font = '16px monospace';
-          ctx.fillText(`Target: ${searchQuery.toUpperCase()} | Filter: ${spectrumMode} | Era: ${timeMachineYear}`, 20, canvas.height - 20);
+          ctx.fillText(`Target: ${currentTarget ? currentTarget.toUpperCase() : 'UNKNOWN'} | Filter: ${spectrumMode} | Era: ${timeMachineYear}`, 20, canvas.height - 20);
           
           ctx.fillStyle = '#f87171';
           ctx.textAlign = 'right';
@@ -626,13 +591,7 @@ function App() {
 
           {/* Top HUD - Search Bar */}
           <TopHUD 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            onSearch={handleSearchSubmit}
-            suggestions={filteredSuggestions}
-            showSuggestions={showSuggestions}
-            onSuggestionClick={handleSuggestionClick}
-            onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }}
+            executeSearch={executeSearch}
             activeLayer={activeLayer}
           />
 
@@ -670,14 +629,10 @@ function App() {
               speakText={speakText}
               isSpeaking={isSpeaking}
               PROMPT_TEMPLATES={PROMPT_TEMPLATES}
-              chatInput={chatInput}
-              setChatInput={setChatInput}
               selectedFile={selectedFile}
               setSelectedFile={setSelectedFile}
               setFileContent={setFileContent}
               fileInputRef={fileInputRef}
-              startListening={startListening}
-              isListening={isListening}
               handleFileChange={handleFileChange}
             />
           </FloatingPanel>

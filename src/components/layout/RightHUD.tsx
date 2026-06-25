@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -26,22 +26,41 @@ interface RightHUDProps {
   speakText: (text: string) => void;
   isSpeaking: boolean;
   PROMPT_TEMPLATES: string[];
-  chatInput: string;
-  setChatInput: (s: string) => void;
   selectedFile: File | null;
   setSelectedFile: (f: File | null) => void;
   setFileContent: (s: string) => void;
+  setSelectedFile: (f: File | null) => void;
+  setFileContent: (s: string) => void;
   fileInputRef: React.RefObject<HTMLInputElement>;
-  startListening: () => void;
-  isListening: boolean;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export const RightHUD: React.FC<RightHUDProps> = ({
   handleNewSession, sessions, currentSessionId, handleSwitchSession, messages, messagesEndRef,
-  handleChatSubmit, handleCopyText, speakText, isSpeaking, PROMPT_TEMPLATES, chatInput, setChatInput,
-  selectedFile, setSelectedFile, setFileContent, fileInputRef, startListening, isListening, handleFileChange
+  handleChatSubmit, handleCopyText, speakText, isSpeaking, PROMPT_TEMPLATES,
+  selectedFile, setSelectedFile, setFileContent, fileInputRef, handleFileChange
 }) => {
+  const [chatInput, setChatInput] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) { alert("Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy dùng Google Chrome/Edge."); return; }
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'vi-VN'; recognition.continuous = false; recognition.interimResults = false;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (event: any) => { setChatInput(prev => prev + (prev.length > 0 ? ' ' : '') + event.results[0][0].transcript); };
+    recognition.onerror = () => setIsListening(false); recognition.onend = () => setIsListening(false);
+    recognition.start();
+  };
+
+  const submitChat = (overrideText?: string) => {
+    const text = overrideText || chatInput;
+    if (text.trim()) {
+      handleChatSubmit(text);
+      setChatInput('');
+    }
+  };
   return (
     <div className="flex flex-col h-full relative overflow-hidden">
       {/* Header */}
@@ -150,13 +169,13 @@ export const RightHUD: React.FC<RightHUDProps> = ({
       <div className="p-2 bg-slate-900/40 border-t border-slate-700/30 shrink-0">
         {/* Quick prompts */}
         <div className="flex gap-1.5 overflow-x-auto hide-scrollbar pb-2">
-          {PROMPT_TEMPLATES.map((pt, i) => ( 
+          {PROMPT_TEMPLATES.map((t, i) => ( 
             <button 
               key={i} 
-              onClick={() => setChatInput(pt)} 
+              onClick={() => setChatInput(t)} 
               className="btn-ghost text-[9px] py-1 px-2 shrink-0 cursor-pointer whitespace-nowrap"
             >
-              {pt.substring(0, 25)}...
+              {t.substring(0, 25)}...
             </button> 
           ))}
         </div>
@@ -203,15 +222,15 @@ export const RightHUD: React.FC<RightHUDProps> = ({
             onKeyDown={(e) => { 
               if (e.key === 'Enter' && !e.shiftKey) { 
                 e.preventDefault(); 
-                handleChatSubmit(); 
+                submitChat(); 
               } 
             }}
             rows={1}
           />
           
           <button 
-            onClick={() => handleChatSubmit()} 
-            className="w-8 h-8 flex items-center justify-center bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-md shrink-0 transition-all duration-200 cursor-pointer" 
+            onClick={() => submitChat()} 
+            className="w-8 h-8 flex items-center justify-center bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-md shrink-0 transition-all duration-200 cursor-pointer"  
             aria-label="Send message"
           >
             <IconSend size={14} />

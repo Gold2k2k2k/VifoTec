@@ -1,27 +1,52 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { IconSearch } from '../Icons';
+import { POPULAR_TARGETS } from '../../data';
 
 interface TopHUDProps {
-  searchQuery: string;
-  setSearchQuery: (val: string) => void;
-  onSearch: (e: React.FormEvent) => void;
-  suggestions: string[];
-  showSuggestions: boolean;
-  onSuggestionClick: (s: string) => void;
-  onFocus: () => void;
+  executeSearch: (query: string) => void;
   activeLayer?: string;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({
-  searchQuery,
-  setSearchQuery,
-  onSearch,
-  suggestions,
-  showSuggestions,
-  onSuggestionClick,
-  onFocus,
+  executeSearch,
   activeLayer = 'deepsky'
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    if (value.trim().length > 0) {
+      setSuggestions(POPULAR_TARGETS.filter(t => t.toLowerCase().includes(value.toLowerCase())));
+      setShowSuggestions(true);
+    } else setShowSuggestions(false);
+  };
+
+  const handleSuggestionClick = (suggestion: string) => { 
+    const query = suggestion.split(" (")[0];
+    setSearchQuery(query); 
+    setShowSuggestions(false); 
+    executeSearch(query);
+  };
+
+  const onSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSearch(searchQuery);
+  };
+
   return (
     <header className="absolute top-0 left-0 right-0 z-[100] flex items-center justify-between px-4 h-14 bg-[#0B0B10]/80 backdrop-blur-xl border-b border-slate-700/40">
       {/* Logo / Title */}
@@ -36,8 +61,8 @@ export const TopHUD: React.FC<TopHUDProps> = ({
       </div>
 
       {/* Search Bar — center */}
-      <div className="relative flex-1 max-w-xl mx-4">
-        <form onSubmit={onSearch} className="relative flex items-center">
+      <div className="relative flex-1 max-w-xl mx-4" ref={searchContainerRef}>
+        <form onSubmit={onSearchSubmit} className="relative flex items-center">
           <div className="absolute left-3 text-slate-500">
             <IconSearch size={15} />
           </div>
@@ -46,8 +71,8 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             className="input-hud w-full pl-9 pr-20 py-2 rounded-lg text-xs"
             placeholder="Search targets... (M101, Orion, Carina...)" 
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={onFocus}
+            onChange={handleInputChange}
+            onFocus={() => { if (searchQuery.trim().length > 0) setShowSuggestions(true); }}
             aria-label="Search celestial targets"
             aria-autocomplete="list"
           />
@@ -70,7 +95,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 <li 
                   key={idx} 
                   role="option"
-                  onClick={() => onSuggestionClick(suggestion)}
+                  onClick={() => handleSuggestionClick(suggestion)}
                   className="px-4 py-2 hover:bg-slate-800/60 cursor-pointer text-slate-300 hover:text-cyan-300 transition-colors flex items-center gap-3 text-xs border-b border-slate-800/40 last:border-0"
                   style={{ fontFamily: 'var(--font-mono)' }}
                 >
