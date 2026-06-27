@@ -523,55 +523,57 @@ function App() {
       {/* Landing Page (Premium Glassmorphism) */}
       {!isExploring && (
         <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-deep-space">
-          {/* Subtle star particles background could be added here */}
-          
+          {/* Premium ambient light effect */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.02] rounded-full blur-[100px] pointer-events-none"></div>
+
           <div className="relative z-10 flex flex-col items-center w-full max-w-4xl px-6">
             
-            {/* Centerpiece Hologram Sphere */}
-            <div className="relative w-40 h-40 mb-10 flex items-center justify-center">
-              <div className="absolute inset-0 border border-cyan-500/50 rounded-full animate-spin-slow" style={{ borderStyle: 'dashed' }}></div>
-              <div className="absolute inset-2 border-2 border-emerald-500/30 rounded-full animate-spin-slow-reverse" style={{ borderStyle: 'dotted' }}></div>
-              <div className="absolute inset-0 bg-cyan-500/10 rounded-full blur-md"></div>
-              <IconTelescope size={40} className="text-cyan-400 opacity-80" />
+            {/* Minimalist Centerpiece */}
+            <div className="relative w-32 h-32 mb-12 flex items-center justify-center">
+              <div className="absolute inset-0 border border-white/10 rounded-full"></div>
+              <div className="absolute inset-4 border border-white/5 rounded-full"></div>
+              <div className="absolute inset-0 bg-white/5 rounded-full blur-xl backdrop-blur-3xl"></div>
+              <IconTelescope size={32} className="text-white/80 z-10 drop-shadow-lg" />
             </div>
 
             {/* Status Pill */}
-            <div className="flex items-center gap-3 mb-8 glass-pill px-4 py-2">
-              <span className="w-2 h-2 rounded-full bg-white/50" style={{ animation: 'pulse-glow 2s infinite' }} />
-              <span className="text-[11px] text-white/70 tracking-[0.2em]">{t('system_ready')}</span>
+            <div className="flex items-center gap-3 mb-8 glass-pill px-5 py-2.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
+              <span className="text-[10px] text-white/80 tracking-[0.25em] uppercase font-medium" style={{ fontFamily: 'var(--font-body)' }}>{t('system_ready')}</span>
             </div>
 
             {/* Title */}
-            <h1 className="text-6xl md:text-8xl font-medium tracking-tighter mb-4 text-center text-gradient" style={{ fontFamily: 'var(--font-heading)' }}>
+            <h1 className="text-6xl md:text-8xl font-light tracking-tighter mb-4 text-center text-gradient" style={{ fontFamily: 'var(--font-heading)' }}>
               JWST EXPLORER
             </h1>
-            <p className="text-white/40 text-xs md:text-sm tracking-[0.3em] mb-16 text-center uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
+            <p className="text-white/40 text-xs md:text-sm tracking-[0.4em] mb-16 text-center uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
               NASA MAST Observatory
             </p>
 
-            {/* Glass Search Pill */}
-            <div className="relative w-full max-w-2xl" ref={searchContainerRef}>
-              <form onSubmit={handleSearchSubmit} className="relative flex items-center glass-pill px-6 py-4 focus-within:bg-white/10 focus-within:border-white/20 transition-all">
-                <span className="text-white/30 mr-4 font-mono text-xl">/</span>
+            {/* Magnetic Search Pill */}
+            <div className="relative w-full max-w-2xl group" ref={searchContainerRef}>
+              <div className="absolute -inset-1 bg-gradient-to-r from-white/0 via-white/5 to-white/0 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center glass-pill px-8 py-5 hover:bg-white/[0.08] focus-within:bg-white/[0.08] focus-within:border-white/20 transition-all duration-500">
+                <IconSearch size={20} className="text-white/30 mr-4" />
                 <input 
                   type="text" 
-                  className="w-full bg-transparent outline-none text-white font-mono text-base tracking-widest placeholder-white/20"
+                  className="w-full bg-transparent outline-none text-white/90 font-mono text-base tracking-widest placeholder-white/20"
                   placeholder={t('search_placeholder')} 
                   value={searchQuery} 
                   onChange={handleInputChange} 
                   onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} 
                 />
-                <button type="submit" className="ml-4 px-6 py-2 bg-white/10 text-white font-mono text-xs tracking-widest rounded-full hover:bg-white/20 hover:scale-105 transition-all">
+                <button type="submit" className="ml-4 px-6 py-2.5 bg-white/10 text-white/90 font-mono text-xs tracking-[0.2em] uppercase rounded-full hover:bg-white/20 hover:scale-105 active:scale-95 transition-all duration-300 border border-white/5">
                   {t('scan')}
                 </button>
               </form>
               
               {showSuggestions && filteredSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 w-full mt-2 bg-black/90 border border-cyan-900 shadow-[0_0_20px_rgba(6,182,212,0.2)] z-50">
-                  <ul className="max-h-60 overflow-y-auto custom-scrollbar py-1" style={{ fontFamily: 'var(--font-mono)' }}>
+                <div className="absolute top-full left-0 w-full mt-4 glass-panel border-white/10 z-50 overflow-hidden">
+                  <ul className="max-h-60 overflow-y-auto custom-scrollbar py-2" style={{ fontFamily: 'var(--font-mono)' }}>
                     {filteredSuggestions.map((suggestion, idx) => ( 
-                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-4 py-3 hover:bg-cyan-900/40 cursor-pointer text-cyan-500 hover:text-cyan-300 transition-colors flex items-center gap-4 text-sm border-b border-cyan-900/30 last:border-0 uppercase tracking-wider">
-                        <span className="text-emerald-500/50 text-[10px] w-5">{(idx + 1).toString().padStart(2, '0')}</span> {suggestion}
+                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-6 py-4 hover:bg-white/5 cursor-pointer text-white/70 hover:text-white transition-colors flex items-center gap-6 text-sm border-b border-white/5 last:border-0 uppercase tracking-widest">
+                        <span className="text-white/20 text-[10px] w-6">{(idx + 1).toString().padStart(2, '0')}</span> {suggestion}
                       </li> 
                     ))}
                   </ul>
@@ -580,17 +582,17 @@ function App() {
             </div>
 
             {/* Skip to explorer */}
-            <button onClick={() => setIsExploring(true)} className="mt-16 text-white/40 hover:text-white transition-all flex items-center gap-3 group">
-              <span className="text-[10px] tracking-[0.2em] uppercase font-mono">{t('skip_startup')}</span>
+            <button onClick={() => setIsExploring(true)} className="mt-20 text-white/30 hover:text-white/80 transition-all duration-500 flex items-center gap-3 group">
+              <span className="text-[10px] tracking-[0.3em] uppercase font-mono">{t('skip_startup')}</span>
             </button>
           </div>
           
-          {/* Footer */}
-          <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
-            <div className="text-left text-[10px] text-white/30 tracking-widest">
+          {/* Minimal Footer */}
+          <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
+            <div className="text-left text-[10px] text-white/20 tracking-[0.2em] uppercase">
               <span>VIFOTEC 2026</span>
             </div>
-            <div className="text-right text-[10px] text-white/30 tracking-widest">
+            <div className="text-right text-[10px] text-white/20 tracking-[0.2em] uppercase">
               <span>{t('powered_by')}</span>
             </div>
           </div>

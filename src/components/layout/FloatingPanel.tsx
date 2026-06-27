@@ -18,42 +18,39 @@ export const FloatingPanel: React.FC<FloatingPanelProps> = ({
   title, 
   children,
   className = '',
-  width = 'w-[340px]'
+  width = 'w-[360px]'
 }) => {
   const translateClass = !isOpen
-    ? position === 'left' ? '-translate-x-full opacity-0' : 'translate-x-full opacity-0'
+    ? position === 'left' ? '-translate-x-[110%] opacity-0' : 'translate-x-[110%] opacity-0'
     : 'translate-x-0 opacity-100';
 
-  const posClass = position === 'left' ? 'left-0 top-16 bottom-16' : 'right-0 top-16 bottom-16';
+  const posClass = position === 'left' ? 'left-6 top-24 bottom-24' : 'right-6 top-24 bottom-24';
 
   return (
     <div 
       className={`
         absolute ${posClass} ${width} z-40
         flex flex-col
-        transition-all duration-500 ease-out
+        transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]
         ${translateClass}
         ${className}
       `}
       role="complementary"
       aria-label={typeof title === 'string' ? title : 'Panel'}
     >
-      <div className="flex-1 flex flex-col hud-panel m-2 rounded-lg overflow-hidden relative">
-        {/* Subtle scanline */}
-        <div className="scanline-overlay rounded-lg" />
-
+      <div className="flex-1 flex flex-col glass-panel overflow-hidden relative shadow-2xl border-white/5">
         {title && (
-          <div className="hud-panel-header relative z-10">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" style={{ animation: 'pulse-glow 2s infinite' }} />
-              <h3 className="text-[11px] font-semibold text-slate-300 tracking-wider uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02]">
+            <div className="flex items-center gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-white/50" />
+              <h3 className="text-[11px] font-medium text-white/80 tracking-[0.2em] uppercase" style={{ fontFamily: 'var(--font-body)' }}>
                 {title}
               </h3>
             </div>
             {onClose && (
               <button 
                 onClick={onClose}
-                className="btn-icon w-6 h-6 border-0"
+                className="btn-icon w-8 h-8 opacity-50 hover:opacity-100 transition-opacity border-0"
                 aria-label="Close panel"
               >
                 <IconClose size={14} />
@@ -62,7 +59,7 @@ export const FloatingPanel: React.FC<FloatingPanelProps> = ({
           </div>
         )}
         
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-2 relative z-10">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 relative z-10">
           {children}
         </div>
       </div>
