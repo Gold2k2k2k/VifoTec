@@ -1,0 +1,575 @@
+ 
+ 
+ 
+  
+       
+SỞ GIÁO DỤC VÀ ĐÀO TẠO THÀNH PHỐ ĐÀ NẴNG  
+      CUỘC THI SÁNG TẠO THANH THIẾU NIÊN NHI ĐỒNG TOÀN QUỐC  
+LẦN THỨ 21 (2024 -2025)  
+ 
+ 
+ 
+ 
+ĐỀ TÀI:  
+ ỨNG DỤNG AI NHẰM PHÁT HIỆN SỚM MÙ LÒA Ở 
+NÔNG THÔN  
+ 
+ 
+ 
+Trường THPT Trần Phú  
+ 
+Học sinh thực hiện  :  Huỳnh Ngọc Thùy Dung  
+Trương Bảo Nghi  
+Huỳnh Bảo Quốc Hùng  
+Nguyễn Phước Phú  
+ 
+Lĩnh vực    : Phần mềm tin học  
+      
+ 
+ 
+      
+ 
+Tháng 07/2025   
+
+ 
+1 
+ TÓM TẮT  
+Mù lòa là một trong những tình trạng suy giảm chức năng thị giác 
+nghiêm trọng nhất, không chỉ ảnh hưởng đến cá  nhân mà còn tạo gánh nặng 
+lớn đối với gia đình và xã hội. Tại Việt Nam, mù lòa và suy giảm thị lực  là vấn 
+đề sức khỏe cộng đồng đáng lo ngại, đặc biệt ở khu vực nông thôn – nơi người 
+dân còn hạn chế về điều kiện tiếp cận dịch vụ chăm sóc mắt chuyên sâu. Các 
+bệnh lý như võng mạc đái tháo đường, tăng nhãn áp hay thoái hóa điểm vàng 
+thường diễn tiến âm thầm, khó phát hiện sớm nếu không có thiết bị chuyên 
+dụng hoặc bác sĩ chuyên khoa nhãn. Trong khi đó, việc phát hiện muộn thường 
+dẫn đến biến chứng nặng, thậm  chí mất thị lực vĩnh viễn. Do đó, nhu cầu về 
+một giải pháp tầm soát sớm, chi phí thấp, dễ triển khai tại cộng đồng đang trở 
+nên cấp thiết.  
+Đề tài này đề xuất phát triển và ứng dụng trí tuệ nhân tạo (AI) để hỗ trợ 
+phát hiện sớm các nguy cơ gây mù lòa thông  qua phân tích ảnh chụp chuyển 
+động mắt được thu thập bằng thiết bị di động hoặc máy ảnh y tế giá rẻ. Mô hình 
+AI sẽ được huấn luyện trên tập dữ liệu lớn gồm hình ảnh mắt của bệnh nhân 
+mắc các bệnh lý thị giác phổ biến, từ đó học cách phân biệt các dấu hiệu  bất 
+thường như xuất huyết võng mạc, thoái hóa điểm vàng, tổn thương thần kinh 
+thị giác, v.v. Kết quả phân tích sẽ được trả về nhanh chóng, hỗ trợ nhân viên y 
+tế tuyến cơ sở hoặc cộng tác viên sức khỏe cộng đồng đưa ra quyết định sơ bộ, 
+giới thiệu bệnh nhâ n đến cơ sở y tế chuyên sâu khi cần thiết.  
+Việc ứng dụng AI trong chẩn đoán và phát hiện sớm mù lòa có thể mang 
+lại nhiều lợi ích vượt trội, không chỉ nâng cao hiệu quả tầm soát cộng đồng, mà 
+còn giảm tải cho các bệnh viện tuyến trên, tiết kiệm chi phí cho  người dân và 
+hệ thống y tế. Quan trọng hơn, công nghệ này có thể tạo ra bước đột phá trong 
+công tác bảo vệ thị lực cho người dân ở vùng sâu vùng xa, góp phần thúc đẩy 
+công bằng trong chăm sóc sức khỏe.  
+ 
+ 
+ 
+ 
+ 
+  
+ 
+2 
+ MỤC LỤC  
+ 
+TÓM TẮT  ................................ ................................ ................................ .................  1 
+MỤC LỤC  ................................ ................................ ................................ .................  2 
+I. GIỚI T HIỆU CHUNG  ................................ ................................ .........................  3 
+1. Đặt vấn đề nghiên cứu  ................................ ................................ ....................  3 
+1.1. Sự cần thiết của nghiên cứu  ................................ ................................ ....... 3 
+1.2. Các đề tài nghiên cứu và sản phẩm đã có mặt trên thị trường trước 
+đây ................................ ................................ ................................ .......................  3 
+2. Mục tiêu và giải pháp của nghiên cứu  ................................ ..........................  4 
+2.1. Mục tiêu nghiên cứu  ................................ ................................ ................  4 
+2.2. Xác định giải pháp nghiên cứu  ................................ ...............................  4 
+3. Đối tượng và phạm vi nghiên cứu  ................................ ................................ .... 5 
+3.1. Đối tượng ngh iên cứu  ................................ ................................ ..............  5 
+3.2. Phạm vi nghiên cứu  ................................ ................................ .................  5 
+4. Tính sáng tạo, nhân văn, hiệu quả và khả năng áp dụng của đề tài  ............  5 
+5. Các phương pháp nghiên cứu và kỹ thuật nghiên cứu  ................................ .. 6 
+II. CÔNG NGHỆ VÀ KỸ THUẬT SỬ DỤNG  ................................ ......................  6 
+1. Phần mềm hệ thống  ................................ ................................ ........................  6 
+2. Mô hình trí tuệ nhân tạo  ................................ ................................ ................  6 
+3. Nguyên lý hoạt động của sản phẩm  ................................ ..............................  7 
+3.1. Bài kiểm tra Snellen  ................................ ................................ ....................  7 
+3.2. Bài kiểm tra Amsler Grid  ................................ ................................ ..........  8 
+3.3. Bộ câu hỏi đánh giá sau kiểm tra Amsler  ................................ .................  9 
+III. KẾT QUẢ THỰC HIỆN ĐỀ TÀI  ................................ ................................ .... 9 
+1. Cài đặt chương trình và sử dụng  ................................ ................................ .. 9 
+2. Giao diện, cách sử dụng và các module của chương trình  .......................  13 
+3. Ưu điểm  ................................ ................................ ................................ .........  14 
+4. Nhược điểm  ................................ ................................ ................................ ... 15 
+5. Thực nghiệm  ................................ ................................ ................................ . 16 
+IV. HƯỚNG PHÁT TRIỂN ................................ ................................ ...................  17 
+V. TÀI LIỆU THAM KHẢO  ................................ ................................ .................  18 
+ 
+3 
+ I. GIỚI THIỆU CHUNG  
+1. Đặt vấn đề nghiên cứu  
+1.1. Sự cần thiết của nghiên cứu  
+Theo ước tính của Bộ Y tế và Tổ chức Y tế Thế giới (WHO), khoảng 2 
+triệu người bị mù hoặc thị lực kém tại Việt Nam, trong đó khoảng 1/3 là người 
+nghèo, không có khả năng điều trị. Một số nguyên nhân chính dẫn đến mù lòa 
+phổ biến là: đục thủy tinh thể, bệnh  lý đáy mắt, cườm nước (glaucoma) và tật 
+khúc xạ. Trên 80% các nguyên nhân gây mù lòa có thể phòng ngừa hoặc chữa 
+khỏi nếu được phát hiện sớm. [1]  
+Tuy nhiên, do khó tiếp cận y tế chuyên khoa khiến nhiều người phát hiện 
+muộn, tỷ lệ mù lòa vùng nông thôn cao hơn nhiều so với vùng thành thị. [1] 
+Trong đó, đối với tật khúc xạ học đường, tỉ lệ mắc phải của học sinh nông thôn 
+khoảng 15 -20%, trong khi tỉ lệ  của học sinh thành thị lên đến 30 -40%. [2]  
+AI trong y tế mắt đã chứng minh hiệu quả trong phân tích ảnh võng mạc 
+và chẩn đoán tự động các tật khúc xạ, thoái hóa điểm vàng… hỗ trợ phát hiện 
+sớm. Việc áp dụng AI trong y tế mắt ở vùng nông thôn hứa hẹn sẽ gi úp tiết 
+kiệm chi phí, nâng cao năng lực nhân viên y tế tuyến dưới, giảm tải bệnh viện 
+tuyến trên, giúp người dẫn dễ tiếp cận hơn với các dịch vụ y tế.  
+1.2. Các đề tài nghiên cứu và sản phẩm đã có mặt trên thị trường 
+trước đây  
+Trong các nỗ lực ứng dụng AI v ào phát hiện sớm mù lòa, nhiều dự án đã 
+đạt được thành công rõ nét. Orbis Việt Nam  triển khai hệ thống Cybersight 
+AI tại tỉnh Tiền Giang và Bình Định, sử dụng camera chụp đáy mắt kèm AI để 
+phát hiện bệnh võng mạc đái tháo đường (DR) nhanh trong 10 –20 giây sau khi 
+tải ảnh lên, giúp nhân viên y tế tuyến xã đưa ra khuyến nghị chuyển tuyến hợp 
+lý. Thử nghiệm tại Bình Định khẳng định AI là công cụ hiệu quả trong điều 
+kiện thiếu bác sĩ chuyên khoa và thiết bị y tế. [3]  
+Bên cạnh đó, EyeArt®  của Eyenuk (Mỹ) đã được  ứng dụng tại 4 bệnh 
+viện ở Bình Định nhờ hỗ trợ từ Fred Hollows Foundation, cho kết quả chẩn 
+đoán DR hoàn toàn tự động trong vòng dưới 30 giây, được FDA, CE và Health 
+Canada công nhận. [4] Trên phạm vi quốc tế, AI của Google DeepMind  cũng 
+đã chứng minh kh ả năng phân tích ảnh OCT để xác định hơn 50 bệnh võng 
+mạc với hiệu quả tương đương chuyên gia tại Moorfields Eye Hospital (Anh). 
+[5] 
+ 
+4 
+ Các nghiên cứu học thuật cũng đóng góp nhiều mô hình đáng chú ý: hệ 
+thống AIDRSS  tại Ấn Độ (năm 2025) đạt độ nhạy 92 %, đặc  hiệu 88 % với khả 
+năng phát hiện hoàn toàn DR nguy cấp, triển khai trên hơn 10.000 ảnh đáy mắt. 
+[6] Tương tự, nghiên cứu tại Pháp với hệ thống OphtAI  đạt AUC gần 0,99 
+trong phát hiện DR.  [7]  
+Các sản phẩm và dự án AI trên thế giới và tại Việt Nam đã chứng  tỏ 
+được khả năng phân tích ảnh võng mạc nhanh, chính xác và hữu ích cho tuyến 
+cơ sở. Đây là cơ sở vững chắc để đề tài “Ứng dụng AI nhằm phát hiện sớm mù 
+lòa ở nông thôn” phát triển thêm về tính phù hợp với điều kiện thực tế, dễ triển 
+khai và tiết kiệm chi  phí. 
+2. Mục tiêu và giải pháp của nghiên cứu  
+ 2.1. Mục tiêu nghiên cứu  
+Các phương pháp khám mắt truyền thống hiện nay thường đòi hỏi thiết 
+bị chuyên dụng phức tạp và sự tham gia của các chuyên gia có trình độ cao, 
+điều này khiến việc áp dụng rộng rãi tại các vùng nông thôn còn gặp nhiều khó 
+khăn. Trong khi đó, chuyển động mắt  được xem là một dấu hiệu sinh học quan 
+trọng phản ánh chức năng thị giác cũng như trạng thái thần kinh của người 
+bệnh, giúp phát hiện sớm những bất thường ngay từ giai đoạn đầu của bệnh 
+trước khi các triệu chứng lâm sàng rõ ràng. Việc phát triển các thiết  bị theo dõi 
+chuyển động mắt nhỏ gọn, dễ sử dụng sẽ tạo điều kiện thuận lợi để nhân viên 
+y tế cơ sở và người dân ở vùng sâu vùng xa tiếp cận dịch vụ sàng lọc một cách 
+nhanh chóng và hiệu quả. Nhờ đó, khả năng phát hiện và can thiệp kịp thời các 
+bệnh lý mắt  sẽ được nâng cao, góp phần giảm thiểu tỷ lệ mù lòa, cải thiện chất 
+lượng cuộc sống cho người bệnh và giảm thiểu chi phí điều trị lâu dài cho xã 
+hội. 
+ 2.2. Xác định giải pháp nghiên cứu  
+Giải pháp nghiên cứu mà nhóm đề xuất nhằm phát hiện sớm nguy cơ mù 
+lòa ở nông thôn dựa trên việc kết hợp các bài kiểm tra thị lực cơ bản và công 
+nghệ trí tuệ nhân tạo (AI). Cụ thể, nhóm sử dụng hai bài test phổ biến là bảng 
+Snellen và lưới Amsler để đánh giá thị lực của người dùng theo cách trực quan 
+và dễ tiếp cận. Trong qu á trình thực hiện bài kiểm tra, camera của thiết bị (máy 
+tính hoặc điện thoại) sẽ ghi lại chuyển động mắt, mức độ tập trung, tần suất 
+chớp mắt và phản ứng của đồng tử. Các dữ liệu hình ảnh thu thập được này sẽ 
+được phân tích bởi mô hình AI sử dụng Efficien tNet Lite – một kiến trúc học 
+sâu nhẹ, phù hợp với thiết bị cấu hình thấp và hoạt động offline. Mô hình có 
+ 
+5 
+ khả năng đánh giá được dòng chữ nhỏ nhất mà người dùng có thể đọc được, từ 
+đó ước lượng chính xác thị lực hiện tại. Bên cạnh đó, ứng dụng còn tích hợ p 
+chatbot sử dụng xử lý ngôn ngữ tự nhiên tiếng Việt để tương tác với người 
+dùng, giải thích kết quả kiểm tra theo cách dễ hiểu và đưa ra các khuyến nghị 
+như nên đi khám mắt, luyện tập thị lực hoặc kiểm tra lại sau một thời gian. Giải 
+pháp này giúp nâng ca o khả năng phát hiện sớm các vấn đề thị lực mà không 
+cần đến thiết bị y tế chuyên dụng hoặc kết nối Internet.  
+      3. Đối tượng và phạm vi nghiên cứu  
+3.1. Đối tượng nghiên cứu  
+Người dân tại các khu vực nông thôn, đặc biệt là người lớn tuổi, người 
+lao động  phổ thông, học sinh/sinh viên có dấu hiệu suy giảm thị lực.  
+ 3.2. Phạm vi nghiên cứu  
+● Tập trung tại khu vực miền Trung Việt Nam, nơi có nhiều hộ dân sống 
+xa trung tâm y tế.  
+● Ứng dụng chạy trên hệ điều hành Android, Windows, hoặc các thiết bị 
+khác như Raspberry Pi.  
+     4. Tính sáng tạo, nhân văn, hiệu quả và khả năng áp dụng của đề tài  
+Đề tài thể hiện rõ tính sáng tạo khi lần đầu tiên áp dụng trí tuệ nhân tạo 
+(AI) theo hướng p hân tích chuyển động mắt thông qua camera thiết bị phổ 
+thông để kiểm tra thị lực – điều trước đây thường chỉ thực hiện được với các 
+thiết bị y tế chuyên dụng. Việc sử dụng camera thường và mô hình AI nhẹ như 
+EfficientNet Lite giúp mở rộng khả năng tiếp cận  công nghệ kiểm tra mắt cho 
+người dân vùng nông thôn, nơi điều kiện hạ tầng còn nhiều hạn chế. Bên cạnh 
+tính sáng tạo, đề tài còn mang giá trị nhân văn sâu sắc khi hướng đến mục tiêu 
+bảo vệ thị lực cho cộng đồng, đặc biệt là người cao tuổi – những đối tượn g có 
+nguy cơ cao bị suy giảm thị lực nhưng lại ít được tiếp cận dịch vụ y tế. Giải 
+pháp này góp phần ngăn chặn sớm mù lòa – một trong những nguyên nhân 
+hàng đầu gây ảnh hưởng đến chất lượng sống và năng lực lao động của người 
+dân. Về mặt hiệu quả, ứng dụng  có chi phí triển khai thấp, không cần Internet, 
+có thể dễ dàng nhân rộng tại các địa phương. Đặc biệt, tính ứng dụng cao được 
+thể hiện ở thiết kế giao diện đơn giản, thân thiện, dễ cài đặt và sử dụng ngay cả 
+với người không quen công nghệ, từ đó tạo điều kiện cho việc phổ cập và sử 
+dụng đại trà trong cộng đồng.  
+ 
+6 
+      5. Các phương pháp nghiên cứu và kỹ thuật nghiên cứu  
+Trong quá trình thực hiện đề tài, nhóm nghiên cứu đã áp dụng tổng hợp 
+nhiều phương pháp và kỹ thuật nghiên cứu nhằm đảm bảo tính khoa học và  
+thực tiễn của giải pháp. Trước hết, nhóm tiến hành khảo sát và phỏng vấn thực 
+tế tại các địa phương nông thôn để tìm hiểu thói quen chăm sóc mắt, khả năng 
+tiếp cận công nghệ, cũng như nhu cầu kiểm tra thị lực của người dân. Tiếp theo, 
+nhóm nghiên cứu chuy ên sâu các tài liệu y học liên quan như bảng kiểm tra 
+Snellen, lưới Amsler, và các dấu hiệu nhận biết sớm các bệnh lý về mắt, từ đó 
+xác định các tiêu chí lâm sàng phù hợp để đưa vào mô hình. Trên cơ sở đó, 
+nhóm tiến hành xây dựng mô hình học máy (machine l earning) bằng cách huấn 
+luyện AI từ dữ liệu thu được qua camera thiết bị, bao gồm hình ảnh mắt, chuyển 
+động đồng tử, hành vi quan sát của người dùng trong quá trình kiểm tra thị lực. 
+Sau khi mô hình AI được xây dựng, nhóm tiếp tục lập trình một ứng dụng tí ch 
+hợp giao diện thân thiện với người dùng, có hướng dẫn trực quan bằng tiếng 
+Việt để phù hợp với nhiều đối tượng sử dụng, đặc biệt là người lớn tuổi. Cuối 
+cùng, nhóm thực hiện các đợt thử nghiệm thực tế tại trường học và trạm y tế 
+địa phương để đánh giá đ ộ chính xác, từ đó hiệu chỉnh thuật toán nhằm nâng 
+cao độ tin cậy của hệ thống trước khi triển khai diện rộng.  
+II. CÔNG NGHỆ VÀ KỸ THUẬT SỬ DỤNG  
+1. Phần mềm hệ thống  
+Phần mềm được xây dựng dựa trên framework Flutter/Dart, cùng các thư 
+viện hỗ trợ giao diện và  quản lý trạng thái, bao gồm Material Design, Bloc,...  
+Việc sử dụng Flutter đảm bảo phần mềm có thể chạy trên đa nền tảng và 
+đa dạng thiết bị khác nhau mà không bị giới hạn bởi phần cứng, mở rộng tính 
+kết nối với người dùng.  
+2. Mô hình trí tuệ nhân tạo  
+Mô hìn h trí tuệ nhân tạo được viết và huấn luyện bằng 
+Tensorflow/Python, quản lý tại HuggingFace và được chuyển hóa sang định 
+dạng TFLite nhằm dễ dàng tương tác với thiết bị di động bằng bộ công cụ Kera.  
+Mô hình được chọn để sử dụng là EfficientNet, đặc thù bởi tính tối ưu 
+và hiệu quả so với nhiều mô hình CNN khác như ResNet hoặc Inception, nhưng 
+sử dụng ít tham số và tính toán. Việc sử dụng mô hình để giải quyết vấn đề đặc 
+thù - phân loại bệnh lý mắt - giúp mô hình có thể đảm bảo tính chính xác mà 
+không cần phải  quá chiếm dụng tài nguyên.  
+ 
+7 
+ Mô hình có thể dễ dàng được chuyển đổi qua định dành TFLite và triển 
+khai trên thiết bị di động, hoàn toàn phù hợp tối ưu cho các thiết bị di động tại 
+các vùng khó khăn hơn.  
+3. Nguyên lý hoạt động của sản phẩm  
+Người sử dụng app sẽ được hướng dẫn qua 2 bài kiểm tra Snellen và 
+Amsler Grid, đồng thời trả lời các câu hỏi được chương trình đưa ra nhằm đánh 
+giá khả năng hoạt động của mắt. Trong lúc đó, mô hình AI sẽ tự động đánh giá 
+các góc hình ảnh được chụp của mắt người dùng trong quá trình làm bài kiểm 
+tra và đánh giá song song trong thời gian chương trình. Cuối cùng, kết quả sẽ 
+được tổng hợp cùng với các chẩn đoán khác nhau để người dùng có thể theo 
+dõi cũng như kiểm tra tình trạng bệnh lý mắt của mình.  
+3.1. Bài kiểm tra Snellen  
+Bảng  Snellen là một công cụ tiêu chuẩn quốc tế dùng để đo thị lực (visual 
+acuity). Bảng gồm nhiều dòng chữ cái có kích thước giảm dần, được thiết kế 
+để đo khả năng phân biệt chi tiết của mắt ở khoảng cách 6 mét (20 feet).  
+Nguyên tắc sử dụng:  
+● Người kiểm tra đứn g cách màn hình 6 mét.  
+● Che một mắt và đọc từng dòng chữ cái trên bảng, từ trên xuống dưới.  
+● Dòng nhỏ nhất mà người dùng có thể đọc chính xác được dùng để xác 
+định mức thị lực.  
+Bảng Snellen  
+Trong ứng dụng: Ứng dụng hiển thị bảng Snellen trên màn hình điện 
+thoại, từng dòng một, và yêu cầu người dùng xác định chữ cái trong mỗi dòng 
+
+ 
+8 
+ thông qua các nút chọn. AI sẽ theo dõi chuyển động mắt để phát hiện nếu người 
+dùng không nhìn rõ hoặc không tập trung.  
+3.2. Bài ki ểm tra Amsler Grid  
+Lưới Amsler là công cụ kiểm tra chức năng vùng hoàng điểm của võng 
+mạc – nơi xử lý hình ảnh trung tâm, giúp nhận biết các dấu hiệu ban đầu của 
+thoái hóa điểm vàng (AMD) và các bệnh lý võng mạc khác.  
+Mô tả:  
+● Gồm một lưới vuông gồm các ô nh ỏ đều nhau.  
+● Ở chính giữa là một chấm đen (điểm cố định).  
+● Khi nhìn vào chấm này, người có thị lực bình thường sẽ thấy các đường 
+thẳng đều và không biến dạng.  
+Cách sử dụng:  
+● Mỗi lần kiểm tra một mắt, che mắt còn lại.  
+● Nhìn cố định vào điểm giữa khoảng 30 giây.  
+● Nếu có vùng nào b ị mờ, méo, gãy, ho ặc không th ấy rõ → có th ể 
+là dấu hiệu bất thường. 
+Lưới Amsler Grid  
+Trong ứng dụng:  
+● Người dùng được yêu cầu chạm vào vùng bị biến dạng nếu có.  
+● Hệ thống lưu lại các điểm người dùng đã chỉ định và đưa vào phân tích 
+AI. 
+
+ 
+9 
+ 3.3. Bộ câu hỏi đánh giá sau kiểm tra Amsler  
+Sau khi hoàn thành bài kiểm tra bằng lưới Amsler, người dùng sẽ được 
+yêu cầu trả lời các câu hỏi sau để xác định dấu hiệu bất thường tiềm ẩn : 
+Câu hỏi 1:  Bạn có nhận thấy đường cong hoặc biến dạng  không?  
+ ☐ Có 
+ ☐ Không  
+ ☐ Không chắc chắn  
+Câu hỏi 2:  Có vùng nào mờ hoặc không rõ  không?  
+ ☐ Có 
+ ☐ Không  
+ ☐ Không chắc chắn  
+Câu hỏi 3:  Bạn có thấy điểm thiếu hoặc điểm tối  không?  
+ ☐ Có 
+ ☐ Không  
+ ☐ Không chắc chắn  
+Các câu trả lời này sẽ được hệ thống ghi nhận, kết hợp với  dữ liệu từ 
+camera và điểm nhấn người dùng trên lưới Amsler để AI đưa ra kết luận sơ 
+bộ về tình trạng thị lực và khuyến nghị có nên đi khám chuyên sâu hay không.  
+III. KẾT QUẢ THỰC HIỆN ĐỀ TÀI  
+1. Cài đặt chương trình và sử dụng  
+Ứng dụng kiểm tra thị lực được đ óng gói dưới dạng tệp APK cho thiết 
+bị Android, cho phép người dùng dễ dàng tải và cài đặt trực tiếp mà không cần 
+đến cửa hàng ứng dụng (Google Play). Sau khi cài đặt, người dùng có thể khởi 
+chạy ứng dụng và bắt đầu quá trình kiểm tra thị lực ngay lập tức mà không cần 
+kết nối Internet  – phù hợp với điều kiện sử dụng tại các vùng nông thôn và 
+vùng sâu vùng xa.  
+● Giao diện mở đầu và giới thiệu tính năng  
+Khi mở ứng dụng lần đầu tiên, người dùng sẽ thấy giao diện giới thiệu 
+các tính năng chính. Một trong những đi ểm nổi bật là tính năng "Phân tích 
+AI", nơi trí tuệ nhân tạo sẽ dựa trên hiệu suất kiểm tra của người dùng để đưa 
+ra đánh giá chi tiết và khuyến nghị cá nhân hóa phù hợp. Giao diện sử dụng 
+biểu tượng lớn, màu sắc hài hòa và bố cục rõ ràng, tạo cảm giác thâ n thiện và 
+dễ tiếp cận.  
+ 
+10 
+       Hình 1  
+● Hướng dẫn kiểm tra Snellen và Lưới Amsler  
+Người dùng có thể chọn bài kiểm tra thị lực phù hợp: bài kiểm tra bảng 
+Snellen  – đo thị lực bằng cách đọc các chữ cái có kích thước giảm dần (hình 
+3), hoặc kiểm tra bằng lưới Amsler  – đánh giá khả năng phát hiện biến dạng 
+thị giác trung tâm (hình 2).  
+Mỗi bài kiểm tra đều có hướng dẫn chi tiết bằng văn bản và biểu 
+tượng , như: giữ thiết bị ở khoảng cách phù hợp, che một mắt, tập trung vào 
+điểm giữa, và cách phả n hồi sau kiểm tra. Đặc biệt, ứng dụng cũng nhấn mạnh 
+việc camera sẽ ghi nhận chuyển động mắt và đồng tử của người dùng  trong 
+quá trình kiểm tra để phục vụ phân tích AI (hình 3).  
+ 
+ 
+ 
+ 
+ 
+
+ 
+11 
+        Hình 2                   Hình 3  
+● Thực hiện bài kiểm tra trực tiếp  
+Trong bài kiểm tra Snellen (hình 4), người dùng được yêu cầu xác định 
+chữ cái hiển thị trên màn hình bằng cách chọn trong các ô đáp án bên dưới. Hệ 
+thống sẽ tự động chuyển sang dòng chữ nhỏ hơn nếu người dùng trả lời đúng, 
+hoặc dừng lại nếu trả lời sai li ên tục – từ đó ước tính thị lực chính xác nhất (ví 
+dụ: thị lực 20/20 ở dòng 8/8).     
+       Hình 4  
+
+ 
+12 
+   Với bài kiểm tra Amsler (hình 5), người dùng sẽ tập trung nhìn vào 
+điểm đỏ ở giữa lưới và chạm vào màn hình tại những khu vực bị biến dạng, mờ 
+hoặc thiếu – nếu có. Sau đó, ứng dụng sẽ đưa ra bộ câu hỏi đánh giá lại những 
+gì người dùng quan sát được  để xác định dấu hiệu bất thường (hình 6).  
+  Hình 5         Hình 6  
+● Phân tích kết quả và khuyến nghị chăm sóc mắt  
+Sau khi hoàn tất bài kiểm tra, người dùng được c huyển đến trang kết 
+quả tổng hợp  (hình 7). Tại đây, ứng dụng hiển thị “Điểm Thị lực”  theo tỷ lệ 
+phần trăm – ví dụ: 22% kèm cảnh báo “Rủi ro High”. Phần phân tích kiểm tra  
+chỉ ra rằng hiệu suất thấp có thể liên quan đến vấn đề thị lực tiềm ẩn. Dựa vào 
+đó, p hần khuyến nghị  đưa ra các hành động như: nên đi khám mắt toàn diện, 
+cần đánh giá chuyên môn sâu hơn, theo dõi thị lực định kỳ và cân nhắc các 
+phương án điều chỉnh thị lực nếu cần.  
+ 
+ 
+ 
+
+ 
+13 
+      Hình 7           Hình 8  
+● Quản lý hồ sơ và lịch sử  
+Trong mục Hồ sơ cá nhân  (hình 8), người dùng có thể cập nhật thông 
+tin cá nhân (tên, email), điều chỉnh các cài đặt như: bật/tắt thông báo kiểm tra, 
+chuyển đổi chế độ tối/sáng, thay đổi ngôn ngữ, thiết lập quyền riêng tư và sao 
+lưu dữ liệu kiểm tra thị lực . Mục này giúp người dùng quản lý kết quả kiểm 
+tra của bản thân theo thời gian, hỗ trợ theo dõi tiến trình thị lực một cách thuận 
+tiện. 
+2. Giao diện, cách sử dụng và các module của chương trình  
+Ứng dụng được thiết kế với giao diện tối giản, nhằm đảm bảo dễ sử dụng 
+cho đa dạng đối tượng người dùng, đặc biệt là người lớn tuổi và những người 
+không quen sử dụng thiết bị công nghệ. Phông chữ được hiển thị với kích thước 
+lớn, dễ nhìn; các nút điều hướn g rõ ràng và dễ thao tác. Mỗi bước trong quá 
+trình kiểm tra thị lực đều được minh họa bằng hình ảnh trực quan, đi kèm với 
+giọng nói hướng dẫn bằng tiếng Việt, giúp người dùng dễ dàng làm theo mà 
+không cần đọc quá nhiều văn bản. Sự đơn giản và thân thiện tr ong giao diện đã 
+được người dùng đánh giá cao trong quá trình thử nghiệm.  
+
+ 
+14 
+ Về mặt chức năng, ứng dụng được chia thành nhiều module độc lập, phối 
+hợp nhịp nhàng để mang lại trải nghiệm kiểm tra thị lực toàn diện. Trước tiên 
+là module kiểm tra Snellen , có chứ c năng hiển thị bảng chữ cái với kích thước 
+giảm dần, đồng thời sử dụng camera để theo dõi phản ứng của mắt trong quá 
+trình người dùng thực hiện bài test. Kế đến là module lưới Amsler , dùng để 
+kiểm tra khả năng phát hiện biến dạng thị giác trung tâm – một dấu hiệu sớm 
+của bệnh thoái hóa điểm vàng.  
+Ngoài ra, module camera và ghi nhận hành vi mắt  có nhiệm vụ phân 
+tích chuyển động mắt, trạng thái đồng tử và tần suất chớp mắt để đánh giá mức 
+độ tập trung và khả năng nhìn rõ của người dùng. Dữ liệu từ camera sau  đó 
+được chuyển sang module AI phân tích thị lực , sử dụng mô hình EfficientNet 
+Lite nhằm ước lượng chính xác mức thị lực hiện tại.  
+Bên cạnh đó, chatbot tư vấn bằng tiếng Việt  đóng vai trò là trợ lý ảo 
+giúp giải thích kết quả một cách dễ hiểu, đồng thời đưa  ra các khuyến nghị hợp 
+lý như nên khám mắt tại cơ sở y tế, tiếp tục theo dõi tại nhà hoặc luyện tập mắt. 
+Cuối cùng, module lưu trữ lịch sử cục bộ  cho phép người dùng xem lại kết 
+quả kiểm tra trong những lần trước, từ đó theo dõi sự thay đổi thị lực theo t hời 
+gian mà không cần đến kết nối mạng.  
+3. Ưu điểm  
+Một trong những ưu điểm nổi bật nhất của ứng dụng là khả năng hoạt 
+động hoàn toàn offline , không yêu cầu kết nối Internet trong quá trình sử dụng. 
+Điều này cực kỳ phù hợp với điều kiện thực tế tại nhiều khu v ực nông thôn, 
+nơi cơ sở hạ tầng mạng còn yếu kém hoặc không ổn định. Người dân có thể sử 
+dụng ứng dụng mọi lúc, mọi nơi, kể cả khi không có sóng Wi -Fi hay dữ liệu di 
+động, từ đó giúp mở rộng cơ hội tiếp cận dịch vụ chăm sóc thị lực đến các vùng 
+sâu, vùng x a. 
+Thêm vào đó, ứng dụng được thiết kế để chạy mượt trên các thiết bị 
+phổ thông  như điện thoại Android có cấu hình trung bình hoặc các thiết bị giá 
+rẻ như Raspberry Pi. Nhờ sử dụng mô hình AI nhẹ (EfficientNet Lite), sản 
+phẩm duy trì hiệu suất tốt mà không  đòi hỏi phần cứng cao cấp, giúp tiết kiệm 
+chi phí  triển khai và phù hợp với điều kiện tài chính hạn chế của người dùng 
+mục tiêu.  
+Giao diện người dùng của ứng dụng cũng được đánh giá cao về tính 
+thân thiện và dễ sử dụng , đặc biệt là với người lớn tuổi hoặc  người không 
+quen sử dụng công nghệ. Thiết kế phông chữ to, bố cục rõ ràng, nút bấm lớn, 
+ 
+15 
+ kết hợp với hướng dẫn bằng giọng nói tiếng Việt đã giúp loại bỏ nhiều rào cản 
+khi người dùng tiếp cận ứng dụng. Điều này góp phần nâng cao trải nghiệm và 
+khuyến khích người dân kiểm tra thị lực thường xuyên hơn.  
+Cuối cùng, điểm mạnh đặc biệt là tính chính xác và nhất quán trong 
+phân tích thị lực nhờ vào AI . Việc sử dụng camera để ghi nhận hành vi mắt 
+– bao gồm chuyển động đồng tử, tần suất chớp mắt, mức độ tập trung – là một 
+hướng đi sáng tạo giúp phần mềm đưa ra đánh giá khách quan thay vì phụ thuộc 
+vào cảm tính của người dùng như các phương pháp thủ công trước đây. Tích 
+hợp thêm chatbot tư vấn bằng tiếng Việt cũng làm tăng khả năng hiểu và chủ 
+động xử lý tình trạng thị  lực của người dùng sau khi kiểm tra.  
+4. Nhược điểm  
+Tuy mang lại nhiều ưu điểm, ứng dụng vẫn tồn tại một số hạn chế cần 
+khắc phục trong các giai đoạn phát triển tiếp theo . Trước hết, mặc dù AI có 
+thể đưa ra đánh giá sơ bộ về thị lực, ứng dụng không thể thay t hế hoàn toàn 
+việc chẩn đoán chuyên sâu của bác sĩ nhãn khoa . Trong các trường hợp 
+người dùng có bệnh lý phức tạp hoặc thị lực suy giảm nhanh, việc chỉ dựa vào 
+ứng dụng có thể khiến họ chủ quan và chậm trễ trong điều trị y tế kịp thời.  
+Bên cạnh đó, độ chính  xác của AI còn phụ thuộc khá lớn vào chất 
+lượng camera và điều kiện ánh sáng  trong môi trường sử dụng. Nếu camera 
+có độ phân giải thấp hoặc người dùng kiểm tra trong không gian thiếu sáng, 
+mờ, rung tay... thì quá trình ghi nhận hành vi mắt có thể không ch ính xác, ảnh 
+hưởng đến độ tin cậy của kết quả phân tích.  
+Một nhược điểm khác là ứng dụng hiện tại chưa phân loại cụ thể từng 
+loại bệnh mắt  mà chủ yếu tập trung đánh giá mức độ thị lực tổng quát. Điều 
+này có nghĩa là những bệnh như thoái hóa điểm vàng, đục thủy tinh thể, hoặc 
+tăng nhãn áp chưa được nhận diện riêng biệt, mà chỉ được gợi ý là “có dấu hiệu 
+bất thường, nên đi khám”. Trong tương lai, việc mở rộng khả năng chẩn đoán 
+sẽ cần thêm dữ liệu và cải tiến mô hình AI chuyên sâu hơn.  
+Cuối cùng, vì ứng dụng được xây dựng trên nền tảng điện thoại hoặc 
+máy tính, một số người dùng lớn tuổi hoặc có thị lực kém có thể gặp khó khăn 
+trong lần sử dụng đầu tiên  nếu không có người hỗ trợ. Dù đã tích hợp giọng 
+nói hướng dẫn, vẫn cần tăng cường khả năng điều khiển bằng g iọng nói hoàn 
+toàn để tối ưu hóa trải nghiệm cho người khiếm thị hoặc người không biết chữ.  
+ 
+16 
+ 5. Thực nghiệm  
+Để đánh giá tính khả thi và hiệu quả thực tế của ứng dụng kiểm tra thị 
+lực tích hợp AI, nhóm nghiên cứu đã tiến hành thử nghiệm thực địa  tại hai 
+địa điể m: một trường trung học phổ thông và một trạm y tế cấp xã tại khu vực 
+ngoại thành. Tổng cộng có 40 người tham gia  thử nghiệm, được lựa chọn ngẫu 
+nhiên từ ba nhóm đối tượng: học sinh, phụ huynh và người cao tuổi trong cộng 
+đồng. Mục tiêu của quá trình này l à kiểm tra tính thân thiện, mức độ sử dụng 
+hiệu quả cũng như so sánh độ chính xác của ứng dụng với các phương pháp 
+kiểm tra truyền thống.  
+Trong quá trình thử nghiệm, người tham gia được hướng dẫn sử dụng 
+ứng dụng ngay trên điện thoại Android hoặc máy tính xách tay có gắn camera. 
+Ứng dụng hoạt động hoàn toàn offline, với giao diện đơn giản, có hướng dẫn 
+bằng giọng nói và hình ảnh minh họa. Các bước sử dụng bao gồm chọn bài 
+kiểm tra (Snellen hoặc Amsler), làm theo hướng dẫn trên màn hình, để camera 
+ghi lại hà nh vi mắt, và nhận kết quả đánh giá thị lực từ hệ thống AI chỉ sau vài 
+giây xử lý.  
+Kết quả thử nghiệm cho thấy:  
+ 90% người tham gia  có thể tự thực hiện đầy đủ bài kiểm tra ngay trong 
+lần đầu tiên , mà không cần hỗ trợ từ nhân viên y tế  hay người khác. 
+Điều này chứng minh rằng giao diện và hướng dẫn của ứng dụng đã được 
+tối ưu hóa hiệu quả cho người dùng đại trà, kể cả những ngườ i không 
+quen sử dụng công nghệ.  
+ 85% người dùng  đánh giá ứng dụng là dễ sử dụng , thao tác đơn giản, 
+dễ hiểu. Một số học sinh và phụ huynh đề xuất có thêm phiên bản dành 
+cho máy tính để bàn hoặc máy tính bảng , giúp kiểm tra mắt dễ dàng 
+hơn cho người lớn tuổi không  sử dụng điện thoại thông minh.  
+ Đặc biệt, khi so sánh kết quả từ ứng dụ ng với kết quả kiểm tra thị lực 
+tại trạm y tế bằng bảng Snellen giấy truyền thống , mức độ chênh 
+lệch trung bình là ±0.25 Diop . Đây là sai số nhỏ, nằm trong giới hạn 
+chấp nhận được  đối với các phương pháp sàng lọc tại nhà, và đủ đáng 
+tin cậy để phát hiện ng ười có nguy cơ thị lực yếu cần theo dõ i thêm hoặc 
+đi khám chuyên sâu.  
+ Ngoài ra, nhiều người lớn tuổi tỏ ra hài lòng  với việc ứng dụng có 
+giọng nói tiếng Việt hướng dẫn từng bước, giúp họ không cần đọc nhiều 
+chữ. Một số còn chia sẻ rằng nhờ có ứng dụng, họ  cảm thấy yên tâm hơn 
+ 
+17 
+ vì có thể kiểm tra mắt định kỳ ngay tại nhà  mà không cần phải đi xa 
+hoặc xếp hàng chờ khám . 
+Tổng thể, đợt thử nghiệm cho thấy ứng dụng đã đạt được hiệu quả sử 
+dụng cao, độ chính xác tương đối tốt và khả năng tiếp cận phù hợp với các 
+nhóm đối tượng mục tiêu. Đây là cơ sở quan trọng để nhóm tiếp tục hoàn thiện 
+sản phẩm, mở rộng quy mô triển khai và nghiên cứu hướng phát triển chuyên 
+sâu hơn trong tương lai.  
+IV. HƯỚNG PHÁT TRIỂN  
+Trong tương lai, nhóm nghiên cứu định hướng mở rộng và hoàn thiện 
+sản phẩm theo nhiều khía cạnh nhằm nâng cao hiệu quả sử dụng và tính ứng 
+dụng trong thực tiễn. Trước hết, nhóm đặt mục tiêu mở rộng khả năng chẩn 
+đoán  của ứng dụng bằng cách nâng cấp mô hình AI hiện tại, không chỉ dừng 
+lại ở việc ước lượng thị lực tổ ng quát mà còn có thể phát hiện sớm các bệnh 
+lý mắt cụ thể  như thoái hóa điểm vàng, đục thủy tinh thể hay võng mạc tiểu 
+đường – những nguyên nhân phổ biến dẫn đến mù lòa nếu không được can 
+thiệp kịp thời.  
+Bên cạnh đó, ứng dụng sẽ được tích hợp chức năng đi ều khiển bằng 
+giọng nói , nhằm phục vụ cho đối tượng người dùng là người khiếm thị, người 
+già yếu hoặc người không biết chữ. Việc sử dụng hoàn toàn bằng lời nói giúp 
+gia tăng khả năng tiếp cận và xóa bỏ rào cản công nghệ trong cộng đồng nông 
+thôn.  
+Một hướng  phát triển quan trọng khác là liên kết với các cơ sở y tế địa 
+phương , cho phép người dùng dễ dàng gửi kết quả kiểm tra đến trạm y tế 
+gần nhất  thông qua kết nối (khi có), từ đó tạo ra cầu nối giữa công nghệ kiểm 
+tra tại nhà và hệ thống khám chữa bệnh chuyê n sâu.  
+Để phục vụ cộng đồng tốt hơn, nhóm cũng có kế hoạch triển khai thiết 
+bị kiểm tra giá rẻ  sử dụng nền tảng Raspberry Pi. Thiết bị sẽ tích hợp camera, 
+màn hình nhỏ, loa và hệ thống AI, được đóng gói thành một kiosk di động  đặt 
+tại các địa điểm công cộn g như trường học, chợ, nhà văn hóa thôn – giúp người 
+dân dễ dàng tiếp cận mà không cần sử dụng điện thoại thông minh cá nhân.  
+Cuối cùng, nhóm hướng đến việc phát hành ứng dụng chính thức trên 
+Google Play , đồng thời nếu có điều kiện tài trợ, sẽ mở mã nguồn sản phẩm  
+để mời gọi cộng đồng lập trình viên, chuyên gia y tế và tổ chức xã hội cùng 
+tham gia cải tiến. Điều này không chỉ giúp sản phẩm phát triển bền vững, mà 
+ 
+18 
+ còn góp phần lan tỏa giá trị nhân văn và tính khoa học của đề tài ra phạm vi 
+rộng lớn hơn.  
+V. T ÀI LIỆU THAM KHẢO  
+1.  World Health Organization (2019), “World report on vision”, p.39.  
+2. Lâm Trần (2019), “Số trẻ em cận thị ở thành phố cao gấp đôi trẻ sống ở nông 
+thôn”, Báo Nhân Dân, URL: Số trẻ em cận thị ở thành phố cao gấp đôi trẻ sống 
+ở nông thôn . Truy cập vào 03/07/2025.  
+3. Orbis (2024), “AI -led eye screenings launch in Vietn am”, Orbis, URL: 
+https://gbr.orbis.org/en/news/2024/ai -vietnam -2024 . Access on 03/07/2025.  
+4. Jennifer Lim, Malavika Bhaskaranand, Chaithanya Ramachandra, Sandeep 
+Bhat, Kaushal Solanki, and  Srinivas Sadda. (2019) “Artificial Intelligence 
+Screening for Diabetic Retinopathy: Analysis from a Pivotal Multi -Center 
+Prospective Clinical Trial.” ARVO Imaging in the Eye Conference 2019 . 
+5. Fauw J D, Ledsam J R, Romera -Paredes B, Nikolov S, Tomasev N, Bl ackwell 
+S, Askham H, Glorot X, O’Donoghue B, Visentin D, Driessche G van den, 
+Lakshminarayanan B, Meyer C, Mackinder F, Bouton S, Ayoub K, Chopra R, 
+King D, Karthikesalingam A, Hughes C O, Raine R, Hughes J, Sim D A, Egan 
+C, Tufail A, Montgomery H, Hassabi s D, Rees G, Back T, Khaw P T, 
+Suleyman M, Cornebise J, Keane P A and Ronneberger O (2018),  “Clinically 
+applicable deep learning for diagnosis and referral in retinal disease”, Nature 
+Medicine  (24), 1342 –50. 
+6. Amit Kr Dey, Pradeep Walia, Girish Somvanshi, A brar Ali, Sagarnil Das, 
+Pallabi Paul, Minakhi Ghosh (2025), “AI -Driven Diabetic Retinopathy 
+Screening: Multicentric Validation of AIDRSS in India”, arXiv preprint.  
+7. F.-P. Roubelat, V. Soler, F. Varenne, V. Gualino (2024), “Real -world artificial 
+intelligence -based interpretation of fundus imaging as part of an eyewear 
+prescription renewal protocol”, Journal Français d'Ophtalmologie, Volume 
+47, Issue 6.  

@@ -601,187 +601,146 @@ function App() {
 
       {/* Main HUD App */}
       {isExploring && (
-        <>
-          {/* Background Layers */}
-          <div className="absolute inset-0 z-0">
-            <StellariumSky 
-              isVisible={activeLayer === 'stellarium'}
-              onClose={() => setActiveLayer('deepsky')} 
-              onSelectObject={async (name, type, details) => {
-                const userText = `Tôi muốn phân tích thiên thể ${name} (${type}). Chi tiết tọa độ: ${details}`;
-                setMessages(prev => [...prev, { role: 'user', text: userText }]);
-                setMessages(prev => [...prev, { role: 'ai', text: 'Đang kết nối vệ tinh và phân tích dữ liệu...' }]);
-                setRightPanelOpen(true);
-                try {
-                  const reply = await getGeminiResponse(`Người dùng đang xem thiên thể "${name}" (${type}) trên Kính thiên văn Stellarium Web với dữ liệu tọa độ: "${details}". Hãy cung cấp thông tin khoa học chuyên sâu, lịch sử phát hiện và ý nghĩa văn hóa dân gian (đặc biệt là mối liên hệ với văn hóa Việt Nam hoặc phương Đông nếu có) về thiên thể này.`, messages);
-                  setMessages(prev => { const newMsgs = [...prev]; newMsgs[newMsgs.length - 1] = { role: 'ai', text: reply }; return newMsgs; });
-                } catch (err) {
-                  setMessages(prev => { const newMsgs = [...prev]; newMsgs[newMsgs.length - 1] = { role: 'ai', text: '⚠️ Lỗi: Không thể kết nối với lõi xử lý AI.' }; return newMsgs; });
-                }
-              }}
-            />
-
-            {activeLayer === 'deepsky' && (
-              <div className="absolute inset-0 bg-black flex flex-col" onMouseMove={(e) => { 
-                mousePosRef.current = {x: e.clientX, y: e.clientY}; 
-                if (interactionModeRef.current === 'blackhole' && blackholeRef.current) {
-                    blackholeRef.current.style.left = e.clientX + 'px';
-                    blackholeRef.current.style.top = e.clientY + 'px';
-                }
-              }}>
-                {!dziUrl && !isWaitingForDzi && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <p className="text-slate-500 italic text-lg text-center px-4">Hãy sử dụng thanh tìm kiếm phía trên để nạp bản đồ ảnh Deep Zoom (JWST/Hubble).</p>
-                  </div>
-                )}
-                
-                {isWaitingForDzi && (
-                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#0B0B10]/90 backdrop-blur-md">
-                    <div className="scanline-overlay"></div>
-                    <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(0,255,255,0.5)]"></div>
-                    <h2 className="text-2xl font-bold text-cyan-400 tracking-widest text-center glitch" style={{ fontFamily: 'var(--font-heading)' }}>ĐANG TRUY XUẤT NASA MAST</h2>
-                    <p className="text-slate-300 mt-4 text-sm text-center" style={{ fontFamily: 'var(--font-mono)' }}>THỜI GIAN DỰ KIẾN CÒN LẠI: <span className="text-emerald-400 font-bold text-xl ml-2">{timeLeft > 0 ? `${timeLeft}s` : 'ĐANG ĐỒNG BỘ...'}</span></p>
-                    
-                    {/* Fake progress bar */}
-                    <div className="w-64 h-1 bg-slate-800 rounded-full mt-6 overflow-hidden">
-                      <div className="h-full bg-cyan-500 animate-[pulse_1s_ease-in-out_infinite]" style={{ width: `${Math.min(100, Math.max(5, (180 - timeLeft) / 180 * 100))}%` }}></div>
-                    </div>
-                  </div>
-                )}
-                
-                <div id="osd-viewer" className={`absolute inset-0 w-full h-full transition-transform duration-1000 ${interactionMode==='magnify' ? 'cursor-none' : ''} ${isCockpitMode ? 'scale-110 perspective-[1000px] rotate-x-[5deg]' : ''}`} style={{ filter: getSpectrumFilters() }}></div>
-                
-                {isCockpitMode && (
-                  <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,1)] border-[40px] border-slate-900/90 rounded-[100px] overflow-hidden flex items-center justify-center">
-                    <div className="absolute top-0 w-full h-8 bg-slate-800 border-b border-blue-500/30 flex justify-around items-center px-20">
-                      <div className="text-[10px] text-blue-400 font-mono animate-pulse">WARP DRIVE ACTIVE</div>
-                      <div className="text-[10px] text-red-400 font-mono">SHIELDS: 100%</div>
-                    </div>
-                    <div className="absolute bottom-0 w-1/3 h-24 bg-slate-800 border-t border-x rounded-t-[50px] border-slate-600 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] flex items-end justify-center pb-4 gap-4">
-                      <div className="w-8 h-8 rounded-full bg-red-600/20 border border-red-500/50 shadow-[0_0_10px_red]"></div>
-                      <div className="w-12 h-12 rounded-full bg-blue-600 border border-blue-400 shadow-[0_0_20px_blue] flex flex-col items-center justify-center"><span className="text-[8px]">AUTO</span></div>
-                      <div className="w-8 h-8 rounded-full bg-emerald-600/20 border border-emerald-500/50 shadow-[0_0_10px_emerald]"></div>
-                    </div>
-                  </div>
-                )}
-
-                <div ref={blackholeRef} className={`fixed z-40 pointer-events-none rounded-full ${interactionMode === 'blackhole' ? 'block' : 'hidden'}`} style={{ width: '300px', height: '300px', transform: 'translate(-50%, -50%)', backdropFilter: 'blur(8px) contrast(200%) hue-rotate(180deg)', boxShadow: 'inset 0 0 100px black, 0 0 30px rgba(168, 85, 247, 0.5)', background: 'radial-gradient(circle, black 15%, transparent 60%)' }}></div>
-
-                <div ref={scannerRef} className={`absolute top-0 bottom-0 w-[2px] bg-orange-500 shadow-[0_0_20px_5px_rgba(234,88,12,0.8)] z-30 pointer-events-none ${isSonifying ? 'block' : 'hidden'}`} style={{ left: '0%' }}>
-                  <div className="absolute -left-16 w-32 h-full bg-gradient-to-r from-transparent to-orange-500/20"></div>
-                </div>
-                
-                {/* Center Reticle (Signature) */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex flex-col items-center justify-center">
-                  <div className="relative w-[150px] h-[150px] flex items-center justify-center animate-[spin_60s_linear_infinite]">
-                    {/* Outer dashed ring */}
-                    <svg className="absolute inset-0 w-full h-full text-cyan-500/30" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 6" />
-                      <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                    </svg>
-                    {/* Crosshairs */}
-                    <div className="absolute top-0 bottom-0 w-[1px] bg-cyan-500/50"></div>
-                    <div className="absolute left-0 right-0 h-[1px] bg-cyan-500/50"></div>
-                    <div className="w-2 h-2 border border-cyan-400"></div>
-                  </div>
-                  <div className="absolute top-[110%] flex flex-col items-center">
-                    <div className="text-cyan-400 text-[10px] font-bold tracking-widest uppercase mb-1" style={{ fontFamily: 'var(--font-heading)' }}>TARGET: {currentTarget || 'UNKNOWN'}</div>
-                    <div ref={reticleCoordsRef} id="reticle-coords-text" className="text-emerald-400 text-[10px] whitespace-nowrap bg-slate-900/80 px-2 py-1 rounded-sm border border-slate-700/50 backdrop-blur-md shadow-[0_0_10px_rgba(16,185,129,0.1)]" style={{ fontFamily: 'var(--font-mono)' }}>
-                      RA: 0.0000 | DEC: 0.0000
-                    </div>
-                  </div>
-                </div>
-
-                <SpaceNewsTicker />
-              </div>
-            )}
-
-            {activeLayer === 'vrgallery' && (
-              <React.Suspense fallback={<div className="absolute inset-0 bg-slate-900 flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">INITIATING VR ENVIRONMENT...</div>}>
-                <VRGallery onClose={() => setActiveLayer('stellarium')} speakText={speakText} />
-              </React.Suspense>
-            )}
-            {activeLayer === 'radar' && (
-              <React.Suspense fallback={<div className="absolute inset-0 bg-slate-900 flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">CONNECTING TO RADAR TELEMETRY...</div>}>
-                <div className="absolute inset-0 bg-slate-900"><Radar3D /></div>
-              </React.Suspense>
-            )}
-          </div>
-
-          {/* Top HUD - Search Bar */}
-          <TopHUD 
-            executeSearch={executeSearch}
-            activeLayer={activeLayer}
-          />
-
-          {/* Bottom HUD - View Switcher Dock */}
-          {bottomDockOpen && <BottomDock items={dockItems} />}
-
-          {/* Left HUD - Hologram Tools (No Floating Panel) */}
-          <div className={`absolute left-6 top-1/2 -translate-y-1/2 z-50 transition-opacity duration-300 ${leftPanelOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-            <LeftHUD 
-              activeLayer={activeLayer}
-              dziUrl={dziUrl}
-              filters={filters}
-              setFilters={setFilters}
-              handleDownload={handleDownload}
-              toggleSonification={toggleSonification}
-              generateCitizenReport={generateCitizenReport}
-              controls={controls}
-              isCockpitMode={isCockpitMode}
-              setShowQuiz={setShowQuiz}
-              badges={badges}
-            />
-          </div>
-
-          {/* Right Floating Panel - AI Assistant */}
-          <FloatingPanel position="right" isOpen={rightPanelOpen} title="Trợ lý Gemini AI" width="w-80 md:w-96">
-            <RightHUD 
-              handleNewSession={handleNewSession}
-              sessions={sessions}
-              currentSessionId={currentSessionId}
-              handleSwitchSession={handleSwitchSession}
-              messages={messages}
-              messagesEndRef={messagesEndRef}
-              handleChatSubmit={handleChatSubmit}
-              handleCopyText={handleCopyText}
-              speakText={speakText}
-              isSpeaking={isSpeaking}
-              PROMPT_TEMPLATES={PROMPT_TEMPLATES}
-              selectedFile={selectedFile}
-              setSelectedFile={setSelectedFile}
-              setFileContent={setFileContent}
-              fileInputRef={fileInputRef}
-              handleFileChange={handleFileChange}
-            />
-          </FloatingPanel>
-
-          {/* Panel Toggle Controls */}
-          <div className="absolute bottom-20 left-3 z-50 flex flex-col gap-2">
-            <button 
-              onClick={() => setLeftPanelOpen(!leftPanelOpen)}
-              className={`btn-icon rounded-lg cursor-pointer ${leftPanelOpen ? 'active' : ''}`}
-              title="Toggle Tools Panel"
-              aria-label="Toggle tools panel"
-            >
-              <IconPanel size={16} />
-            </button>
-          </div>
-
-          <div className="absolute bottom-20 right-3 z-50 flex flex-col gap-2">
-            <button 
-              onClick={() => setRightPanelOpen(!rightPanelOpen)}
-              className={`btn-icon rounded-lg cursor-pointer ${rightPanelOpen ? 'active' : ''}`}
-              title="Toggle AI Assistant"
-              aria-label="Toggle AI assistant"
-            >
-              <IconBrain size={16} />
-            </button>
-          </div>
+        <div className="absolute inset-0 z-0 flex flex-col items-center justify-center p-8 bg-[#101014]">
           
+          <div className="w-full max-w-[1600px] flex-1 flex flex-col border border-[var(--ks-gold-hairline)] rounded-[4px] relative shadow-[0_0_50px_rgba(212,175,55,0.08)] bg-[var(--ks-lacquer-deep)]">
+            
+            {/* TopHUD */}
+            <TopHUD executeSearch={executeSearch} activeLayer={activeLayer} />
+
+            <div className="flex flex-1 overflow-hidden relative">
+              {/* LeftHUD */}
+              <LeftHUD 
+                controls={controls}
+                handleDownload={handleDownload}
+                toggleSonification={toggleSonification}
+                generateCitizenReport={generateCitizenReport}
+                setShowQuiz={setShowQuiz}
+              />
+
+              {/* Center Viewport */}
+              <div className="flex-1 relative overflow-hidden bg-black border-l border-[var(--ks-gold-hairline)]">
+                
+                {/* Background Layers */}
+                <div className="absolute inset-0 z-0">
+                  <StellariumSky 
+                    isVisible={activeLayer === 'stellarium'}
+                    onClose={() => setActiveLayer('deepsky')} 
+                    onSelectObject={async (name, type, details) => {
+                      const userText = `Tôi muốn phân tích thiên thể ${name} (${type}). Chi tiết tọa độ: ${details}`;
+                      setMessages(prev => [...prev, { role: 'user', text: userText }]);
+                      setMessages(prev => [...prev, { role: 'ai', text: 'Đang kết nối vệ tinh và phân tích dữ liệu...' }]);
+                      setRightPanelOpen(true);
+                      try {
+                        const reply = await getGeminiResponse(`Người dùng đang xem thiên thể "${name}" (${type}) trên Kính thiên văn Stellarium Web với dữ liệu tọa độ: "${details}". Hãy cung cấp thông tin khoa học chuyên sâu, lịch sử phát hiện và ý nghĩa văn hóa dân gian (đặc biệt là mối liên hệ với văn hóa Việt Nam hoặc phương Đông nếu có) về thiên thể này.`, messages);
+                        setMessages(prev => { const newMsgs = [...prev]; newMsgs[newMsgs.length - 1] = { role: 'ai', text: reply }; return newMsgs; });
+                      } catch (err) {
+                        setMessages(prev => { const newMsgs = [...prev]; newMsgs[newMsgs.length - 1] = { role: 'ai', text: '⚠️ Lỗi: Không thể kết nối với lõi xử lý AI.' }; return newMsgs; });
+                      }
+                    }}
+                  />
+
+                  {activeLayer === 'deepsky' && (
+                    <div className="absolute inset-0 bg-black flex flex-col" onMouseMove={(e) => { 
+                      mousePosRef.current = {x: e.clientX, y: e.clientY}; 
+                      if (interactionModeRef.current === 'blackhole' && blackholeRef.current) {
+                          blackholeRef.current.style.left = e.clientX + 'px';
+                          blackholeRef.current.style.top = e.clientY + 'px';
+                      }
+                    }}>
+                      {!dziUrl && !isWaitingForDzi && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <p className="text-slate-500 italic text-lg text-center px-4">Hãy sử dụng thanh tìm kiếm phía trên để nạp bản đồ ảnh Deep Zoom (JWST/Hubble).</p>
+                        </div>
+                      )}
+                      
+                      {isWaitingForDzi && (
+                        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#0B0B10]/90 backdrop-blur-md">
+                          <div className="scanline-overlay"></div>
+                          <div className="w-16 h-16 border-4 border-[var(--ks-kinpaku-gold)] border-t-transparent rounded-full animate-spin mb-6 shadow-[0_0_15px_rgba(212,175,55,0.5)]"></div>
+                          <h2 className="text-2xl font-bold text-[var(--ks-champagne)] tracking-widest text-center glitch" style={{ fontFamily: 'var(--font-heading)' }}>ĐANG TRUY XUẤT NASA MAST</h2>
+                          <p className="text-[var(--ks-text-muted)] mt-4 text-sm text-center" style={{ fontFamily: 'var(--font-mono)' }}>THỜI GIAN DỰ KIẾN CÒN LẠI: <span className="text-[var(--ks-kinpaku-gold)] font-bold text-xl ml-2">{timeLeft > 0 ? `${timeLeft}s` : 'ĐANG ĐỒNG BỘ...'}</span></p>
+                          
+                          <div className="w-64 h-1 bg-[var(--ks-graphite)] rounded-full mt-6 overflow-hidden">
+                            <div className="h-full bg-[var(--ks-kinpaku-gold)] animate-[pulse_1s_ease-in-out_infinite]" style={{ width: `${Math.min(100, Math.max(5, (180 - timeLeft) / 180 * 100))}%` }}></div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div id="osd-viewer" className={`absolute inset-0 w-full h-full transition-transform duration-1000 ${interactionMode==='magnify' ? 'cursor-none' : ''} ${isCockpitMode ? 'scale-110 perspective-[1000px] rotate-x-[5deg]' : ''}`} style={{ filter: getSpectrumFilters() }}></div>
+                      
+                      {isCockpitMode && (
+                        <div className="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_150px_rgba(0,0,0,1)] border-[40px] border-slate-900/90 rounded-[100px] overflow-hidden flex items-center justify-center">
+                          <div className="absolute top-0 w-full h-8 bg-slate-800 border-b border-blue-500/30 flex justify-around items-center px-20">
+                            <div className="text-[10px] text-blue-400 font-mono animate-pulse">WARP DRIVE ACTIVE</div>
+                            <div className="text-[10px] text-red-400 font-mono">SHIELDS: 100%</div>
+                          </div>
+                          <div className="absolute bottom-0 w-1/3 h-24 bg-slate-800 border-t border-x rounded-t-[50px] border-slate-600 shadow-[0_-20px_50px_rgba(0,0,0,0.8)] flex items-end justify-center pb-4 gap-4">
+                            <div className="w-8 h-8 rounded-full bg-red-600/20 border border-red-500/50 shadow-[0_0_10px_red]"></div>
+                            <div className="w-12 h-12 rounded-full bg-blue-600 border border-blue-400 shadow-[0_0_20px_blue] flex flex-col items-center justify-center"><span className="text-[8px]">AUTO</span></div>
+                            <div className="w-8 h-8 rounded-full bg-emerald-600/20 border border-emerald-500/50 shadow-[0_0_10px_emerald]"></div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div ref={blackholeRef} className={`fixed z-40 pointer-events-none rounded-full ${interactionMode === 'blackhole' ? 'block' : 'hidden'}`} style={{ width: '300px', height: '300px', transform: 'translate(-50%, -50%)', backdropFilter: 'blur(8px) contrast(200%) hue-rotate(180deg)', boxShadow: 'inset 0 0 100px black, 0 0 30px rgba(168, 85, 247, 0.5)', background: 'radial-gradient(circle, black 15%, transparent 60%)' }}></div>
+
+                      <div ref={scannerRef} className={`absolute top-0 bottom-0 w-[2px] bg-orange-500 shadow-[0_0_20px_5px_rgba(234,88,12,0.8)] z-30 pointer-events-none ${isSonifying ? 'block' : 'hidden'}`} style={{ left: '0%' }}>
+                        <div className="absolute -left-16 w-32 h-full bg-gradient-to-r from-transparent to-orange-500/20"></div>
+                      </div>
+                      
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 flex flex-col items-center justify-center">
+                        <div className="relative w-[150px] h-[150px] flex items-center justify-center animate-[spin_60s_linear_infinite]">
+                          <svg className="absolute inset-0 w-full h-full text-[var(--ks-kinpaku-gold)]/30" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="48" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="4 6" />
+                            <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                          </svg>
+                          <div className="absolute top-0 bottom-0 w-[1px] bg-[var(--ks-kinpaku-gold)]/50"></div>
+                          <div className="absolute left-0 right-0 h-[1px] bg-[var(--ks-kinpaku-gold)]/50"></div>
+                          <div className="w-2 h-2 border border-[var(--ks-kinpaku-gold)]"></div>
+                        </div>
+                        <div className="absolute top-[110%] flex flex-col items-center">
+                          <div className="text-[var(--ks-kinpaku-gold)] text-[10px] font-bold tracking-widest uppercase mb-1" style={{ fontFamily: 'var(--font-heading)' }}>TARGET: {currentTarget || 'UNKNOWN'}</div>
+                          <div ref={reticleCoordsRef} id="reticle-coords-text" className="text-[var(--ks-champagne)] text-[10px] whitespace-nowrap bg-[var(--ks-lacquer-deep)]/80 px-2 py-1 rounded-sm border border-[var(--ks-gold-hairline)] backdrop-blur-md" style={{ fontFamily: 'var(--font-mono)' }}>
+                            RA: 0.0000 | DEC: 0.0000
+                          </div>
+                        </div>
+                      </div>
+
+                      <SpaceNewsTicker />
+                    </div>
+                  )}
+
+                  {activeLayer === 'vrgallery' && (
+                    <React.Suspense fallback={<div className="absolute inset-0 bg-slate-900 flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">INITIATING VR ENVIRONMENT...</div>}>
+                      <VRGallery onClose={() => setActiveLayer('stellarium')} speakText={speakText} />
+                    </React.Suspense>
+                  )}
+                  {activeLayer === 'radar' && (
+                    <React.Suspense fallback={<div className="absolute inset-0 bg-slate-900 flex items-center justify-center text-cyan-500 font-mono tracking-widest animate-pulse">CONNECTING TO RADAR TELEMETRY...</div>}>
+                      <div className="absolute inset-0 bg-slate-900"><Radar3D /></div>
+                    </React.Suspense>
+                  )}
+                </div>
+
+              </div>
+
+              {/* RightHUD - AI Data Core */}
+              <RightHUD 
+                messages={messages} 
+                handleChatSubmit={handleChatSubmit} 
+                PROMPT_TEMPLATES={PROMPT_TEMPLATES} 
+              />
+            </div>
+            
+          </div>
+
+          {/* Bottom Dock outside the main container */}
+          <BottomDock items={dockItems} />
+
           {/* Modals & Overlays */}
           {showQuiz && <QuizOverlay onClose={() => setShowQuiz(false)} onWin={(badge) => { const newBadges = [...badges, badge]; setBadges(newBadges); localStorage.setItem('jwst_badges', JSON.stringify(newBadges)); setShowQuiz(false); }} />}
-        </>
+        </div>
       )}
     </div>
   );

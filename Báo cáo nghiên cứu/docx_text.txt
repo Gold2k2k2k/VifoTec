@@ -1,0 +1,999 @@
+
+
+CUỘC THI SÁNG TẠO 
+THANH THIẾU NIÊN NHI ĐỒNG TOÀN QUỐC
+LẦN THỨ 21 (2025-2026)
+🙡 ★ 🙣
+
+
+BÁO CÁO TÓM TẮT:
+AIRCHECK - NGHIÊN CỨU HỆ THỐNG THEO DÕI VÀ HỖ TRỢ CHUẨN ĐOÁN HỘI CHỨNG RỐI LOẠN NGƯNG THỞ KHI NGỦ (OSA) DỰA TRÊN CẢM BIẾN SINH HỌC VÀ WEB NGƯỜI DÙNG
+
+Lĩnh vực: phần mềm tin học
+
+
+
+Tháng 7 năm 2025
+
+TÓM TẮT
+
+Ngưng thở khi ngủ (OSA) là một bệnh lý khá phổ biến nhưng lại rất khó phát hiện nếu không có thiết bị chuyên dụng. Bệnh có thể gây ảnh hưởng nghiêm trọng đến sức khỏe như mệt mỏi kéo dài, tim mạch và thậm chí là đột quỵ nếu không được chẩn đoán sớm. Tuy nhiên, các phương pháp chẩn đoán hiện nay thường đắt tiền và ít phù hợp để sử dụng tại nhà.
+Từ thực tế đó, em đã thực hiện đề tài xây dựng một hệ thống giúp hỗ trợ chẩn đoán OSA tại nhà. Hệ thống bao gồm một thiết bị đeo giúp thu thập các thông số sinh lý như BPM, chỉ số SpO₂, tiếng ngáy và tư thế ngủ. Những dữ liệu này sẽ được gửi về máy tính để xử lý và phân tích bằng tiện ích Apps Script của Google Sheets như một số dữ liệu như: AHI (số lần ngừng hoặc giảm thở mỗi giờ), ODI (số lần SpO₂ giảm ≥4% trong mỗi giờ ngủ), … Sau đó, kết quả sẽ được hiển thị lên một trang Web. Trang Web sẽ hiện ra các thông số đã được xử lí từ Google Sheets và hiện ra 20 câu hỏi để thêm chắc phần xác suất xem có bị OSA hay không. Sau khi trả lời xong 20 câu hỏi thì Web sẽ cho ra tỉ lệ mắc OSA và lời khuyên dành cho người đo.
+Đề tài không chỉ giúp nâng cao ý thức về sức khỏe giấc ngủ mà còn là bước khởi đầu để ứng dụng các thiết bị IoT và công nghệ web vào lĩnh vực y tế, mang lại giải pháp chẩn đoán sớm, tiện lợi và tiết kiệm hơn cho cộng đồng.
+
+
+Mục lục
+
+I. GIỚI THIỆU CHUNG
+1. Đặt vấn đề nghiên cứu
+1.1. Sự cần thiết của nghiên cứu
+Hội chứng ngưng thở tắc nghẽn khi ngủ (Obstructive Sleep Apnea – OSA) là một rối loạn hô hấp mạn tính xảy ra trong khi ngủ, đặc trưng bởi sự lặp đi lặp lại của các đợt ngừng hoặc giảm luồng khí thở do tắc nghẽn đường hô hấp trên. Bệnh thường đi kèm với các biểu hiện như ngáy to, cảm giác không ngủ đủ giấc, mệt mỏi kéo dài và buồn ngủ ban ngày. Tuy nhiên, do các triệu chứng thường chỉ xuất hiện vào ban đêm và tiến triển âm thầm, nhiều người mắc OSA không ý thức được tình trạng bệnh của mình, dẫn đến việc chẩn đoán và can thiệp bị chậm trễ.
+Điều đáng lo ngại là OSA không chỉ ảnh hưởng đến chất lượng giấc ngủ, mà còn gây ra những hậu quả nghiêm trọng đến sức khỏe tổng thể. Việc não bộ và cơ thể liên tục bị thiếu oxy trong suốt đêm làm tăng nguy cơ mắc các bệnh lý tim mạch như cao huyết áp, nhồi máu cơ tim, suy tim và đột quỵ. OSA cũng có mối liên hệ chặt chẽ với rối loạn chuyển hóa như tiểu đường loại 2, béo phì, và các vấn đề thần kinh như giảm trí nhớ, rối loạn cảm xúc, trầm cảm. Ngoài ra, buồn ngủ ban ngày do OSA còn làm tăng khả năng xảy ra tai nạn lao động và tai nạn giao thông.
+Mặc dù tỷ lệ mắc OSA ngày càng tăng, đặc biệt ở người trung niên, người thừa cân và nam giới, phần lớn trường hợp vẫn chưa được chẩn đoán. Nguyên nhân chủ yếu đến từ việc chẩn đoán chính xác hiện nay đòi hỏi sử dụng phương pháp đa ký giấc ngủ (Polysomnography – PSG) tại bệnh viện – một quy trình phức tạp, tốn kém và ít phù hợp để triển khai đại trà trong cộng đồng.
+Do đó, việc nghiên cứu và phát triển một hệ thống chẩn đoán hỗ trợ OSA sử dụng công nghệ IoT, có khả năng thu thập và phân tích các chỉ số sinh lý ngay tại nhà, là một hướng đi cấp thiết và phù hợp với xu thế y tế hiện đại. Giải pháp này không chỉ góp phần sàng lọc và phát hiện sớm bệnh nhân có nguy cơ cao, mà còn tạo điều kiện để người dân chủ động theo dõi sức khỏe hô hấp và cải thiện chất lượng giấc ngủ một cách hiệu quả và tiện lợi hơn. Từ những lí do trên, em đã nghiên cứu ra hệ thống có tên “ AirCheck - Hệ thống theo dõi và hỗ trợ chẩn đoán hội chứng ngưng thở khi ngủ dựa trên cảm biến sinh học và web người dùng ”.
+
+
+
+1.2. Các đề tài nghiên cứu trước đây và sản phẩm đã có trên thị trường 		Trong những năm gần đây, trên thị trường quốc tế đã xuất hiện nhiều thiết bị thương mại phục vụ cho việc theo dõi giấc ngủ và phát hiện sớm nguy cơ mắc hội chứng ngưng thở khi ngủ (OSA), nổi bật trong số đó là Withings Sleep Analyzer, WatchPAT, Fitbit Sense, và Oura Ring. Các thiết bị này đều có khả năng ghi nhận nhiều chỉ số sinh lý trong khi ngủ như nhịp tim, nồng độ oxy trong máu (SpO₂), nhịp hô hấp, tiếng ngáy, chuyển động cơ thể, tư thế nằm… để phân tích chất lượng giấc ngủ và ước tính mức độ OSA. Đặc biệt, thiết bị WatchPAT của Itamar Medical (Israel) được FDA Hoa Kỳ chứng nhận là thiết bị y tế hỗ trợ chẩn đoán OSA tại nhà, có độ chính xác cao khi so sánh với phương pháp đo PSG trong bệnh viện. Tuy nhiên, các thiết bị này có giá thành từ 5 triệu đến hơn 15 triệu đồng, một số còn yêu cầu sử dụng kèm phần mềm trả phí định kỳ và ngôn ngữ sử dụng chủ yếu là tiếng Anh, khiến việc tiếp cận đối với người dùng phổ thông, nhất là tại các nước đang phát triển như Việt Nam, còn gặp nhiều hạn chế.					Tại Việt Nam, số lượng nghiên cứu và sản phẩm ứng dụng công nghệ hỗ trợ chẩn đoán OSA vẫn còn khá khiêm tốn. Hầu hết các đề tài trong nước vẫn tập trung ở lĩnh vực y học lâm sàng, chủ yếu được triển khai tại các bệnh viện lớn như Bệnh viện Bạch Mai hoặc Bệnh viện Đại học Y Dược TP.HCM, thông qua các nghiên cứu về rối loạn giấc ngủ và ảnh hưởng của OSA đến sức khỏe tim mạch và chuyển hóa. Tuy nhiên, việc ứng dụng công nghệ để chẩn đoán sớm hoặc theo dõi OSA tại nhà vẫn còn rất hạn chế.										Một số nhóm nghiên cứu ở lĩnh vực kỹ thuật đã bắt đầu tiếp cận vấn đề này dưới góc độ hệ thống nhúng. Ví dụ, nhóm sinh viên khoa Kỹ thuật y sinh – Trường Đại học Bách Khoa TP.HCM từng phát triển thiết bị đeo tay theo dõi nhịp tim và phát hiện ngáy dựa trên cảm biến âm thanh. Nhóm nghiên cứu thuộc Trường Đại học Sư phạm Kỹ thuật TP.HCM sử dụng vi điều khiển ESP32, cảm biến MAX30102 (đo nhịp tim và SpO₂), MPU6050 (đo tư thế nằm), và MAX4466 (ghi nhận âm thanh ngáy) để xây dựng hệ thống thu thập dữ liệu về giấc ngủ. Tuy vậy, đa phần các hệ thống này mới dừng lại ở mức thử nghiệm, chỉ thu thập dữ liệu đơn lẻ mà chưa có giải pháp phân tích chuyên sâu hay giao diện hiển thị dữ liệu rõ ràng cho người dùng cuối. Ngoài ra, các yếu tố quan trọng như nhân trắc học (tuổi, giới tính, chỉ số BMI, chủng tộc) và thói quen sinh hoạt (giờ đi ngủ, mức độ vận động, tiền sử bệnh lý) – vốn là yếu tố then chốt trong việc đánh giá nguy cơ OSA – vẫn chưa được tích hợp đầy đủ vào quy trình phân tích.							Thực tế trên cho thấy còn rất nhiều tiềm năng và khoảng trống để phát triển một hệ thống hỗ trợ chẩn đoán OSA hoàn chỉnh, vừa đảm bảo độ chính xác, vừa chi phí thấp, dễ sử dụng và có khả năng ứng dụng trong giáo dục sức khỏe cộng đồng, nhất là cho giới trẻ – nhóm đối tượng đang ngày càng có xu hướng rối loạn giấc ngủ nhưng lại thiếu nhận thức đúng đắn về tác hại của OSA.
+2. Mục tiêu và giải pháp của nghiên cứu
+2.1. Mục tiêu nghiên cứu
+2.1.1. Mục tiêu tổng quát
+Nghiên cứu và phát triển một hệ thống tích hợp phần cứng và phần mềm có khả năng theo dõi các tín hiệu sinh học quan trọng trong khi ngủ như nhịp tim, nồng độ oxy trong máu (SpO₂), tư thế ngủ (MPU6050) và âm thanh ngáy (MAX4466) . Hệ thống sẽ thu thập dữ liệu từ các cảm biến gắn trên cơ thể người dùng, xử lý dữ liệu để phát hiện các dấu hiệu liên quan đến hội chứng ngưng thở khi ngủ (OSA), đồng thời cung cấp giao diện web thân thiện để hiển thị dữ liệu, hỗ trợ đánh giá và chẩn đoán ban đầu cho người dùng và chuyên gia y tế. Qua đó, đề tài hướng đến mục tiêu hỗ trợ phát hiện sớm và theo dõi OSA tại nhà, giảm phụ thuộc vào các thiết bị y tế đắt tiền trong bệnh viện.
+2.1.2. Mục tiêu cụ thể									Đề tài này tập trung vào việc thiết kế và xây dựng một hệ thống theo dõi giấc ngủ bằng phần cứng tích hợp nhiều loại cảm biến sinh học. Cụ thể, hệ thống sử dụng cảm biến MAX30102 để đo nhịp tim và nồng độ oxy trong máu (SpO₂), cảm biến MPU6050 để theo dõi tư thế nằm, microphone MAX4466 để phát hiện tiếng ngáy, và module NRF24L01 hoặc kết nối WiFi qua ESP32 để truyền dữ liệu không dây.													Dựa trên các phần cứng đó, một chương trình sẽ được phát triển trên vi điều khiển ESP32 nhằm thu thập dữ liệu từ các cảm biến theo thời gian thực. Chương trình sẽ xử lý sơ bộ các tín hiệu như lọc nhiễu, tính toán nhịp tim (BPM), SpO₂, phát hiện tiếng ngáy và xác định tư thế nằm. Sau đó, dữ liệu sẽ được gửi lên hệ thống hiển thị hoặc lưu trữ để phục vụ phân tích.							Một giao diện web trực quan cũng sẽ được xây dựng để người dùng có thể theo dõi các thông số sinh học của mình. Giao diện này không chỉ hiển thị dữ liệu thô mà còn tổng hợp các chỉ số quan trọng như nhịp tim trung bình, SpO₂ trung bình, chỉ số ngưng thở khi ngủ (AHI), chỉ số giảm oxy (ODI), tỷ lệ thời gian nằm ngửa và số lần ngáy trong suốt quá trình theo dõi.						Ngoài ra, hệ thống sẽ kết hợp thêm bảng câu hỏi y tế (về tuổi, giới tính, BMI, tiền sử bệnh lý, v.v.) để bổ sung yếu tố định tính, giúp đánh giá nguy cơ mắc hội chứng ngưng thở khi ngủ (OSA) một cách toàn diện hơn. Cuối cùng, hệ thống sẽ được thử nghiệm thực tế trên người dùng để đánh giá hiệu quả, đồng thời so sánh kết quả thu được với các ngưỡng chẩn đoán y khoa nhằm kiểm tra độ chính xác và khả năng ứng dụng của hệ thống trong việc phát hiện sớm OSA tại nhà.
+								
+2.2. Xác định giải pháp nghiên cứu								Để đạt được mục tiêu đề ra, em lựa chọn giải pháp kết hợp giữa phần cứng và phần mềm, nhằm xây dựng một hệ thống theo dõi hội chứng ngưng thở khi ngủ (OSA) tại nhà một cách hiệu quả, tiết kiệm chi phí và dễ sử dụng.			Về phần cứng, hệ thống sử dụng vi điều khiển ESP32 làm trung tâm điều khiển, kết nối với các cảm biến như MAX30102 (đo nhịp tim và SpO₂), MPU6050 (xác định tư thế ngủ) và micro MAX4466 (phát hiện tiếng ngáy). ESP32 không chỉ thu thập dữ liệu mà còn xử lý sơ bộ ngay trên thiết bị, bao gồm lọc nhiễu, phát hiện đỉnh nhịp tim (beat detection), tính toán SpO₂ thông qua bảng tra hoặc dùng thư viện spo2_algorithm.h. Sau khi xử lý, dữ liệu sẽ được truyền không dây qua WiFi hoặc NRF24L01 đến máy tính hoặc nền tảng web để lưu trữ và hiển thị.			Về phần mềm, em xây dựng một giao diện web đơn giản, trực quan bằng HTML/CSS/JavaScript hoặc ReactJS. Dữ liệu được lưu trữ và xử lý trên nền tảng như Google Sheets Web App. Trên giao diện, người dùng có thể theo dõi các tín hiệu sinh học dưới dạng biểu đồ thời gian thực, xem bảng tổng hợp các chỉ số quan trọng như nhịp tim trung bình, SpO₂ trung bình, chỉ số AHI, ODI, tỷ lệ nằm ngửa, và số lần ngáy. Ngoài ra, còn có một bảng câu hỏi sàng lọc OSA dựa trên các yếu tố lâm sàng như tuổi, giới tính, BMI, tiền sử bệnh lý...						Khi người dùng bấm nút “Phân tích tỉ lệ”, hệ thống sẽ dừng ghi nhận dữ liệu và xử lý toàn bộ thông tin đã thu thập để đưa ra kết quả phân tích cuối cùng. Việc đánh giá nguy cơ OSA được thực hiện dựa trên các ngưỡng y khoa đã được công nhận (ví dụ: AHI ≥ 5 lần/giờ là OSA nhẹ), kết hợp với thông tin từ bảng câu hỏi để đưa ra nhận định tổng quan.									Tóm lại, giải pháp của đề tài là sự kết hợp hài hòa giữa việc thu thập dữ liệu thực tế từ cơ thể người, áp dụng các thuật toán phân tích y tế cơ bản và cung cấp một giao diện thân thiện với người dùng, nhằm hỗ trợ việc theo dõi và đánh giá nguy cơ OSA một cách thuận tiện tại nhà.
+
+3. Đối tượng và phạm vi nghiên cứu
+3.1. Đối tượng nghiên cứu
+Đối tượng mà đề tài hướng đến là những người có nguy cơ mắc hội chứng ngưng thở khi ngủ (OSA), đặc biệt là nhóm dân số phổ biến nhưng chưa được chẩn đoán hoặc tiếp cận y tế đầy đủ.
+Cụ thể bao gồm:
+Người trưởng thành có các dấu hiệu nghi ngờ OSA như: ngáy to kéo dài, buồn ngủ bất thường vào ban ngày, mệt mỏi không rõ nguyên nhân, hoặc có tiền sử tăng huyết áp, béo phì, tiểu đường type 2.
+Những người có chỉ số BMI cao, thường xuyên nằm ngửa khi ngủ, hoặc có vòng cổ lớn – đây là những yếu tố nguy cơ đã được ghi nhận liên quan đến OSA.
+Tình nguyện viên khỏe mạnh, không có bệnh lý nền, cũng được đưa vào thử nghiệm để kiểm tra độ chính xác và tính ổn định của hệ thống trong điều kiện kiểm soát.
+Ngoài ra, hệ thống còn hướng đến những người muốn theo dõi chất lượng giấc ngủ tại nhà, không cần đến các thiết bị y tế đắt tiền như trong bệnh viện. Điều này đặc biệt hữu ích cho người dân ở vùng nông thôn, vùng sâu vùng xa, nơi điều kiện tiếp cận dịch vụ y tế còn hạn chế.
+
+3.2. Phạm vi nghiên cứu
+	3.2.1. Địa bàn nghiên cứu: Chung cư SunHome, Phường Nại Hiên Đông.
+3.2.2. Giới hạn nghiên cứu:									Trong quá trình thực hiện, đề tài còn một số giới hạn nhất định do điều kiện kỹ thuật, thời gian và phạm vi triển khai, cụ thể như sau:
+Về thiết bị cảm biến: Các cảm biến được sử dụng trong hệ thống như MAX30102, MPU6050, MAX4466 đều là loại phổ biến, giá rẻ và dễ mua trên thị trường. Tuy đáp ứng được nhu cầu nghiên cứu và theo dõi cơ bản, nhưng độ chính xác của chúng vẫn còn khoảng cách so với các thiết bị y tế chuyên dụng như Polysomnography (PSG) – phương pháp chẩn đoán OSA tiêu chuẩn hiện nay.
+Về thời gian theo dõi: Hệ thống được thiết kế để hoạt động ổn định trong một đêm (từ 6 đến 8 tiếng), tuy nhiên chưa được kiểm chứng khi sử dụng trong thời gian dài (nhiều đêm liên tục), nên chưa thể đánh giá chính xác độ bền và tính ổn định lâu dài của thiết bị cũng như dữ liệu thu được.
+Về độ chính xác phân tích: Các chỉ số như AHI, ODI, SpO₂ trung bình, BPM trung bình và tỷ lệ nằm ngửa/ngáy được tính toán dựa trên thuật toán cơ bản hoặc các ngưỡng tham khảo y học đơn giản. Hệ thống chưa tích hợp các mô hình phân tích nâng cao như AI/học máy, nên độ chính xác trong đánh giá vẫn còn hạn chế so với các hệ thống chuyên sâu về phân tích giấc ngủ.
+Về số lượng người tham gia thử nghiệm: Do giới hạn về thời gian, kinh phí và điều kiện triển khai, số lượng tình nguyện viên tham gia thử nghiệm thực tế còn ít. Điều này khiến kết quả chưa đủ tính đại diện hoặc độ tin cậy thống kê cao cho nhiều nhóm người dùng khác nhau (ví dụ: theo giới tính, độ tuổi, chỉ số BMI...).
+Về điều kiện môi trường thử nghiệm: Hệ thống được chạy thử chủ yếu trong môi trường dân dụng như phòng ngủ, ký túc xá, nên dễ chịu ảnh hưởng bởi các yếu tố nhiễu như tiếng ồn, ánh sáng, nhiệt độ hoặc thay đổi tư thế ngủ đột ngột. Đây là một khác biệt lớn so với các nghiên cứu thực hiện trong môi trường y tế được kiểm soát chặt chẽ.
+Những giới hạn trên là cơ sở để em nghiên cứu rút kinh nghiệm và đề xuất các cải tiến trong các phiên bản nâng cấp tiếp theo của hệ thống, cũng như hướng mở cho các nghiên cứu chuyên sâu hơn trong tương lai.					
+4. Tính mới, sáng tạo, nhân văn, hiệu quả và khả năng áp dụng của đề tài	
+4.1. Tính mới
+Đề tài kết hợp các cảm biến sinh học giá rẻ với nền tảng web thân thiện để tạo ra một hệ thống theo dõi OSA đơn giản, dễ tiếp cận tại nhà. Điểm mới nằm ở việc tích hợp dữ liệu thời gian thực (SpO₂, nhịp tim, ngáy, tư thế ngủ) xong từ đó nhờ Google Sheets phân tích ra các dữ liệu chuẩn y tế. Sau đó dữ liệu được truyền lên web với bảng câu hỏi y khoa nhằm phân tích nguy cơ OSA toàn diện. Ngoài ra, việc sử dụng Google Sheets làm trung gian lưu trữ dữ liệu giúp giảm chi phí, phù hợp với bối cảnh nghiên cứu mà vẫn đảm bảo tính thực tiễn và hiệu quả. Thiết bị cũng không quá khó để sử dụng, người dùng có thể chủ động quay với thời gian họ mong muốn và có thể lưu dữ liệu dưới dạng Exel.
+
+4.2. Tính sáng tạo											Đề tài “AirCheck – Hệ thống theo dõi và hỗ trợ chẩn đoán hội chứng ngưng thở khi ngủ dựa trên cảm biến sinh học và web người dùng” thể hiện tính sáng tạo ở việc kết hợp giữa các cảm biến sinh học giá rẻ với một nền tảng web hiện đại, nhằm tạo ra một hệ thống theo dõi sức khỏe giấc ngủ đơn giản, dễ triển khai tại nhà và phù hợp với người dùng phổ thông.									Khác với các hệ thống y tế truyền thống – vốn chỉ triển khai tại bệnh viện và yêu cầu thiết bị chuyên dụng đắt tiền như Polysomnography (PSG) – AirCheck hướng tới một mô hình nhẹ nhàng hơn. Hệ thống sử dụng phần cứng tùy biến để thu thập các tín hiệu sinh học quan trọng như nhịp tim, SpO₂, tư thế ngủ và tiếng ngáy, đồng thời xử lý và hiển thị dữ liệu thông qua một giao diện web trực quan, dễ sử dụng, kể cả với người không có kiến thức chuyên sâu về y tế.				Một điểm đáng chú ý là tính năng phân tích dữ liệu ngay khi người dùng nhấn nút, giúp hệ thống phản hồi gần như tức thời. Ngoài ra, việc kết hợp giữa dữ liệu định lượng từ cảm biến và dữ liệu định tính từ bảng câu hỏi y khoa cũng là một điểm mới mẻ, giúp đánh giá nguy cơ OSA theo cách toàn diện hơn, cả về mặt sinh lý lẫn yếu tố lâm sàng.										Bên cạnh đó, đề tài lựa chọn hướng đi tiết kiệm và dễ triển khai, tận dụng tối đa các công nghệ mã nguồn mở như ESP32, Google Sheets Web App, ReactJS..., vừa phù hợp với điều kiện nghiên cứu của sinh viên, vừa đảm bảo tính khoa học và tiềm năng ứng dụng thực tế trong cộng đồng.
+
+4.3. Tính nhân văn										Đề tài “AirCheck” thể hiện rõ tính nhân văn khi hướng đến việc hỗ trợ phát hiện sớm hội chứng ngưng thở khi ngủ (OSA) – một vấn đề sức khỏe nghiêm trọng nhưng thường bị bỏ sót. Hệ thống sử dụng thiết bị giá rẻ, dễ triển khai tại nhà, giúp người dùng chủ động theo dõi giấc ngủ mà không cần đến bệnh viện hay thiết bị đắt tiền.												Giải pháp đặc biệt phù hợp với người dân ở vùng sâu, vùng xa – nơi thiếu điều kiện tiếp cận dịch vụ y tế. Đồng thời, đề tài góp phần nâng cao nhận thức cộng đồng về tầm quan trọng của giấc ngủ và phòng ngừa bệnh lý liên quan. Đây không chỉ là một sản phẩm công nghệ, mà còn là công cụ hỗ trợ chăm sóc sức khỏe một cách thiết thực và nhân đạo.
+
+4.4. Tính hiệu quả
+Hệ thống AirCheck cho phép theo dõi nhịp tim, SpO₂, ngáy và tư thế ngủ một cách chính xác, liên tục và tiết kiệm ngay tại nhà. Nhờ tích hợp web và cảm biến giá rẻ, hệ thống hoạt động ổn định, dễ sử dụng và phù hợp với nhiều đối tượng, đặc biệt ở khu vực thiếu điều kiện y tế. Dữ liệu được phân tích và cảnh báo dựa trên tiêu chuẩn y khoa, hỗ trợ đánh giá nguy cơ OSA hiệu quả.
+
+4.5. Khả năng áp dụng										Hệ thống có thể được triển khai rộng rãi tại nhà, phòng khám hoặc trường học để sàng lọc nguy cơ OSA ban đầu, phát hiện sớm giúp điều trị sớm, phòng ngừa các biến chứng như: tăng huyết áp, đột quỵ, suy tim.... Nhờ sử dụng phần cứng giá rẻ và công nghệ mã nguồn mở, giải pháp phù hợp với cả người dùng phổ thông lẫn cơ sở y tế ở vùng thiếu điều kiện. Ngoài ra còn có thể áp dụng cho trường học, dựa vào đó để làm công cụ trực quan và thực hành hiệu quả trong đào tạo các ngành kỹ thuật, y sinh, IoT, … đối với sinh viên. Còn đối với học sinh có thể áp dụng vào các môn học như Tin học, Công nghệ để cho học sinh khơi dậy niềm hứng thú với bộ môn này. Giao diện web và dữ liệu từ Google Sheets cho phép bác sĩ từ xa truy cập và đánh giá theo từng cá nhân.
+5. Các Phương pháp nghiên cứu và kỹ thuật nghiên cứu
+5.1. Phương pháp nghiên cứu tài liệu							Nghiên cứu và thu thập các tài liệu, bài báo khoa học, luận văn, giáo trình, tiêu chuẩn y khoa về hội chứng ngưng thở khi ngủ (OSA), các chỉ số y sinh như SpO₂, BPM, AHI, ODI... Đồng thời tìm hiểu cách hoạt động của các cảm biến sinh học (MAX30102, MPU6050, MAX4466), cấu trúc hệ thống nhúng với ESP32 và các mô hình thiết kế web thu thập – xử lý dữ liệu thời gian thực.
+
+5.2. Phương pháp thực nghiệm								Tiến hành lắp ráp hệ thống phần cứng và lập trình ESP32 để thu nhận dữ liệu từ cảm biến. Thực hiện các thử nghiệm đo đạc trong điều kiện thực tế với người dùng tình nguyện trong thời gian ngủ, từ đó đánh giá khả năng hoạt động, độ ổn định và tính chính xác của hệ thống.
+
+5.3. Phương pháp phân tích – tổng hợp							Phân tích các tín hiệu thu được từ cảm biến (PPG, gia tốc, âm thanh...), lọc và xử lý tín hiệu, từ đó tính toán ra các chỉ số liên quan như nhịp tim trung bình, SpO₂ trung bình, số lần ngáy, thời gian nằm ngửa, và các chỉ số đánh giá nguy cơ OSA. Tổng hợp dữ liệu với thông tin từ bảng câu hỏi để đánh giá toàn diện.
+
+5.4. Phương pháp mô hình hóa hệ thống								Thiết kế sơ đồ khối hệ thống, xác định các luồng dữ liệu từ cảm biến đến giao diện web. Xây dựng quy trình đo – truyền – phân tích – hiển thị dữ liệu. Mô phỏng và minh họa cách hệ thống hoạt động từ đầu vào đến đầu ra.
+
+5.5. Phương pháp đánh giá hiệu quả								So sánh dữ liệu thu được từ hệ thống với các ngưỡng y khoa đã được công bố để đánh giá mức độ chính xác và khả năng hỗ trợ chẩn đoán OSA. Đồng thời khảo sát ý kiến người dùng về mức độ dễ sử dụng, độ tin cậy và tiện ích của hệ thống.													
+
+II. CÔNG NGHỆ VÀ KĨ THUẬT SỬ DỤNG								
+
+1. Ngôn ngữ lập trình Arduino IDE và ESP32.
+	Vi điều khiển ESP32 của hãng Espressif được lựa chọn làm bộ xử lý trung tâm trong hệ thống, nhờ khả năng xử lý mạnh mẽ, hỗ trợ Wi-Fi/Bluetooth, tích hợp đa dạng chân giao tiếp (I2C, SPI, UART, ADC, PWM...) và tương thích tốt với nhiều cảm biến sinh học. Lập trình cho ESP32 được thực hiện trong môi trường Arduino IDE, sử dụng ngôn ngữ lập trình C/C++, rất phổ biến trong cộng đồng phát triển IoT và hệ thống nhúng.									Trong quá trình phát triển đề tài, em đã sử dụng một số thư viện mã nguồn mở nổi bật để hỗ trợ việc giao tiếp phần cứng, xử lý tín hiệu và truyền dữ liệu. Cụ thể:													Các thư viện chính dành cho lập trình nhúng dành cho các mô đun:
+Wire.h: Giao tiếp I2C với các cảm biến như MAX30105 và MPU6050.
+MAX30105.h: Thư viện giao tiếp và điều khiển cảm biến MAX30102 (dẫn xuất từ MAX30105) dùng để đo tín hiệu PPG từ đó tính toán nhịp tim và SpO₂.
+Pulse.h: Xử lý tín hiệu xung từ cảm biến, phát hiện nhịp đập tim (heartbeat) theo thời gian thực.
+MAFilter.h: Bộ lọc trung bình trượt giúp làm mượt tín hiệu PPG đầu ra, ổn định kết quả đo.
+spo2_table.h: Bảng tra giá trị tỉ lệ R (IR/Red) để nội suy và ước lượng độ bão hòa oxy trong máu (SpO₂).
+Adafruit_MPU6050.h, Adafruit_Sensor.h: Thư viện hỗ trợ giao tiếp và đọc dữ liệu cảm biến tư thế (MPU6050) từ hãng Adafruit, tích hợp con quay hồi chuyển và gia tốc kế.
+SPI.h, RF24.h: Giao tiếp qua chuẩn SPI với mô-đun RF24L01 để truyền dữ liệu không dây giữa các ESP32 hoặc từ thiết bị đến máy tính chủ.				
+
+Hình ảnh môi trường Arduino IDE và các thư viện chính dành cho lập trình nhúng dành cho các mô đun.
+2. Nền tảng Google sheets và lập trình trên Apps Script				Trong đề tài này, Google Sheets được lựa chọn làm nền tảng lưu trữ dữ liệu trung gian, kết nối giữa thiết bị phần cứng (ESP32) và hệ thống phân tích trên giao diện web. Đây là một giải pháp linh hoạt, dễ triển khai và hoàn toàn miễn phí, phù hợp với yêu cầu về thu thập, xử lý và hiển thị dữ liệu sức khỏe theo thời gian thực.		Để gửi dữ liệu từ ESP32 lên Google Sheets, em sử dụng Google Apps Script – một nền tảng lập trình dựa trên JavaScript, cho phép người dùng viết các đoạn mã tùy chỉnh chạy trực tiếp trên nền tảng Google. Cụ thể, một đoạn mã Apps Script được viết để tạo một Web App có khả năng nhận dữ liệu từ ESP32 qua giao thức HTTP (phương thức GET hoặc POST), sau đó tự động ghi dữ liệu đó vào các ô tương ứng trong bảng tính Google Sheets.				
+
+Hình ảnh giao diện Apps Script của Google Sheets.
+3. Giao diện Web và hiển thị dữ liệu			
+Giao diện web được thiết kế nhằm cung cấp một nền tảng trực quan, dễ sử dụng để người dùng có thể theo dõi tình trạng sức khỏe giấc ngủ của mình, đặc biệt là nhận biết nguy cơ mắc hội chứng ngưng thở khi ngủ (OSA). Trang web đóng vai trò là cầu nối giữa thiết bị cảm biến và người dùng, đồng thời tích hợp thêm các yếu tố nhân trắc học để cho ra đánh giá toàn diện hơn về nguy cơ OSA.
+3.1. Công nghệ sử dụng
+Trang web được xây dựng dựa trên các công nghệ web phổ biến, dễ triển khai và phù hợp với môi trường nghiên cứu sinh viên:
+HTML, CSS: Dùng để tạo cấu trúc và định dạng giao diện một cách rõ ràng, trực quan.
+AJAX hoặc Fetch API: Cho phép lấy dữ liệu trực tiếp từ Google Sheets ở định dạng JSON, giúp cập nhật nội dung mà không cần tải lại trang.
+3.2. Các tính năng chính
+Hiển thị dữ liệu thời gian thực: Các biểu đồ được cập nhật liên tục trong quá trình đo, thể hiện các chỉ số sinh học như nhịp tim, SpO₂, tư thế nằm, số lần ngáy... theo thời gian.
+Giải thích các cụm từ y tế như AHI, ODI, BPM trung bình, …
+Phân tích tổng hợp sau đo: Sau khi người dùng bấm nút “Phân tích tỉ lệ”, hệ thống sẽ ngừng thu thập dữ liệu mới và thực hiện phân tích toàn bộ phiên đo. Các chỉ số như SpO₂ trung bình, AHI, ODI, tổng số lần ngáy, thời gian nằm ngửa... sẽ được tổng hợp và hiển thị dưới dạng bảng 
+Bảng câu hỏi y tế: Người dùng có thể nhập các thông tin cá nhân như tuổi, giới tính, BMI, ... để giúp hệ thống đánh giá nguy cơ OSA chính xác hơn dựa trên các yếu tố lâm sàng đã được chứng minh.
+Kết luận tự động: Dựa vào dữ liệu đo và thông tin người dùng, hệ thống sẽ đưa ra kết luận sơ bộ dựa trên các ngưỡng y khoa đã công bố theo tỉ lệ  phân trăm cùng với các lời khuyên cho người đo. (ví dụ: AHI ≥ 5 là có nguy cơ OSA nhẹ...).
+
+
+Hình ảnh giao diện Web có dữ liệu và phân tích.
+3.3. Thiết kế giao diện
+Giao diện được thiết kế với tông màu nhẹ nhàng, dễ nhìn, thân thiện với mọi lứa tuổi, đặc biệt phù hợp với người cao tuổi hoặc người không rành công nghệ. Các biểu đồ, bảng số liệu và nút chức năng được bố trí rõ ràng, dễ thao tác trên cả máy tính và điện thoại.
+Việc sử dụng Google Sheets làm nguồn dữ liệu giúp hệ thống có thể cập nhật dữ liệu linh hoạt mà không cần dùng đến cơ sở dữ liệu chuyên biệt trong giai đoạn thử nghiệm. Điều này giúp rút ngắn thời gian triển khai và giảm chi phí phát triển, trong khi vẫn đảm bảo hiệu quả hiển thị và khả năng mở rộng sau này.
+
+Hình ảnh giao diện Web
+
+
+4. Cách sử dụng và vận hành
+- Trước hết chúng ta cắm phích cắm vào của ESP32 nhận vào nguồn điện nào đó, xong kết nối Wifi cho ESP32 nhận. Chúng ta dùng điện thoại hoặc máy tính để kết nối mạng ESP32 gửi phát ra. Ở đây code em đã ghi tên Wifi là “ESP32_Setup” và mật khẩu là “12345678”. Kết nối xong bấm vào mạng Wifi, lúc đó nó sẽ hiện ra Web cấu hình (nếu không hiện thì lên trình duyệt gõ http://192.168.4.1). Xong chọn mạng mà bạn muốn kết nối và ghi mật khẩu.
+*Lưu ý: Nếu đã kết nối một lần thì những lần sau không cần kết nối lại nữa mà ESP32 sẽ tự động kết nối.
+
+- Người dùng đeo thiết bị vào ban đêm với phần ESP32 gửi (nơi chứa các cảm biến sinh học để đo thông số y tế của con người) lên trên ngực và phần bao tay (nơi có gắn cảm biến MAX30102 ) đeo vào ngón tay.
+*Lưu ý: Đặt ngón tay vào đúng mặt LED phát sáng đỏ của MAX30102.
+
+- Phần ESP32 nhận cắm vào máy tính kèm với bật Google Sheets (Google Sheets của em đã tạo, các thầy cô copy link Google Sheets trong file em gửi và dán lên trình duyệt) để xem được thông số mỗi giây và xem cách thu thập dữ liệu kèm xử lí dữ liệu ở “Tiện ích xong bấm vào Apps Script” (Phần này chứa code xử lí của Apps Script). Xong bật WebOSA để xem các thông số đã được xử lí chuẩn theo y tế.
+
+- Sau đó cắm cục sạc vào phích cắm ESP32 gửi và ấn nút “Start” phần trên để bắt đầu đo thu thập dữ liệu. Các thông số sẽ lần lượt hiện lên trên Google Sheets và Web.
+*Lưu ý: Ngón tay phải đặt đúng vào vị trí đo của MAX30102 (Phần LED) trước khi ấn nút bắt đầu.
+
+- Sau khi đo xong, vào Web xem thông số và ấn nút “Phân tích tỉ lệ”. Web sẽ hiện ra 20 câu hỏi có không để mình trả lời. Sau khi trả lời xong 20 câu hỏi thì ấn nút “Gửi trả lời” để xem tỉ lệ ở phần “Tỉ lệ nguy cơ OSA:”.
+*Lưu ý: Thời gian đo trung bình phải từ 5 đến 6 tiếng thì dữ liệu được xử lí như AHI, ODI, BPM trung bình, … mới chính xác.
+
+- Xong lưu trang Google Sheets thành file Exel để lưu dữ liệu của lần đo đó. Sau khi lưu thì xóa toàn bộ dữ liệu để chuẩn bị cho lần đo tiếp theo.
+
+Hình ảnh đeo thiết bị lên người.
+III/ MÔ TẢ CHI TIẾT QUÁ TRÌNH TẠO SẢN PHẨM
+1. Cắm dây kết nối các cảm biến và code của thiết bị đo
+
+1.1. Cắm dây kết nối các cảm biến cho các thiết bị
+- Những thiết bị cần chuẩn bị:
+   + 2 ESP32
+   + 1 cảm biến MAX4466
+   + 1 cảm biến MPU6050
+   + 1 cảm biến MAX30102
+   + 2 NRF24L01
+   + Breadboard và dây cắm
+   + Nút nhấn
+
+
+ 
+
+
+
+
+
+
+
+Cắm dây cho thiết bị
+		Trong hệ thống, các cảm biến và linh kiện được kết nối với ESP32 như sau:
+MAX30102 (đo nhịp tim và SpO₂):
++ Chân VIN nối đến 3.3V
++ Chân GND nối đến GND
++ Chân SDA nối đến GPIO21
++ Chân SCL nối đến GPIO22
+=>  Đây là giao tiếp I2C, có thể dùng chung bus với các thiết bị khác như MPU6050.
+MPU6050 (cảm biến tư thế):
++ Chân VCC nối đến 3.3V
++ Chân GND nối đến GND
++ Chân SDA nối đến GPIO21 (dùng chung với MAX30102)
++ Chân SCL nối đến GPIO22
+=>  Cùng sử dụng giao tiếp I2C nên chia sẻ bus với MAX30102.
+MAX4466 (microphone thu tiếng ngáy):
++ Chân VCC nối đến 3.3V
++ Chân GND nối đến GND
++ Chân OUT nối đến GPIO34
+=>  Đây là tín hiệu analog, do đó cần nối vào chân ADC input-only của ESP32.
+Nút nhấn (Start/Stop):
++ Một đầu nối đến GPIO32 ( Nút bắt đầu )
++ Một đầu nối đến GPIO4 ( Nút dừng lại )
++ Một đầu nối đến GND
+=>  Có thể kèm theo điện trở kéo lên (pull-up) nếu cần, để đảm bảo ổn định tín hiệu khi nhấn.
+NRF24L01:
+ Giao tiếp SPI, gồm các chân:
+• MOSI – GPIO23
+• MISO – GPIO19
+• SCK – GPIO18
+• CSN – GPIO5
+• CE – GPIO17 (hoặc chân khác tùy cấu hình)
+=>  NRF24L01 yêu cầu cấp nguồn ổn định (ưu tiên dùng module có tụ lọc nếu dùng trực tiếp 3.3V từ ESP32).
+*Lưu ý: Sẽ có 2 ESP32 gửi và ESP32 nhận dữ liệu. ESP32 nhận chỉ kết nối với một NRF24L01. Còn ESP32 gửi sẽ kết nối với các cảm biến, nút bấm và cả NRF24L01 thứ hai. NRF24L01 giữa 2 ESP32 cắm dây y như nhau.	
+Hình ảnh khi cắm xong hết toàn bộ của cả ESP32 gửi và nhận.
+1.2. Code của ESP32 gửi								
+-Code khai báo thư viện và chân của các cảm biến:
+#include <Wire.h>
+#include "MAX30105.h"
+#include "Pulse.h"
+#include "MAFilter.h"
+#include "spo2_table.h"
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <SPI.h>
+#include <RF24.h>
+
+-Trong đoạn khai báo thư viện này, thư viện “MAFilter”, “Pulse” và "spo2_table.h" là không có sẵn nên cần phải tự tạo một thư viện riêng để sử dụng cho cảm biến MAX30102. 
+
+Đây là đoạn code của lần lượt của ba thư viện:
+- Thư viện MAFilter.h:
+#ifndef MAFILTER_H
+#define MAFILTER_H
+
+class MAFilter {
+  private:
+    static const int SIZE = 8;
+    int16_t buffer[SIZE];
+    int index = 0;
+    bool filled = false;
+
+  public:
+    int16_t filter(int16_t value) {
+      buffer[index] = value;
+      index = (index + 1) % SIZE;
+      if (index == 0) filled = true;
+
+      int32_t sum = 0;
+      int count = filled ? SIZE : index;
+      for (int i = 0; i < count; i++) {
+        sum += buffer[i];
+      }
+      return (int16_t)(sum / count);
+    }
+};
+
+#endif
+
+- Thư viện Pulse.h:
+#ifndef PULSE_H
+#define PULSE_H
+
+#include <Arduino.h>
+
+class Pulse {
+  private:
+    int16_t prevValue = 0;
+    int16_t prevPrevValue = 0;
+    int16_t peak = 0;
+    int16_t valley = 0;
+    int beatCount = 0;
+    int totalAC = 0;
+    int totalDC = 0;
+    int sampleCount = 0;
+
+  public:
+    // Lọc thành phần DC ra khỏi tín hiệu
+    int16_t dc_filter(uint32_t x) {
+      static int32_t w = 0;
+      static int32_t result = 0;
+      w = w + (((int32_t)x - result) >> 4);
+      result = result + ((w - result) >> 5);
+      return (int16_t)(x - result);
+    }
+
+    // Lọc trung bình động
+    int16_t ma_filter(int16_t x) {
+      static int16_t buffer[8] = {0};
+      static int idx = 0;
+      buffer[idx] = x;
+      idx = (idx + 1) % 8;
+
+      int32_t sum = 0;
+      for (int i = 0; i < 8; i++) {
+        sum += buffer[i];
+      }
+      return (int16_t)(sum >> 3);
+    }
+
+    // Phát hiện nhịp tim dựa vào đỉnh
+    bool isBeat(int16_t x) {
+      bool beatDetected = false;
+
+      if (prevValue > prevPrevValue && prevValue > x && prevValue > 100) {
+        beatDetected = true;
+        peak = prevValue;
+        valley = x;
+        beatCount++;
+      }
+
+      // Tích lũy để tính AC/DC
+      totalAC += abs(x);
+      totalDC += prevValue;
+      sampleCount++;
+
+      prevPrevValue = prevValue;
+      prevValue = x;
+
+      return beatDetected;
+    }
+
+    // Giá trị AC trung bình
+    int avgAC() {
+      if (sampleCount == 0) return 1;
+      return totalAC / sampleCount;
+    }
+
+    // Giá trị DC trung bình
+    int avgDC() {
+      if (sampleCount == 0) return 1;
+      return totalDC / sampleCount;
+    }
+
+    // Reset sau mỗi lần phát hiện beat
+    void reset() {
+      beatCount = 0;
+      totalAC = 0;
+      totalDC = 0;
+      sampleCount = 0;
+    }
+};
+
+#endif
+
+- Thư viện spo2_table.h:
+#ifndef SPO2_TABLE_H
+#define SPO2_TABLE_H
+
+const uint8_t spo2_table[184] = {
+  95, 95, 95, 96, 96, 96, 97, 97, 97, 97, 97, 98, 98, 98, 98, 98, 99, 99, 99, 99,
+  99, 99, 99, 99, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100,
+  100, 100, 100, 100, 99, 99, 99, 99, 99, 99, 99, 99, 98, 98, 98, 98, 98, 98, 97, 97,
+  97, 97, 96, 96, 96, 96, 95, 95, 95, 94, 94, 94, 93, 93, 93, 92, 92, 92, 91, 91,
+  90, 90, 89, 89, 89, 88, 88, 87, 87, 86, 86, 85, 85, 84, 84, 83, 82, 82, 81, 81,
+  80, 80, 79, 78, 78, 77, 76, 76, 75, 74, 74, 73, 72, 72, 71, 70, 69, 69, 68, 67,
+  66, 66, 65, 64, 63, 62, 62, 61, 60, 59, 58, 57, 56, 56, 55, 54, 53, 52, 51, 50,
+  49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 31, 30, 29,
+  28, 27, 26, 25, 23, 22, 21, 20, 19, 17, 16, 15, 14, 12, 11, 10, 9, 7, 6, 5,
+  3, 2, 1, 0
+};
+
+#endif
+- Ba thư viện tự tạo gồm Pulse.h, MAFilter.h và spo2_table.h hỗ trợ xử lý tín hiệu sinh học từ cảm biến MAX30102, với vai trò cụ thể như sau:
+- Pulse.h: Xử lý tín hiệu PPG từ đèn IR và Red, bao gồm lọc nhiễu, loại bỏ thành phần DC và phát hiện nhịp tim theo thời gian thực.
+- MAFilter.h: Làm mượt giá trị nhịp tim (BPM) bằng thuật toán trung bình trượt, giúp kết quả đo ổn định, tránh dao động bất thường.
+- spo2_table.h: Chứa bảng tra cứu giá trị SpO₂ tương ứng với chỉ số tín hiệu, giúp tính nhanh SpO₂ mà không cần các phép toán phức tạp.
+- Nhờ sự kết hợp của ba thư viện này, chương trình có thể đo và phân tích nhịp tim, SpO₂ một cách chính xác, mượt mà và tối ưu tài nguyên vi điều khiển.
+- Biến cấu hình và trạng thái:
+#define MICROPHONE_PIN 34
+#define BTN_START 32
+#define BTN_STOP  4
+#define SNORE_THRESHOLD 800
+#define SOUND_SAMPLE_DELAY 50
+
+- Đo nhịp tim & SpO₂ với MAX30102:
+uint32_t ir = sensor.getIR();
+uint32_t red = sensor.getRed();
+- Gồm pulseIR và pulseRed để lọc DC/AC và nhận diện nhịp tim.
+- Sử dụng bộ lọc trung bình MA (Moving Average) để ổn định giá trị.
+- Dùng công thức:
+    if (beatIR || beatRed) {
+      unsigned long now = millis();
+      long bpm = 60000L / (now - lastBeat);
+      lastBeat = now;
+
+      if (bpm > 40 && bpm < 180) {
+        beatAvg = bpmFilter.filter((int16_t)bpm);
+
+        long acRed = pulseRed.avgAC();
+        long dcRed = pulseRed.avgDC();
+        long acIR  = pulseIR.avgAC();
+        long dcIR  = pulseIR.avgDC();
+
+        static int beatCounter = 0;
+        beatCounter++;
+        if (beatCounter >= 4) {
+          pulseRed.reset();
+          pulseIR.reset();
+          beatCounter = 0;
+        }
+
+        long numerator   = (acRed * dcIR) / 256;
+        long denominator = (dcRed * acIR) / 256;
+
+        int RX100 = (denominator > 0) ? (numerator * 100) / denominator : 0;
+        if ((RX100 >= 0) && (RX100 < 184)) {
+          SPO2 = spo2_table[RX100];
+        } else {
+          SPO2 = 0;
+        }
+- Nếu phát hiện nhịp tim hợp lệ (40–180 BPM), tiến hành tính SpO₂.
+
+
+- MPU6050: Xác định tư thế cơ thể:
+- Code đo tư thế ban đầu (tư thế chuẩn):
+mpu.getAccelerometerSensor()->getEvent(&a);
+  baseAccelX = a.acceleration.x;
+  baseAccelY = a.acceleration.y;
+  baseAccelZ = a.acceleration.z;
+=>  Ghi lại gia tốc ban đầu khi khởi động, giả định là tư thế nằm ngửa.
+- Trong TaskSnoreAndPosture(), mỗi 1 giây:
+mpu.getAccelerometerSensor()->getEvent(&a);
+=>  Đọc lại gia tốc hiện tại.
+- So sánh với tư thế ban đầu:						
++ Độ lệch gia tốc (tổng độ thay đổi):
+float dx = a.acceleration.x - baseAccelX;
+float dy = a.acceleration.y - baseAccelY;
+float dz = a.acceleration.z - baseAccelZ;
+float deltaAccel = sqrt(dx * dx + dy * dy + dz * dz);
++ Góc lệch giữa hai vector gia tốc:
+ float dotProduct = baseAccelX * a.acceleration.x +
+                    baseAccelY * a.acceleration.y +
+                    baseAccelZ * a.acceleration.z;
+      float magBase = sqrt(baseAccelX * baseAccelX + baseAccelY * baseAccelY + baseAccelZ * baseAccelZ);
+      float magCurrent = sqrt(a.acceleration.x * a.acceleration.x + a.acceleration.y * a.acceleration.y + a.acceleration.z * a.acceleration.z);
+      float angle = acos(dotProduct / (magBase * magCurrent)) * 180.0 / PI;
+
+- Xác định tư thế:
+bool isDifferentPosture = (deltaAccel > 2.0) || (angle > 20.0);
+=> Nếu vượt ngưỡng lệch vị trí hoặc góc nghiêng > 20 độ được coi là tư thế khác.
+
+- Cập nhật thời gian tư thế:
+if (isDifferentPosture) {
+ otherPostureTime += mpuInterval;
+ Serial.println("Tư thế khác");
+} else {
+  lyingTime += mpuInterval;
+  Serial.println("Nằm ngửa");
+}
+=>  Ghi lại tổng thời gian người nằm ngửa và không nằm ngửa.
+
+
+- Phát hiện ngáy bằng MAX4466:
+- Đọc âm thanh liên tục:
+int soundLevel = analogRead(MICROPHONE_PIN);
+=> Lấy mẫu tín hiệu âm thanh (giá trị từ 0–4095 trên ESP32).
+
+- Tính độ chênh lệch so với lần đọc trước:
+int diff = abs(soundLevel - lastSoundLevel);
+lastSoundLevel = soundLevel;
+=> Tính sự thay đổi biên độ âm thanh (dao động lớn → có tiếng động bất thường).
+
+- Phát hiện tiếng ngáy dựa trên ngưỡng:
+if (diff > SNORE_THRESHOLD) {
+      if (!isSnoring) {
+        isSnoring = true;
+        snoreStartTime = millis();
+        snoreCount++;
+      }
+    }
+=> Nếu sự thay đổi vượt quá SNORE_THRESHOLD (ví dụ: 800), coi là bắt đầu 1 lần ngáy.
+
+
+- Kết thúc tiếng ngáy khi âm thanh giảm:
+else {
+      if (isSnoring) {
+        isSnoring = false;
+        totalSnoreDuration += (millis() - snoreStartTime) / 1000;
+      }
+    }
+=> Khi không còn âm thanh mạnh, tính thời gian đã ngáy và cộng dồn vào tổng.
+
+
+- Ghi log ra Serial:
+Serial.print("Âm: "); Serial.print(soundLevel);
+Serial.print(" | Lần ngáy: "); Serial.print(snoreCount);
+Serial.print(" | TG ngáy: "); Serial.print((int)snoreDurationNow); Serial.println("s");
+
+
+ - Gửi dữ liệu qua NRF24L01:
+RF24 radio(15, 5);
+const byte address[6] = "00001";
+struct DataPacket {
+  int32_t bpm;
+  int32_t spo2;
+  uint32_t seconds;
+  uint32_t snoreCount;
+  uint32_t snoreTime;
+  uint32_t lyingSec;
+  uint32_t otherSec;
+  uint32_t measuredSec;
+};
+=> Mỗi giây, nếu có dữ liệu mới: gửi 1 gói dữ liệu.
+1.3. Code của ESP32 nhận
+
+- Khai báo thư viện và cấu hình ban đầu
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <WiFiManager.h> 
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+
++WiFi.h: Thư viện WiFi chuẩn của ESP32 để kết nối mạng.
++HTTPClient.h: Dùng để gửi các request HTTP (như POST) lên server.
++WiFiManager.h: Tự động kết nối WiFi và tạo cổng cấu hình nếu không có sẵn mạng.
++SPI.h, nRF24L01.h, RF24.h: Các thư viện điều khiển module truyền không dây NRF24L01.
+
+
+- Địa chỉ Web App Google Sheets
+const char* URL_WEBAPP = "const char* URL_WEBAPP = "https://script.google.com/macros/s/AKfycbwnGJhz31SNTf8gz-5WwK-xXRXqAXDGSPh5QkKzPu48NF3UC8p9hF6jJgF7uswdD29uhQ/exec";
+";
+
+=> Đây là đường dẫn đến một Google Apps Script đã được triển khai ở chế độ Web App, cho phép nhận dữ liệu dạng JSON từ ESP32 và ghi vào Google Sheets.
+
+- Cấu hình NRF24L01
+#define CE_PIN 15
+#define CSN_PIN 5
+RF24 radio(CE_PIN, CSN_PIN);
+const byte address[6] = "00001";
++ CE, CSN: Chân điều khiển NRF24L01 kết nối với ESP32.
++  address: Địa chỉ truyền/nhận dữ liệu (phải khớp giữa ESP phát và ESP nhận).
++  radio: Đối tượng để điều khiển NRF24L01.
+
+- Khai báo cấu trúc dữ liệu
+struct DataPacket {
+  int32_t bpm;
+  int32_t spo2;
+  uint32_t seconds;
+  uint32_t snoreCount;
+  uint32_t snoreTime;
+  uint32_t lyingSec;
+  uint32_t otherSec;
+  uint32_t measuredSec;
+};
+
+
+- Setup – Cấu hình khởi động
+ WiFiManager wm;
+   bool res;
+  res = wm.autoConnect("ESP32_Setup", "12345678");
+
+=> Sử dụng WiFiManager: nếu ESP chưa có WiFi đã lưu, nó sẽ tạo một WiFi AP tên ESP32_Setup, cho phép người dùng cấu hình mạng qua trình duyệt.
+ 
+  radio.begin();
+  radio.setDataRate(RF24_250KBPS);
+  radio.setPALevel(RF24_PA_LOW);
+  radio.openReadingPipe(0, address);
+  radio.startListening();
+  Serial.println(" Sẵn sàng nhận dữ liệu từ NRF24L01...");
+=> Khởi động NRF24L01 và bắt đầu ở chế độ nhận dữ liệu.
+
+
+- Loop – Nhận dữ liệu và gửi đi
+  if (radio.available()) {
+    DataPacket receivedData;
+    radio.read(&receivedData, sizeof(receivedData));
+
+=> Khi có dữ liệu từ thiết bị gửi, ESP sẽ đọc vào receivedData.
+
+    Serial.println("------ 📥 DỮ LIỆU NHẬN ĐƯỢC ------");
+    Serial.printf("❤️ BPM: %d | 🩸 SpO2: %d%% | ⏱ TG: %ds\n", receivedData.bpm, receivedData.spo2, receivedData.seconds);
+    Serial.printf("😴 Số lần ngáy: %d | 🕒 TG ngáy: %ds\n", receivedData.snoreCount, receivedData.snoreTime);
+    Serial.printf("🛌 Nằm ngửa: %ds | 🚶 Khác: %ds | 📏 TG đo: %ds\n", receivedData.lyingSec, receivedData.otherSec, receivedData.measuredSec);
+    Serial.println("-----------------------------------");
+
+=> In thông tin ra Serial để dễ theo dõi.
+
+
+
+- Gửi dữ liệu lên Google Sheets
+    if (WiFi.status() == WL_CONNECTED) {
+      HTTPClient http;
+      http.begin(URL_WEBAPP);
+      http.addHeader("Content-Type", "application/json");
+String postData = "{";
+      postData += "\"bpm\":" + String(receivedData.bpm) + ",";
+      postData += "\"spo2\":" + String(receivedData.spo2) + ",";
+      postData += "\"seconds\":" + String(receivedData.seconds) + ",";
+      postData += "\"snoreCount\":" + String(receivedData.snoreCount) + ",";
+      postData += "\"snoreTime\":" + String(receivedData.snoreTime) + ",";
+      postData += "\"lyingSec\":" + String(receivedData.lyingSec) + ",";
+      postData += "\"otherSec\":" + String(receivedData.otherSec) + ",";
+      postData += "\"measuredSec\":" + String(receivedData.measuredSec);
+      postData += "}";
+
+      int httpResponseCode = http.POST(postData);
+
+
+=>  - Tạo một chuỗi JSON chứa dữ liệu đo được và gửi POST request đến Web App.
+       -  Nếu gửi thành công, hiển thị phản hồi từ server. Nếu lỗi, in mã lỗi.
+
+
+2. Code gửi dữ liệu qua Google sheets bằng tiện ích Apps Script
+
+- Hàm doPost(e) – Tiếp nhận dữ liệu từ ESP32:
+function doPost(e) {
+  if (!e || !e.postData || !e.postData.contents) {
+    return ContentService.createTextOutput("No post data received");
+  }
+=>  -Kiểm tra dữ liệu gửi từ ESP32 có tồn tại không. Nếu không, trả về thông báo lỗi.
+        -e.postData.contents: Dữ liệu JSON gửi đến qua HTTP POST.
+
+const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+const data = JSON.parse(e.postData.contents);
+=>Truy cập sheet hiện tại và chuyển dữ liệu JSON sang dạng đối tượng.
+
+
+sheet.appendRow([
+    new Date(),
+    data.bpm,
+    data.spo2,
+    data.seconds,
+    data.snoreCount,
+    data.snoreTime,
+    data.lyingSec,
+    data.otherSec,
+    data.measuredSec
+  ]);
+=> -Ghi một dòng mới vào sheet với các thông số:
+       -Thời gian ghi, nhịp tim, SpO₂, giây đếm, số lần ngáy, thời gian ngáy, thời gian nằm ngửa, tư thế khác, và tổng thời gian đo.
+processMetrics(); //gọi hàm xử lí dữ liệu
+  return ContentService.createTextOutput("Success");
+}
+
+
+-Hàm processMetrics() – Phân tích dữ liệu đo:
+function processMetrics() {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+
+=> Lấy toàn bộ dữ liệu hiện có trong Google Sheets.
+
+
+ let sumSpO2 = 0;
+  let sumBPM = 0;
+  let totalSnoreCount = 0;
+
+  let odiDrops = 0;
+  let apneaEvents = 0;
+
+  let desaturationCounter = 0;
+  let apneaCounter = 0;
+
+  let baselineSpO2 = null;
+  let baselineBPM = null;
+
+  const n = data.length - 1;
+=> Khởi tạo biến để tính SpO₂ trung bình, nhịp tim trung bình, số lần giảm SpO₂ (ODI), ngưng thở (AHI)...
+
+
+for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const bpm = row[1];
+    const spo2 = row[2];
+    const snoreCount = row[4];
+=> Duyệt từng dòng dữ liệu (bỏ qua tiêu đề).
+if (typeof spo2 === "number") sumSpO2 += spo2;
+    if (typeof bpm === "number") sumBPM += bpm;
+    if (typeof snoreCount === "number") totalSnoreCount += snoreCount;
+
+    if (baselineSpO2 === null && typeof spo2 === "number") baselineSpO2 = spo2;
+    if (baselineBPM === null && typeof bpm === "number") baselineBPM = bpm;
+=> -  Cộng dồn giá trị để tính trung bình.
+     -  Ghi nhận giá trị ban đầu làm mốc so sánh (baseline).
+
+- Phát hiện sự kiện giảm SpO₂ ≥ 4% (ODI):
+ 
+if (typeof spo2 === "number") {
+      if ((baselineSpO2 - spo2) >= 4) {
+        desaturationCounter++;
+        if (desaturationCounter === 5) {
+          odiDrops++;
+        }
+      } else {
+        desaturationCounter = 0;
+      }
+      baselineSpO2 = 0.9 * baselineSpO2 + 0.1 * spo2;
+    }
+
+=> Tăng bộ đếm nếu SpO₂ giảm ≥ 4% trong ≥ 5 giây được tính tính là 1 ODI event.
+
+
+- Phát hiện ngưng thở (AHI):
+
+if (typeof spo2 === "number" && typeof bpm === "number") {
+      if ((baselineSpO2 - spo2) >= 4 && (baselineBPM - bpm) >= 5) {
+        apneaCounter++;
+        if (apneaCounter === 5) {
+          apneaEvents++;
+        }
+      } else {
+        apneaCounter = 0;
+      }
+
+      baselineSpO2 = 0.9 * baselineSpO2 + 0.1 * spo2;
+      baselineBPM = 0.9 * baselineBPM + 0.1 * bpm;
+    }
+  }
+=> Nếu SpO₂ giảm ≥ 4% và BPM giảm ≥ 5 trong ít nhất 5 giây được tính là 1 ngưng thở (apnea).
+
+
+- Tính toán kết quả cuối cùng:
+
+  const lastRow = data[data.length - 1];
+  const totalLyingSec = typeof lastRow[6] === "number" ? lastRow[6] : 0;
+  const totalMeasuredSec = typeof lastRow[8] === "number" ? lastRow[8] : 0;
+
+  const avgSpO2 = (sumSpO2 / n).toFixed(1);
+  const avgBPM = (sumBPM / n).toFixed(1);
+  const snoreRate = totalMeasuredSec > 0 ? (totalSnoreCount / totalMeasuredSec).toFixed(3) : "0";
+  const lyingRatio = totalMeasuredSec > 0 ? (100 * totalLyingSec / totalMeasuredSec).toFixed(1) : "0";
+  const totalTimeHr = totalMeasuredSec / 3600;
+
+  const AHI = totalTimeHr > 0 ? (apneaEvents / totalTimeHr).toFixed(2) : "0";
+  const ODI = totalTimeHr > 0 ? (odiDrops / totalTimeHr).toFixed(2) : "0";
+=> - Tính trung bình SpO₂, BPM, tỷ lệ ngáy, tỷ lệ nằm ngửa, thời gian đo.
+      - Tính chỉ số AHI, ODI theo giờ.
+
+
+sheet.getRange(sheet.getLastRow(), 10, 1, 7).setValues([[
+    parseFloat(AHI),
+    parseFloat(ODI),
+    parseFloat(avgSpO2),
+    parseFloat(avgBPM),
+    parseFloat(lyingRatio),
+    parseFloat(snoreRate),
+    parseFloat(totalMeasuredSec)
+  ]]);
+}
+=> Ghi kết quả phân tích vào 7 cột cuối cùng trên dòng vừa thêm.
+
+
+- Hàm doGet() – Trả dữ liệu JSON về web:
+function doGet(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const json = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = {};
+    for (let j = 0; j < headers.length; j++) {
+      row[headers[j]] = data[i][j];
+    }
+    json.push(row);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify(json)).setMimeType(ContentService.MimeType.JSON);
+}
+3. Code website hiển thị thông số và chuẩn đoán
+3.1 Cấu trúc tổng thể:
+Trang web được xây dựng bằng HTML, CSS và JavaScript, có nhiệm vụ:
+- Hiển thị các thông số y tế (AHI, ODI, SpO₂ trung bình, BPM trung bình, tỷ lệ nằm ngửa, tần suất ngáy, tổng thời gian đo).
+- Cung cấp giải thích y khoa về các chỉ số.
+- Cho phép người dùng phân tích nguy cơ OSA dựa trên dữ liệu đo lường và 20 câu hỏi trắc nghiệm Có/Không.
+- Hiển thị kết quả phân tích và lời khuyên y tế phù hợp.
+3.2 Phần HTML: Giao diện người dùng:
+<div class="metrics">
+    <div class="metric">AHI: <span id="ahi"></span></div>
+    <div class="metric">ODI: <span id="odi"></span></div>
+    <div class="metric">SpO₂ trung bình (%): <span id="spo2"></span></div>
+    <div class="metric">BPM trung bình: <span id="bpm"></span></div>
+    <div class="metric">Tỉ lệ nằm ngửa (%): <span id="lying"></span></div>
+    <div class="metric">Tần suất ngáy (lần/giây): <span id="snore"></span></div>
+    <div class="metric">Tổng thời gian đo (giây): <span id="duration"></span></div>
+  </div>
+
+  <button id="analyzeBtn">Phân tích tỉ lệ</button>
+
+  <div id="osa-analysis" style="display: none;">
+    <h3>Kết quả phân tích OSA</h3>
+    <p><strong>Tỉ lệ nguy cơ OSA:</strong> <span id="osa-risk">Đang phân tích...</span></p>
+
+    <form id="osa-form">
+      <h4>Trả lời các câu hỏi sau:</h4>
+      <div id="questions"></div>
+      <button type="button" id="submitAnswers">Gửi trả lời</button>
+    </form>
+  </div>
+
+
+
+3.3 Phần JavaScript: Xử lý dữ liệu và phân tích:
+
+- Lấy và hiển thị dữ liệu từ Google Sheets
+
+const url = "https://script.google.com/macros/s/AKfycbwnGJhz31SNTf8gz-5WwK-xXRXqAXDGSPh5QkKzPu48NF3UC8p9hF6jJgF7uswdD29uhQ/exec";
+    let intervalId;
+
+    async function fetchAndUpdate() {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const latest = data[data.length - 1];
+
+        document.getElementById("ahi").textContent = latest["AHI"] || "0";
+        document.getElementById("odi").textContent = latest["ODI"] || "0";
+        document.getElementById("spo2").textContent = latest["SpO₂ trung bình (%)"] || "-";
+        document.getElementById("bpm").textContent = latest["BPM trung bình"] || "-";
+        document.getElementById("lying").textContent = latest["Tỉ lệ nằm ngửa (%)"] || "-";
+        document.getElementById("snore").textContent = latest["Tần suất ngáy (lần/giây)"] || "-";
+        document.getElementById("duration").textContent = latest["Tổng thời gian đo (giây)"] || "-";
+
+        window.latestSnapshot = latest;
+      } catch (err) {
+        console.error("Lỗi fetch dữ liệu:", err);
+      }
+    }
+
+- Phân tích tỉ lệ nguy cơ OSA khi nhấn nút
+
+document.getElementById("analyzeBtn").addEventListener("click", () => {
+      clearInterval(intervalId);
+      createQuestions();
+      document.getElementById("osa-analysis").style.display = "block";
+    });
+
+- Tạo 20 câu hỏi Có/Không:
+
+function createQuestions() {
+      const questionList = [
+        "Bạn có thường cảm thấy buồn ngủ vào ban ngày không?",
+        "Bạn có ngáy to vào ban đêm không?",
+        "Bạn có cảm giác nghẹt thở khi ngủ không?",
+        "Bạn có thức dậy nhiều lần giữa đêm không?",
+        "Bạn có khó tập trung vào ban ngày không?",
+        "Bạn có bị tăng cân nhanh gần đây không?",
+        "Bạn có huyết áp cao không?",
+        "Bạn có cảm giác khô miệng khi thức dậy không?",
+        "Bạn có cảm giác mệt mỏi kéo dài không?",
+        "Bạn có thấy khó thở khi ngủ nằm ngửa không?",
+        "Bạn có cảm thấy đầu đau vào buổi sáng không?",
+        "Bạn có nhịp tim không đều không?",
+        "Bạn có cảm giác mất ngủ không?",
+        "Bạn có rối loạn lo âu hoặc trầm cảm không?",
+        "Bạn có thức dậy đột ngột khi ngủ không?",
+        "Bạn có cảm thấy ngột ngạt vào ban đêm không?",
+        "Bạn có ai đó từng nói bạn ngừng thở khi ngủ không?",
+        "Bạn có chỉ số BMI cao hơn bình thường không?",
+        "Bạn trên 40 tuổi không?",
+        "Bạn có cổ to (vòng cổ trên 40cm nam, 35cm nữ) không?"
+      ]; 
+
+      const container = document.getElementById("questions");
+      container.innerHTML = "";
+
+      questionList.forEach((q, i) => {
+        const div = document.createElement("div");
+        div.className = "question";
+        div.innerHTML = `
+          <label>${i + 1}. ${q}</label><br/>
+          <label><input type="radio" name="q${i}" value="yes" required> Có</label>
+          <label><input type="radio" name="q${i}" value="no"> Không</label>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+
+
+Danh sách questionList chứa 20 câu hỏi sàng lọc nguy cơ OSA (ví dụ: ngủ ngáy, mệt mỏi ban ngày, cao huyết áp…).
+Mỗi câu hỏi có 2 lựa chọn radio: "Có" hoặc "Không".
+
+- Tính toán tỉ lệ nguy cơ OSA và đưa ra lời khuyên:
+
+    function computeRiskMetric(snapshot, yesCount) {
+      // Cân nhắc nguy cơ dựa trên AHI, ODI, SpO2, cộng thêm điểm từ 20 câu
+      let riskScore = 0;
+
+      const AHI = parseFloat(snapshot["AHI"]) || 0;
+      const ODI = parseFloat(snapshot["ODI"]) || 0;
+      const SpO2 = parseFloat(snapshot["SpO₂ trung bình (%)"]) || 100;
+
+      if (AHI >= 15) riskScore += 40;
+      else if (AHI >= 5) riskScore += 25;
+
+      if (ODI >= 10) riskScore += 20;
+
+      if (SpO2 < 94) riskScore += 10;
+
+      riskScore += yesCount * 2; // Mỗi câu trả lời "Có" góp 2%
+
+      return Math.min(100, riskScore.toFixed(1));
+    } function showExplanation(metric) {
+      const explanations = {
+        AHI: "AHI (Apnea-Hypopnea Index) là số lần ngừng hoặc giảm thở mỗi giờ. AHI ≥ 5 cho thấy nguy cơ OSA.",
+        ODI: "ODI (Oxygen Desaturation Index) là số lần SpO₂ giảm ≥4% trong mỗi giờ ngủ. ODI ≥ 5 là bất thường.",
+        SpO2: "SpO₂ trung bình dưới 94% có thể cho thấy oxy máu thấp khi ngủ.",
+        BPM: "BPM là nhịp tim trung bình. Nhịp quá nhanh hay chậm đều cần chú ý.",
+        Snore: "Tần suất ngáy cao có thể liên quan đến tắc nghẽn hô hấp khi ngủ."
+      };
+      document.getElementById("explanation").textContent = explanations[metric] || "";
+    }
+
+Mỗi chỉ số có một mức đóng góp vào tổng điểm riskScore.
+Trả lời "Có" ở mỗi câu hỏi góp thêm 2%.
+Tổng điểm bị giới hạn ở mức 100%.
+Đưa ra lời khuyên theo mức độ
+- Gửi câu trả lời và hiển thị kết quả và lời khuyên:
+document.getElementById("submitAnswers").addEventListener("click", () => {
+      const form = document.getElementById("osa-form");
+      const formData = new FormData(form);
+      let yesCount = 0;
+      for (let [_, value] of formData.entries()) {
+        if (value === "yes") yesCount++;
+      }
+
+      const score = computeRiskMetric(window.latestSnapshot, yesCount);
+
+      let advice = "";
+      if (score >= 80) advice = "Nguy cơ rất cao. Cần đi khám chuyên khoa hô hấp/ngủ ngay.";
+      else if (score >= 50) advice = "Nguy cơ trung bình-cao. Nên theo dõi thêm và gặp bác sĩ.";
+      else if (score >= 20) advice = "Nguy cơ nhẹ. Có thể cải thiện bằng lối sống.";
+      else advice = "Nguy cơ thấp. Tiếp tục duy trì sức khỏe tốt.";
+
+      document.getElementById("osa-risk").textContent = `${score}% nguy cơ OSA. ${advice}`;
+    });
+Sau khi người dùng chọn xong 20 câu hỏi và bấm "Gửi trả lời", trang tính toán phân trăm nguy cơ và hiển thị lời khuyên.
+4. Làm khung cho sản phẩm
+- Những vật liệu cần chuẩn bị:
+  + Keo
+  + Bìa trắng giấy cứng
+  + Bút màu
+
+4.1. Làm khung cho ESP32 gửi
+- Sử dụng các bìa trắng giấy cứng xếp lại thành một hình hộp với kích thức dạng ngang của phần ESP32 gửi
+- Đục các lổ cho các cảm biến, nút và NRF24L01
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Hình ảnh khung cho ESP32 gửi.
+
+4.2. Làm khung cho ESP32 nhận
+- Sử dụng các bìa trắng giấy cứng xếp lại thành một hình hộp với kích thức dạng ngang của phần ESP32 nhận
+- Đục các lổ cho cáp dây và ăng – ten ( Ở đây em dùng NRF24L01 có ăng – ten cho ESP32 nhận )
+
+
+
+
+
+
+
+Hình ảnh khung cho ESP32 nhận.
+Hình ảnh khi bỏ khung của phần cứng của ESP32 gửi và nhận
+
+
+Hình ảnh hoàn thiện sản phẩm.
+IV/ Tổng kết đo thực tế
+
+1.Kết nối Wifi cho ESP32 nhận
+- Cắm phích cắm của ESP32 nhận vào máy tính.
+- Nếu đã kết nối một lần rồi thì ESP32 nhận sẽ tự động kết nối cho lần sau.
+- Còn nếu chưa kết nối sẽ phát mạng lên và dùng máy tính hoặc điện thoại để kết nối như mục “4. Cách sử dụng và vận hành” trang 12.
+
+
+2.Bắt đầu đeo sản phẩm
+- Phần AirCheck đeo vào ngực của người đo bằng dây đeo, phần bao ngón tay đặt ngón tay lên cảm biến MAX30102. Phần phích cắm cắm vô cục sạc dự phòng.
+
+
+Hình ảnh sau khi đeo.
+- Bật Web lên và nằm lên giường. Sau khi nằm lên giường thì ấn nút bất đầu để bắt đầu đo. 
+
+
+Hình ảnh đeo và ngủ.
+
+Hình ảnh giao diện khi bật web
+3. Kết quả
+- Dậy và ấn nút “Stop” để dừng lại quá trình đo.
+- Sau đó vô Web để xem thông số và trả lời câu hỏi để đưa ra tỉ lệ mắc phải bệnh OSA và lời khuyên. Ngoài ra bạn còn có thể vô Google Sheets để xem chi tiết thông số và lưu lại dưới dạng Exel.
+
+
+Hình ảnh sau khi qua 5 tiếng rưỡi đo và hiện lên Web để phân tích và cho lời khuyên.
+
+Hình ảnh thông số dữ liệu sau 5 tiếng rưỡi đo trên Google Sheets.
+V/ Phần kết luận
+1. Kết luận												Trong khuôn khổ đề tài, em đã xây dựng thành công một hệ thống đo lường và phân tích nguy cơ ngưng thở khi ngủ (OSA) dựa trên nền tảng ESP32, cảm biến sinh học (MAX30102, MPU6050, MAX4466), kết hợp với truyền thông không dây (NRF24L01) và xử lý dữ liệu trên nền tảng đám mây (Google Sheets, Google Apps Script). Hệ thống không chỉ thu thập được các chỉ số quan trọng như nhịp tim, SpO₂, tư thế ngủ, ngáy… mà còn cho phép phân tích chỉ số y khoa (AHI, ODI, SpO₂ trung bình…) và tính toán nguy cơ OSA tổng hợp, giúp đánh giá tình trạng sức khỏe một cách định lượng và trực quan.					Bên cạnh đó, em đã thiết kế một giao diện web hiện đại, thân thiện, có thể cập nhật dữ liệu theo thời gian thực, đồng thời hỗ trợ người dùng trả lời 20 câu hỏi tầm soát, góp phần đưa ra đánh giá nguy cơ OSA chính xác hơn. Hệ thống thể hiện được tính hiệu quả, chi phí thấp, dễ mở rộng và hoàn toàn có thể triển khai thực tế trong các ứng dụng giám sát sức khỏe cá nhân hoặc cộng đồng.				Tuy còn một số hạn chế nhất định như chưa tích hợp cảnh báo thời gian thực, chưa lưu trữ dữ liệu dài hạn ngoài Google Sheets hay chưa có khả năng tự động gửi báo cáo định kỳ, nhưng đề tài đã đạt được các mục tiêu chính đề ra ban đầu, thể hiện năng lực tích hợp công nghệ phần cứng – phần mềm – IoT – y sinh của em.
+2. Định hướng tương lai
+- Tối ưu phần cứng										Dùng pin sạc lithium tích hợp mạch sạc (TP4056, BMS). Bổ sung cảm biến CO₂ hoặc cảm biến hô hấp (piezo/chest band) để theo dõi nhịp thở chính xác hơn. Thu nhỏ thiết bị lại nếu được thêm nữa.
+-  Phát triển phần mềm thông minh								Ứng dụng trí tuệ nhân tạo để phân tích dữ liệu sinh học và phát hiện bất thường. Mô hình có thể sử dụng các thuật toán học máy như Random Forest, Logistic Regression hoặc CNN. Tự động tạo báo cáo PDF và gửi qua email cho người dùng hoặc bác sĩ.
+-  Cải tiến giao diện người dùng								Xây dựng ứng dụng di động (Android/iOS) và giao diện web nâng cao hỗ trợ biểu đồ trực quan, cảnh báo, tùy chỉnh phiên đo. Hệ thống đa người dùng có thể lưu trữ lịch sử cá nhân theo tài khoản đăng nhập.
+-  Mở rộng ứng dụng thực tế										Ứng dụng tại nhà cho người cao tuổi hoặc người có nguy cơ OSA. Tích hợp với hệ thống bệnh viện hoặc telemedicine, hợp tác cùng bác sĩ chuyên ngành để kiểm chứng hiệu quả lâm sàng.
+-  Khả năng thương mại hóa									Thiết kế sản phẩm hoàn chỉnh, đăng ký sở hữu trí tuệ và chứng nhận y tế. Xây dựng kế hoạch marketing và thử nghiệm thị trường tại phòng khám, trung tâm sức khỏe.
+
