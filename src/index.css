@@ -1,20 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600&family=Alumni+Sans+Pinstripe&family=Alumni+Sans:wght@400;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Reset toàn bộ thiết kế để đập đi xây lại */
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: #000;
-  color: #fff;
-  font-family: sans-serif;
+@layer base {
+  :root {
+    /* Colors - Surfaces */
+    --ks-lacquer-black: oklch(7% 0.006 95);
+    --ks-lacquer-deep: oklch(4% 0.004 95);
+    --ks-raised-lacquer: oklch(11% 0.006 95);
+    --ks-graphite: oklch(15% 0.008 95);
+    --ks-graphite-2: oklch(19% 0.008 95);
+
+    /* Colors - Text */
+    --ks-champagne: oklch(91% 0 0);
+    --ks-text-warm: oklch(88% 0 0);
+    --ks-text-muted: oklch(72% 0 0);
+    --ks-text-faint: oklch(62% 0 0);
+    --ks-text-mute-deep: oklch(52% 0 0);
+
+    /* Colors - Gold Ramp */
+    --ks-kinpaku-pale: oklch(86% 0.07 84);
+    --ks-kinpaku-gold: oklch(84% 0.19 80.46);
+    --ks-kinpaku-rich: oklch(77% 0.13 82);
+    --ks-kinpaku-deep: oklch(61% 0.085 78);
+    --ks-kinpaku-rule: oklch(78% 0.12 82);
+    --ks-gold-hairline: oklch(78% 0 0 / 0.16);
+    --ks-gold-hairline-strong: oklch(74% 0.09 82 / 0.6);
+
+    /* Colors - Patina Ramp */
+    --ks-patina-pale: oklch(82% 0.07 188);
+    --ks-verdigris-patina: oklch(70% 0.12 188);
+    --ks-patina-deep: oklch(49% 0.08 188);
+
+    /* Typography */
+    --font-wordmark: "Alumni Sans", "Albert Sans", Arial, sans-serif;
+    --font-display: "Alumni Sans Pinstripe", "Albert Sans", Arial, sans-serif;
+    --font-body: "Albert Sans", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "SFMono-Regular", "Roboto Mono", Consolas, monospace;
+  }
+
+  html, body, #root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: var(--ks-lacquer-black);
+    color: var(--ks-text-warm);
+    font-family: var(--font-body);
+  }
 }
 
-/* Ẩn các class cũ nếu còn sót */
-.glass-panel, .glass-pill, .glass-btn {
-  background: transparent;
-  border: 1px solid #333;
+@layer components {
+  /* Primitives Kit */
+  
+  /* Buttons */
+  .ks-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 38px;
+    min-height: 48px;
+    font-family: var(--font-body);
+    font-size: 1.18rem;
+    font-weight: 500;
+    line-height: 1.35;
+    border-radius: 2px;
+    transition: all 0.2s ease-out;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  
+  .ks-button-primary {
+    background-color: var(--ks-kinpaku-gold);
+    color: var(--ks-lacquer-deep);
+  }
+  .ks-button-primary:hover {
+    background-color: var(--ks-kinpaku-pale);
+  }
+  
+  .ks-button-secondary {
+    background-color: transparent;
+    color: var(--ks-kinpaku-gold);
+    border-color: var(--ks-gold-hairline-strong);
+  }
+  .ks-button-secondary:hover {
+    background-color: oklch(78% 0.12 82 / 0.1);
+  }
+  
+  /* Inputs */
+  .ks-input {
+    background-color: var(--ks-lacquer-deep);
+    color: var(--ks-champagne);
+    border: 1px solid var(--ks-gold-hairline);
+    border-radius: 4px;
+    padding: 14px 16px;
+    font-family: var(--font-body);
+    font-size: 1.02rem;
+    transition: all 0.2s ease;
+  }
+  .ks-input:focus {
+    outline: none;
+    border-color: var(--ks-gold-hairline-strong);
+  }
+  
+  /* Container/Cards */
+  .ks-card {
+    background-color: var(--ks-raised-lacquer);
+    color: var(--ks-text-warm);
+    border: 1px solid var(--ks-gold-hairline);
+    border-radius: 4px;
+    padding: 24px;
+  }
+
+  .ks-bento {
+    background-color: var(--ks-raised-lacquer);
+    border: 1px solid var(--ks-gold-hairline);
+  }
+
+  /* Status Tags */
+  .ks-tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    background-color: var(--ks-graphite);
+    color: var(--ks-text-muted);
+    border: 1px solid var(--ks-gold-hairline);
+    border-radius: 2px;
+  }
+  .ks-tag.is-improved {
+    color: var(--ks-verdigris-patina);
+    border-color: oklch(70% 0.105 190 / 0.24);
+  }
+  
+  /* Custom Scrollbar for Lacquer */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--ks-lacquer-deep);
+    border-left: 1px solid var(--ks-gold-hairline);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--ks-graphite-2);
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--ks-kinpaku-deep);
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
