@@ -523,57 +523,61 @@ function App() {
       {/* Landing Page (Premium Glassmorphism) */}
       {!isExploring && (
         <div className="absolute inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden bg-deep-space">
-          {/* Premium ambient light effect */}
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.02] rounded-full blur-[100px] pointer-events-none"></div>
+          {/* Animated Background Mesh */}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-screen pointer-events-none"></div>
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--ks-kinpaku-gold)]/10 rounded-full blur-[120px] animate-[pulse_8s_ease-in-out_infinite]"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-[#3b82f6]/10 rounded-full blur-[150px] animate-[pulse_12s_ease-in-out_infinite_alternate]"></div>
+          </div>
 
-          <div className="relative z-10 flex flex-col items-center w-full max-w-4xl px-6">
+          <div className="relative z-10 flex flex-col items-center w-full max-w-5xl px-6">
             
             {/* Minimalist Centerpiece */}
-            <div className="relative w-32 h-32 mb-12 flex items-center justify-center">
-              <div className="absolute inset-0 border border-white/10 rounded-full"></div>
-              <div className="absolute inset-4 border border-white/5 rounded-full"></div>
-              <div className="absolute inset-0 bg-white/5 rounded-full blur-xl backdrop-blur-3xl"></div>
-              <IconTelescope size={32} className="text-white/80 z-10 drop-shadow-lg" />
+            <div className="relative w-36 h-36 mb-10 flex items-center justify-center group">
+              <div className="absolute inset-0 border border-[var(--ks-gold-hairline-strong)] rounded-full animate-[spin_30s_linear_infinite]"></div>
+              <div className="absolute inset-2 border border-white/10 rounded-full border-t-[var(--ks-kinpaku-gold)] animate-[spin_20s_linear_infinite_reverse]"></div>
+              <div className="absolute inset-0 bg-[var(--ks-kinpaku-gold)]/5 rounded-full blur-xl backdrop-blur-3xl group-hover:bg-[var(--ks-kinpaku-gold)]/10 transition-colors duration-700"></div>
+              <IconTelescope size={40} className="text-[var(--ks-champagne)] z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.4)]" />
             </div>
 
             {/* Status Pill */}
-            <div className="flex items-center gap-3 mb-8 glass-pill px-5 py-2.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/80 shadow-[0_0_8px_rgba(255,255,255,0.8)] animate-pulse" />
-              <span className="text-[10px] text-white/80 tracking-[0.25em] uppercase font-medium" style={{ fontFamily: 'var(--font-body)' }}>{t('system_ready')}</span>
+            <div className="flex items-center gap-4 mb-6 glass-pill px-6 py-2.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse" />
+              <span className="text-[11px] text-[var(--ks-champagne)] tracking-[0.3em] uppercase font-bold" style={{ fontFamily: 'var(--font-mono)' }}>{t('system_ready')}</span>
             </div>
 
             {/* Title */}
-            <h1 className="text-6xl md:text-8xl font-light tracking-tighter mb-4 text-center text-gradient" style={{ fontFamily: 'var(--font-heading)' }}>
+            <h1 className="text-7xl md:text-9xl font-bold tracking-tighter mb-4 text-center text-gradient drop-shadow-2xl glitch" data-text="JWST EXPLORER" style={{ fontFamily: 'var(--font-display)' }}>
               JWST EXPLORER
             </h1>
-            <p className="text-white/40 text-xs md:text-sm tracking-[0.4em] mb-16 text-center uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
-              NASA MAST Observatory
+            <p className="text-[var(--ks-text-muted)] text-xs md:text-sm tracking-[0.5em] mb-16 text-center uppercase" style={{ fontFamily: 'var(--font-mono)' }}>
+              NASA MAST Observatory &middot; Vifotec 2026
             </p>
 
             {/* Magnetic Search Pill */}
             <div className="relative w-full max-w-2xl group" ref={searchContainerRef}>
-              <div className="absolute -inset-1 bg-gradient-to-r from-white/0 via-white/5 to-white/0 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-1000"></div>
-              <form onSubmit={handleSearchSubmit} className="relative flex items-center glass-pill px-8 py-5 hover:bg-white/[0.08] focus-within:bg-white/[0.08] focus-within:border-white/20 transition-all duration-500">
-                <IconSearch size={20} className="text-white/30 mr-4" />
+              <div className="absolute -inset-1 bg-gradient-to-r from-[var(--ks-kinpaku-gold)]/0 via-[var(--ks-kinpaku-gold)]/20 to-[var(--ks-kinpaku-gold)]/0 rounded-full blur opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+              <form onSubmit={handleSearchSubmit} className="relative flex items-center glass-pill px-8 py-5 hover:bg-white/[0.04] focus-within:bg-white/[0.06] focus-within:border-[var(--ks-kinpaku-gold)] transition-all duration-500 shadow-2xl">
+                <IconSearch size={24} className="text-[var(--ks-text-muted)] mr-5 group-focus-within:text-[var(--ks-kinpaku-gold)] transition-colors" />
                 <input 
                   type="text" 
-                  className="w-full bg-transparent outline-none text-white/90 font-mono text-base tracking-widest placeholder-white/20"
+                  className="w-full bg-transparent outline-none text-[var(--ks-champagne)] font-mono text-lg tracking-widest placeholder-[var(--ks-text-faint)]"
                   placeholder={t('search_placeholder')} 
                   value={searchQuery} 
                   onChange={handleInputChange} 
                   onFocus={() => { if(searchQuery.trim().length > 0) setShowSuggestions(true); }} 
                 />
-                <button type="submit" className="ml-4 px-6 py-2.5 bg-white/10 text-white/90 font-mono text-xs tracking-[0.2em] uppercase rounded-full hover:bg-white/20 hover:scale-105 active:scale-95 transition-all duration-300 border border-white/5">
+                <button type="submit" className="ml-4 px-8 py-3 bg-[var(--ks-kinpaku-gold)] text-black font-bold font-mono text-xs tracking-[0.2em] uppercase rounded-full hover-glow hover:scale-105 active:scale-95 transition-all duration-300">
                   {t('scan')}
                 </button>
               </form>
               
               {showSuggestions && filteredSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 w-full mt-4 glass-panel border-white/10 z-50 overflow-hidden">
-                  <ul className="max-h-60 overflow-y-auto custom-scrollbar py-2" style={{ fontFamily: 'var(--font-mono)' }}>
+                <div className="absolute top-full left-0 w-full mt-4 glass-panel border-[var(--ks-gold-hairline)] z-50 overflow-hidden rounded-xl">
+                  <ul className="max-h-64 overflow-y-auto custom-scrollbar py-2" style={{ fontFamily: 'var(--font-mono)' }}>
                     {filteredSuggestions.map((suggestion, idx) => ( 
-                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-6 py-4 hover:bg-white/5 cursor-pointer text-white/70 hover:text-white transition-colors flex items-center gap-6 text-sm border-b border-white/5 last:border-0 uppercase tracking-widest">
-                        <span className="text-white/20 text-[10px] w-6">{(idx + 1).toString().padStart(2, '0')}</span> {suggestion}
+                      <li key={idx} onClick={() => handleSuggestionClick(suggestion)} className="px-8 py-4 hover:bg-[var(--ks-kinpaku-gold)]/10 cursor-pointer text-[var(--ks-champagne)] transition-colors flex items-center gap-6 text-sm border-b border-white/5 last:border-0 uppercase tracking-widest">
+                        <span className="text-[var(--ks-text-muted)] text-[10px] w-6">{(idx + 1).toString().padStart(2, '0')}</span> {suggestion}
                       </li> 
                     ))}
                   </ul>
@@ -582,17 +586,17 @@ function App() {
             </div>
 
             {/* Skip to explorer */}
-            <button onClick={() => setIsExploring(true)} className="mt-20 text-white/30 hover:text-white/80 transition-all duration-500 flex items-center gap-3 group">
-              <span className="text-[10px] tracking-[0.3em] uppercase font-mono">{t('skip_startup')}</span>
+            <button onClick={() => setIsExploring(true)} className="mt-24 text-[var(--ks-text-muted)] hover:text-[var(--ks-kinpaku-gold)] transition-all duration-500 flex items-center gap-3 group">
+              <span className="text-[10px] tracking-[0.3em] uppercase font-mono group-hover:tracking-[0.4em] transition-all duration-500">{t('skip_startup')}</span>
             </button>
           </div>
           
           {/* Minimal Footer */}
-          <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
-            <div className="text-left text-[10px] text-white/20 tracking-[0.2em] uppercase">
-              <span>VIFOTEC 2026</span>
+          <div className="absolute bottom-8 left-12 right-12 flex justify-between items-end pointer-events-none" style={{ fontFamily: 'var(--font-mono)' }}>
+            <div className="text-left text-[10px] text-[var(--ks-text-muted)] tracking-[0.2em] uppercase">
+              <span>VIFOTEC 2026 &middot; PRO MAX UI</span>
             </div>
-            <div className="text-right text-[10px] text-white/20 tracking-[0.2em] uppercase">
+            <div className="text-right text-[10px] text-[var(--ks-text-muted)] tracking-[0.2em] uppercase">
               <span>{t('powered_by')}</span>
             </div>
           </div>
@@ -601,12 +605,13 @@ function App() {
 
       {/* Main HUD App */}
       {isExploring && (
-        <div className="absolute inset-0 z-0 flex flex-col items-center justify-center p-8 bg-[#101014]">
+        <div className="absolute inset-0 z-0 flex flex-col items-center justify-center p-6 bg-deep-space">
           
-          <div className="w-full max-w-[1600px] flex-1 flex flex-col border border-[var(--ks-gold-hairline)] rounded-[4px] relative shadow-[0_0_50px_rgba(212,175,55,0.08)] bg-[var(--ks-lacquer-deep)]">
+          <div className="w-full max-w-[1800px] flex-1 flex flex-col rounded-2xl relative shadow-[0_0_100px_rgba(0,0,0,0.8)] bg-transparent overflow-hidden">
             
             {/* TopHUD */}
             <TopHUD executeSearch={executeSearch} activeLayer={activeLayer} />
+
 
             <div className="flex flex-1 overflow-hidden relative">
               {/* LeftHUD */}

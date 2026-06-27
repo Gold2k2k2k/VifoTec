@@ -142,14 +142,14 @@
     height: 6px;
   }
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: var(--ks-lacquer-deep);
-    border-left: 1px solid var(--ks-gold-hairline);
+    background: rgba(0,0,0,0.2);
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--ks-graphite-2);
+    background: var(--ks-gold-hairline-strong);
+    border-radius: 10px;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: var(--ks-kinpaku-deep);
+    background: var(--ks-kinpaku-gold);
   }
   
   .hide-scrollbar::-webkit-scrollbar {
@@ -159,4 +159,81 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  /* UI UX Pro Max Standards - Glassmorphism & Kinpaku */
+  .glass-panel {
+    background: rgba(4, 4, 5, 0.4);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid var(--ks-gold-hairline);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(212, 175, 55, 0.02);
+  }
+
+  .glass-pill {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid var(--ks-gold-hairline);
+    border-radius: 9999px;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.01), 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, var(--ks-champagne) 0%, var(--ks-kinpaku-gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-deep-space {
+    background: radial-gradient(circle at 50% 0%, var(--ks-graphite-2) 0%, var(--ks-lacquer-black) 100%);
+  }
+
+  /* Micro animations */
+  .hover-glow:hover {
+    box-shadow: 0 0 15px var(--ks-gold-hairline-strong);
+    text-shadow: 0 0 10px var(--ks-kinpaku-gold);
+  }
+
+  .glitch {
+    position: relative;
+  }
+  .glitch::before, .glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+  }
+  .glitch::before {
+    left: 2px;
+    text-shadow: -1px 0 red;
+    clip: rect(24px, 550px, 90px, 0);
+    animation: glitch-anim-2 3s infinite linear alternate-reverse;
+  }
+  .glitch::after {
+    left: -2px;
+    text-shadow: -1px 0 blue;
+    clip: rect(85px, 550px, 140px, 0);
+    animation: glitch-anim 2.5s infinite linear alternate-reverse;
+  }
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(10px, 9999px, 81px, 0); }
+  20% { clip: rect(65px, 9999px, 11px, 0); }
+  40% { clip: rect(38px, 9999px, 92px, 0); }
+  60% { clip: rect(27px, 9999px, 49px, 0); }
+  80% { clip: rect(9px, 9999px, 73px, 0); }
+  100% { clip: rect(48px, 9999px, 20px, 0); }
+}
+@keyframes glitch-anim-2 {
+  0% { clip: rect(20px, 9999px, 31px, 0); }
+  20% { clip: rect(15px, 9999px, 91px, 0); }
+  40% { clip: rect(88px, 9999px, 12px, 0); }
+  60% { clip: rect(57px, 9999px, 89px, 0); }
+  80% { clip: rect(19px, 9999px, 53px, 0); }
+  100% { clip: rect(68px, 9999px, 40px, 0); }
 }
