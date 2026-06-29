@@ -1494,8 +1494,14 @@ export const StellariumSky: React.FC<StellariumSkyProps> = ({ onClose, onSelectO
             ✕
           </button>
           <h1 className="text-sm md:text-lg font-bold text-sky-400 tracking-wider flex items-center gap-2 whitespace-nowrap">
-            <span>🌌</span> BẢN ĐỒ SAO NGOẠI TUYẾN
+            <span>🌌</span> {useOfficialEngine ? 'STELLARIUM (OFFICIAL)' : 'STELLARIUM WEB 2D'}
           </h1>
+          <button
+            onClick={() => setUseOfficialEngine(!useOfficialEngine)}
+            className={`md:ml-4 px-3 md:px-4 py-1.5 text-[10px] md:text-xs rounded-full font-bold transition-all whitespace-nowrap ${useOfficialEngine ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.6)] hover:shadow-[0_0_25px_rgba(37,99,235,0.8)]'}`}
+          >
+            {useOfficialEngine ? 'Bản đồ nội bộ' : 'Bản đồ 3D'}
+          </button>
         </div>
 
         {/* Global Presets / Quick Search */}
